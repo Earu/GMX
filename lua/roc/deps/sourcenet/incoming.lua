@@ -57,7 +57,6 @@ end
 hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localchan)
 	local islocal = netchan == localchan
 	if not game.IsDedicated() and ((islocal and SERVER) or (not islocal and CLIENT)) then
-		MsgC(Color(255, 255, 0), "Ignoring a stream\n")
 		return
 	end
 

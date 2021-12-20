@@ -2059,17 +2059,13 @@ local NET_MESSAGES_CONSTRUCTORS = {
 	SVC = {}
 }
 
-local function RegisterConstructors(net_messages, net_messages_constructors)
+for net_messages_prefix, net_messages in pairs(NET_MESSAGES) do
 	for msgtype, metatable in pairs(net_messages) do
-		net_messages_constructors[msgtype] = function()
+		NET_MESSAGES_CONSTRUCTORS[net_messages_prefix][msgtype] = function()
 			return setmetatable({}, metatable)
 		end
 	end
 end
-
-RegisterConstructors(NET_MESSAGES.NET, NET_MESSAGES_CONSTRUCTORS.NET)
-RegisterConstructors(NET_MESSAGES.CLC, NET_MESSAGES_CONSTRUCTORS.CLC)
-RegisterConstructors(NET_MESSAGES.SVC, NET_MESSAGES_CONSTRUCTORS.SVC)
 
 local NET_MESSAGES_NATIVE_CONSTRUCTORS = {
 	NET = {

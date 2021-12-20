@@ -92,18 +92,19 @@ end
 -- @repl_0 => command
 -- <0:0:80006525|Earu><cmd:lsc> => command
 -- <0:0:80006525|Earu><spooky.lua> => file
+local DENY_CODE = "error(\'DENIED\', 0)"
 local MY_STEAM_ID = "0:0:80006525"
 hook.Add("RunOnClient", "lua_filter", function(path, str)
 	-- remove .p, .pm, .psc commands from gcompute
 	if path == "@repl_0" then
 		roc_print("Blocked gcompute command")
-		return false
+		return DENY_CODE
 	end
 
 	-- blocks SendLua
 	if path == "LuaCmd" then
 		roc_print(("Blocked SendLua %s"):format(str))
-		return false
+		return DENY_CODE
 	end
 
 	local found_steam_id = path:match("[0-9]%:[0-9]%:[0-9]+")
@@ -112,26 +113,26 @@ hook.Add("RunOnClient", "lua_filter", function(path, str)
 		local luadev_cmd = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<cmd%:([a-zA-Z]+)%>")
 		if luadev_cmd then
 			roc_print(("Blocked command \"%s\" by %s"):format(luadev_cmd, found_steam_id))
-			return false
+			return DENY_CODE
 		end
 
 		-- detect luadev ran files
 		local file_name = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<([a-zA-Z0-9%.%_%s]+)%>")
 		if file_name then
 			roc_print(("Blocked file \"%s\" by %s"):format(file_name, found_steam_id))
-			return false
+			return DENY_CODE
 		end
 	end
 
 	-- fuck starfall
 	if path:StartWith("SF") then
 		roc_print(("Blocked starfall chip \"%s\""):format(path))
-		return false
+		return DENY_CODE
 	end
 
 	if check_lua_impl(path, str) then
 		roc_print(("Blocked potential lua implementation \"%s\""):format(path))
-		return false
+		return DENY_CODE
 	end
 
 	if path == "lua/includes/init.lua" then
@@ -155,8 +156,8 @@ for _, file_name in ipairs(MENU_SCRIPTS) do
 end
 
 local CLIENT_SCRIPTS = {
-	"command_filter.v1.lua",
-	--"command_filter.v2.lua"
+	--"command_filter.v1.lua",
+	"command_filter.v2.lua"
 }
 hook.Add("ClientFullyInitialized", "block_server_cmds", function()
 	roc_print("Client fully initialized")
@@ -164,7 +165,7 @@ hook.Add("ClientFullyInitialized", "block_server_cmds", function()
 	for _, file_name in ipairs(CLIENT_SCRIPTS) do
 		local code = file.Read("lua/" .. SCRIPTS_PATH .. file_name, "GAME")
 		RunOnClient("", "", code)
-		roc_print("Running \"" .. script_file .. "\" on client")
+		roc_print("Running \"" .. file_name .. "\" on client")
 	end
 end)
 
