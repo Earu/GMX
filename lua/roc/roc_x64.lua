@@ -104,7 +104,7 @@ hook.Add("RunOnClient", "lua_filter", function(path, str)
 	-- blocks SendLua
 	if path == "LuaCmd" then
 		roc_print(("Blocked SendLua %s"):format(str))
-		return DENY_CODE
+		return false
 	end
 
 	local found_steam_id = path:match("[0-9]%:[0-9]%:[0-9]+")
@@ -132,23 +132,32 @@ hook.Add("RunOnClient", "lua_filter", function(path, str)
 
 	if check_lua_impl(path, str) then
 		roc_print(("Blocked potential lua implementation \"%s\""):format(path))
-		return DENY_CODE
+		return false
 	end
 
 	if path == "lua/includes/init.lua" then
-		return str .. "\n" .. GEN_CODE .. "\n" .. [[
-			pcall(require, "browser_fix")
-
+		local init_script = str .. "\n" .. GEN_CODE .. "\n" .. [[
 			local hook_name = GEN_NAME()
 			hook.Add("InitPostEntity", hook_name, function()
 				hook.Remove("InitPostEntity", hook_name)
 				LocalPlayer():ConCommand("]] .. _G.ROC_COM_NAME .. [[ hook.Run('ClientFullyInitialized')")
 			end)
 		]]
+
+		local custom_init_scripts = {}
+		hook.Run("PostClientLuaInit", custom_init_scripts)
+		for _, custom_init_script in pairs(custom_init_scripts) do
+			init_script = init_script .. "\n" .. custom_init_script
+		end
 	end
 end)
 
-local MENU_SCRIPTS = { "editor.lua" }
+local MENU_SCRIPTS = {
+	"editor.lua",
+	"external_console.lua",
+	"misc.lua",
+}
+
 local SCRIPTS_PATH = "roc/roc_scripts/"
 for _, file_name in ipairs(MENU_SCRIPTS) do
 	include(SCRIPTS_PATH .. file_name)
