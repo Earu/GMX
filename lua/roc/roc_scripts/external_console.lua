@@ -17,6 +17,6 @@ local function is_gterm_running()
 end
 
 if not is_gterm_running() then
-	local GTERM_PATH = "C:/Users/Earu/source/repos/GTerm/bin/Debug/GTerm.exe"
+	local GTERM_PATH = "C:/Users/Earu/source/repos/GTerm/bin/Release/GTerm.exe"
 	gterm_pid = Process.Start(GTERM_PATH)
 end

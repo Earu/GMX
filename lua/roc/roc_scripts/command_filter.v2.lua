@@ -10,6 +10,7 @@ end
 local WHITELIST = {
 	dsp_player = true,
 	gmod_toolmode = true,
+	r_cleardecals = true,
 }
 
 FilterIncomingMessage(net_StringCmd, function(netchan, read, write)

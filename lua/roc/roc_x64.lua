@@ -149,13 +149,14 @@ hook.Add("RunOnClient", "lua_filter", function(path, str)
 		for _, custom_init_script in pairs(custom_init_scripts) do
 			init_script = init_script .. "\n" .. custom_init_script
 		end
+
+		return init_script
 	end
 end)
 
 local MENU_SCRIPTS = {
 	"editor.lua",
 	"external_console.lua",
-	"misc.lua",
 }
 
 local SCRIPTS_PATH = "roc/roc_scripts/"
@@ -166,7 +167,8 @@ end
 
 local CLIENT_SCRIPTS = {
 	--"command_filter.v1.lua",
-	"command_filter.v2.lua"
+	"command_filter.v2.lua",
+	"misc.lua",
 }
 hook.Add("ClientFullyInitialized", "block_server_cmds", function()
 	roc_print("Client fully initialized")
