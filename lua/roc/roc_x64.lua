@@ -5,8 +5,12 @@ require("roc")
 local HEADER_COLOR = Color(255, 0, 0)
 local BODY_COLOR = Color(197, 53, 17)
 function roc_print(...)
-	MsgC(HEADER_COLOR, "[ROC] ", BODY_COLOR, ...)
-	MsgN()
+	local args = {}
+	for key, arg in pairs({ ... }) do
+		args[key] = tostring(arg)
+	end
+
+	MsgC(HEADER_COLOR, "[ROC] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
 end
 
 concommand.Add("roc_file", function(_, _, _, path)
@@ -166,6 +170,7 @@ for _, file_name in ipairs(MENU_SCRIPTS) do
 end
 
 local CLIENT_SCRIPTS = {
+	"lua_cache.lua",
 	--"command_filter.v1.lua",
 	"command_filter.v2.lua",
 	"misc.lua",

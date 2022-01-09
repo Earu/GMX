@@ -824,6 +824,8 @@ concommand.Add("roc_explore_server_files", function()
 		function browser:OnSelect(path, pnl)
 			if file.Exists(path, "LUA") then
 				local code = file.Read(path, "LUA")
+				if not code then return end
+
 				if not code or #code:Trim() == 0 then
 					code = "-- content not networked"
 				end

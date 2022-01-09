@@ -3,8 +3,12 @@ include("roc/deps/sourcenet/incoming.lua")
 local HEADER_COLOR = Color(255, 0, 0)
 local BODY_COLOR = Color(197, 53, 17)
 local function roc_print(...)
-	MsgC(HEADER_COLOR, "[ROC] ", BODY_COLOR, ...)
-	MsgN()
+	local args = {}
+	for key, arg in pairs({ ... }) do
+		args[key] = tostring(arg)
+	end
+
+	MsgC(HEADER_COLOR, "[ROC] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
 end
 
 local WHITELIST = {
