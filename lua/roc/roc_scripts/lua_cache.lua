@@ -17,23 +17,23 @@ local function tohex(str)
 	end)
 end
 
-local hash_cache
+local path_cache
 local function process_cached_file(path)
 	local string_tbl = StringTable("client_lua_files")
 
-	if hash_cache == nil then
-		hash_cache = {}
+	if path_cache == nil then
+		path_cache = {}
 
 		local tbl = string_tbl:GetTableStrings()
 		for id, str in pairs(tbl) do
 			if id ~= 0 then
 				local cached_path = str:gsub("^lua/",""):gsub("^gamemodes/",""):gsub("%.lua$","")
-				hash_cache[cached_path] = id
+				path_cache[cached_path] = id
 			end
 		end
 	end
 
-	local num = hash_cache[path]
+	local num = path_cache[path]
 	local data = num and string_tbl:GetData(num)
 	local hash = data and data:sub(1, 32) or ""
 
@@ -67,12 +67,13 @@ local function get_data(hash)
 end
 
 local BAD = ("\0"):rep(32)
+local cache = {}
 local function read_lua_cache(path)
 	if isfunction(path) then path = debug.getinfo(path).source end
 
 	path = path:gsub("^lua/",""):gsub("^gamemodes/",""):gsub("%.lua$","")
 
-	local hash = hash_cache and tostring(hash_cache[path])
+	local hash = cache[path]
 	if hash then
 		local data, err = get_data(hash)
 		if err then
@@ -83,7 +84,7 @@ local function read_lua_cache(path)
 		end
 	end
 
-	hash = tostring(process_cached_file(path))
+	hash = process_cached_file(path)
 	if hash == BAD then
 		roc_print("error trying to open", path, "BAD HASH")
 		return ""
@@ -96,7 +97,7 @@ local function read_lua_cache(path)
 		return ""
 	end
 
-	hash_cache[path] = hash
+	cache[path] = hash
 	return data
 end
 
