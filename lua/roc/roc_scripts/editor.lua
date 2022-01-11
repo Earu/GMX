@@ -159,7 +159,7 @@ do
 	AccessorFunc(LUA_FILE_BROWSER, "m_bOpen", "Open")
 
 	function LUA_FILE_BROWSER:Init()
-		self:SetPath("GAME")
+		self:SetPath("MOD")
 
 		self.Divider = self:Add("LuaFileBrowserDivider")
 		self.Divider:Dock(FILL)
@@ -363,7 +363,7 @@ do
 		DPanel.Clear(self)
 
 		self.m_strBaseFolder, self.m_strCurrentFolder, self.m_strFilter, self.m_strName, self.m_strSearch, self.Divider.m_pRight = nil
-		self.m_bOpen, self.m_bModels, self.m_strPath = false, false, "GAME"
+		self.m_bOpen, self.m_bModels, self.m_strPath = false, false, "MOD"
 		self.bSetup = nil
 
 		self:Init()
@@ -613,7 +613,7 @@ local LUA_EDITOR = {
 		self.OpenedFileBrowser = true
 
 		local editor = self
-		if not location then location = "GAME" end
+		if not location then location = "MOD" end
 
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(self:GetWide(), self:GetTall())

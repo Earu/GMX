@@ -105,8 +105,55 @@ end
 local old_file_read = file.Read
 function file.Read(path, env)
 	if env == "LUA" then
-		return read_lua_cache(path)
+		local ret = read_lua_cache(path)
+		if not ret or #ret == 0 then
+			ret = old_file_read(path, env)
+		end
+
+		return ret
 	else
 		return old_file_read(path, env)
 	end
 end
+
+require("zip")
+
+local srv_ip = game.GetIPAddress()
+local archives_path = ("Archives/%s"):format(srv_ip:gsub("%.","_"):gsub("%:", "_"))
+file.CreateDir(archives_path)
+
+local function create_tmp_package(res, dir)
+	res = res or {}
+
+	local files, dirs = file.Find(dir and dir .. "/*" or "*", "LUA")
+	for _, f in pairs(files or {}) do
+		if not f:EndsWith(".lua") then continue end
+
+		local virtual_file_path = dir and dir .. "/" .. f or f
+		local code = read_lua_cache(virtual_file_path)
+		if not code or #code == 0 then continue end -- if we cant read content then dont dump, its useless
+
+		local real_path = ("%s/tmp/%s.txt"):format(archives_path, virtual_file_path)
+		local parent_dir = real_path:GetPathFromFilename()
+
+		file.CreateDir(parent_dir)
+		file.Write(real_path, code)
+
+		table.insert(res, {
+			Path = real_path,
+			ArchivePath = virtual_file_path,
+		})
+	end
+
+	for _, d in pairs(dirs or {}) do
+		create_tmp_package(res, dir and dir .. "/" .. d or d)
+	end
+
+	return res
+end
+
+local zip_path = ("data/%s/%s.zip"):format(archives_path, os.date("%x"):gsub("/", "_"))
+local package_path = ("data/%s/tmp/"):format(archives_path)
+
+create_tmp_package()
+Zip(zip_path, package_path, true)

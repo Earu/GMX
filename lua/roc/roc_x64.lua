@@ -14,8 +14,8 @@ function roc_print(...)
 end
 
 concommand.Add("roc_file", function(_, _, _, path)
-	if file.Exists(path, "GAME") then
-		local lua = file.Read(path, "GAME")
+	if file.Exists(path, "MOD") then
+		local lua = file.Read(path, "MOD")
 		RunOnClient("", "", lua)
 		roc_print("Client running: " .. path)
 	end
@@ -27,8 +27,8 @@ concommand.Add("roc_lua", function(_, _, _, lua)
 end)
 
 concommand.Add("roc_file_menu", function(_, _, _, path)
-	if file.Exists(path, "GAME") then
-		local lua = file.Read(path, "GAME")
+	if file.Exists(path, "MOD") then
+		local lua = file.Read(path, "MOD")
 		RunStringEx(lua)
 		roc_print("Menu running: " .. path)
 	end
@@ -179,7 +179,7 @@ hook.Add("ClientFullyInitialized", "block_server_cmds", function()
 	roc_print("Client fully initialized")
 
 	for _, file_name in ipairs(CLIENT_SCRIPTS) do
-		local code = file.Read("lua/" .. SCRIPTS_PATH .. file_name, "GAME")
+		local code = file.Read("lua/" .. SCRIPTS_PATH .. file_name, "MOD")
 		RunOnClient("", "", code)
 		roc_print("Running \"" .. file_name .. "\" on client")
 	end
