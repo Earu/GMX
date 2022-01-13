@@ -3,7 +3,7 @@ if jit.arch ~= "x64" then return end
 require("roc")
 
 local HEADER_COLOR = Color(255, 157, 0)
-local BODY_COLOR = Color(190, 135, 15)
+local BODY_COLOR = Color(255, 196, 0)
 function gmx_print(...)
 	local args = {}
 	for key, arg in pairs({ ... }) do

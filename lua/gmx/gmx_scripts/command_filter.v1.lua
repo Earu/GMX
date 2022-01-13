@@ -1,7 +1,7 @@
 require("sourcenet")
 
-local HEADER_COLOR = Color(255, 0, 0)
-local BODY_COLOR = Color(197, 53, 17)
+local HEADER_COLOR = Color(255, 157, 0)
+local BODY_COLOR = Color(255, 196, 0)
 local function gmx_print(...)
 	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, ...)
 	MsgN()

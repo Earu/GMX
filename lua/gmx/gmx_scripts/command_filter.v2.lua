@@ -1,7 +1,7 @@
 include("gmx/deps/sourcenet/incoming.lua")
 
-local HEADER_COLOR = Color(255, 0, 0)
-local BODY_COLOR = Color(197, 53, 17)
+local HEADER_COLOR = Color(255, 157, 0)
+local BODY_COLOR = Color(255, 196, 0)
 local function gmx_print(...)
 	local args = {}
 	for key, arg in pairs({ ... }) do
