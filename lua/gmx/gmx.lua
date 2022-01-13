@@ -22,6 +22,10 @@ end
 
 require("roc")
 
+concommand.Add("gmx_reload", function()
+	include("lua/gmx/gmx.lua")
+end)
+
 concommand.Add("gmx_file", function(_, _, _, path)
 	if file.Exists(path, "MOD") then
 		local lua = file.Read(path, "MOD")
@@ -97,6 +101,7 @@ local MENU_SCRIPTS = {
 	"repl_filter.lua",
 	"editor.lua",
 	"external_console.lua",
+	"errors.lua",
 }
 
 local SCRIPTS_PATH = "gmx/gmx_scripts/"

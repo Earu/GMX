@@ -66,6 +66,7 @@ local function get_data(hash)
 	return data
 end
 
+local print_errors = true
 local BAD = ("\0"):rep(32)
 local cache = {}
 local function read_lua_cache(path)
@@ -77,7 +78,9 @@ local function read_lua_cache(path)
 	if hash then
 		local data, err = get_data(hash)
 		if err then
-			gmx_print("error trying to open", path, err)
+			if print_errors then
+				gmx_print("error trying to open", path, err)
+			end
 			return ""
 		else
 			return data
@@ -86,14 +89,20 @@ local function read_lua_cache(path)
 
 	hash = process_cached_file(path)
 	if hash == BAD then
-		gmx_print("error trying to open", path, "BAD HASH")
+		if print_errors then
+			gmx_print("error trying to open", path, "BAD HASH")
+		end
+
 		return ""
 	end
 
 	hash = tohex(hash):lower()
 	local data, err = get_data(hash)
 	if err then
-		gmx_print("error trying to open", path, err)
+		if print_errors then
+			gmx_print("error trying to open", path, err)
+		end
+
 		return ""
 	end
 
@@ -123,6 +132,7 @@ local archives_path = ("Archives/%s"):format(srv_ip:gsub("%.","_"):gsub("%:", "_
 file.CreateDir(archives_path)
 
 local function create_tmp_package(res, dir)
+	print_errors = false
 	res = res or {}
 
 	local files, dirs = file.Find(dir and dir .. "/*" or "*", "LUA")
@@ -149,6 +159,7 @@ local function create_tmp_package(res, dir)
 		create_tmp_package(res, dir and dir .. "/" .. d or d)
 	end
 
+	print_errors = true
 	return res
 end
 
