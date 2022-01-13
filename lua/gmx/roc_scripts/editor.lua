@@ -754,7 +754,7 @@ local LUA_EDITOR = {
 		local text = ("%s[%s] Ran %s on %s"):format(spacing, self.LastAction.Time, tab.Name, self.LastAction.Type)
 		if #text == 0 then text = ("%sReady"):format(spacing) end
 		self.LblRunStatus:SetText(text)
-		roc_print(text)
+		gmx_print(text)
 	end,
 	GetCode = function(self)
 		local tab = self.CodeTabs:GetActiveTab()
@@ -832,7 +832,7 @@ concommand.Add("roc_explore_server_files", function()
 
 				local tmp_file_name = GEN_NAME() .. ".txt"
 				file.Write(tmp_file_name, code)
-				LocalPlayer():ConCommand("]] .. _G.ROC_COM_NAME .. [[ hook.Run('ReceivedServerFile', '" .. path .. "', '" .. tmp_file_name .. "')")
+				LocalPlayer():ConCommand("]] .. _G.GMX_COM_ID .. [[ hook.Run('ReceivedServerFile', '" .. path .. "', '" .. tmp_file_name .. "')")
 			end
 		end
 	]])
@@ -844,6 +844,6 @@ hook.Add("ReceivedServerFile", "explore_srv_files", function(original_path, tmp_
 	local code = file.Read(tmp_file_name, "DATA")
 	file.Delete(tmp_file_name)
 
-	roc_print("Received server file " .. original_path)
+	gmx_print("Received server file " .. original_path)
 	EDITOR:NewTab(code, original_path)
 end)

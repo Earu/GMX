@@ -2,41 +2,41 @@ if jit.arch ~= "x64" then return end
 
 require("roc")
 
-local HEADER_COLOR = Color(255, 0, 0)
-local BODY_COLOR = Color(197, 53, 17)
-function roc_print(...)
+local HEADER_COLOR = Color(255, 157, 0)
+local BODY_COLOR = Color(190, 135, 15)
+function gmx_print(...)
 	local args = {}
 	for key, arg in pairs({ ... }) do
 		args[key] = tostring(arg)
 	end
 
-	MsgC(HEADER_COLOR, "[ROC] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
+	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
 end
 
-concommand.Add("roc_file", function(_, _, _, path)
+concommand.Add("gmx_file", function(_, _, _, path)
 	if file.Exists(path, "MOD") then
 		local lua = file.Read(path, "MOD")
 		RunOnClient("", "", lua)
-		roc_print("Client running: " .. path)
+		gmx_print("Client running: " .. path)
 	end
 end)
 
-concommand.Add("roc_lua", function(_, _, _, lua)
+concommand.Add("gmx_lua", function(_, _, _, lua)
 	RunOnClient("", "", lua)
-	roc_print("Client running: " .. lua)
+	gmx_print("Client running: " .. lua)
 end)
 
-concommand.Add("roc_file_menu", function(_, _, _, path)
+concommand.Add("gmx_file_menu", function(_, _, _, path)
 	if file.Exists(path, "MOD") then
 		local lua = file.Read(path, "MOD")
 		RunStringEx(lua)
-		roc_print("Menu running: " .. path)
+		gmx_print("Menu running: " .. path)
 	end
 end)
 
-concommand.Add("roc_lua_menu", function(_, _, _, lua)
+concommand.Add("gmx_lua_menu", function(_, _, _, lua)
 	RunStringEx(lua)
-	roc_print("Menu running: " .. lua)
+	gmx_print("Menu running: " .. lua)
 end)
 
 GEN_CODE = [[
@@ -52,9 +52,9 @@ GEN_CODE = [[
 	end
 ]]
 
-if not _G.ROC_COM_NAME then
-	RunStringEx(GEN_CODE .. "_G.ROC_COM_NAME = GEN_NAME()")
-	concommand.Add(_G.ROC_COM_NAME, function(_, _, _, lua)
+if not _G.GMX_COM_ID then
+	RunStringEx(GEN_CODE .. "_G.GMX_COM_ID = GEN_NAME()")
+	concommand.Add(_G.GMX_COM_ID, function(_, _, _, lua)
 		RunStringEx(lua)
 	end)
 end
@@ -101,13 +101,13 @@ local MY_STEAM_ID = "0:0:80006525"
 hook.Add("RunOnClient", "lua_filter", function(path, str)
 	-- remove .p, .pm, .psc commands from gcompute
 	if path == "@repl_0" then
-		roc_print("Blocked gcompute command")
+		gmx_print("Blocked gcompute command")
 		return DENY_CODE
 	end
 
 	-- blocks SendLua
 	if path == "LuaCmd" then
-		roc_print(("Blocked SendLua %s"):format(str))
+		gmx_print(("Blocked SendLua %s"):format(str))
 		return false
 	end
 
@@ -116,26 +116,26 @@ hook.Add("RunOnClient", "lua_filter", function(path, str)
 		-- detect luadev .l, .lm, .lsc commands and checks if ran by me or not
 		local luadev_cmd = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<cmd%:([a-zA-Z]+)%>")
 		if luadev_cmd then
-			roc_print(("Blocked command \"%s\" by %s"):format(luadev_cmd, found_steam_id))
+			gmx_print(("Blocked command \"%s\" by %s"):format(luadev_cmd, found_steam_id))
 			return DENY_CODE
 		end
 
 		-- detect luadev ran files
 		local file_name = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<([a-zA-Z0-9%.%_%s]+)%>")
 		if file_name then
-			roc_print(("Blocked file \"%s\" by %s"):format(file_name, found_steam_id))
+			gmx_print(("Blocked file \"%s\" by %s"):format(file_name, found_steam_id))
 			return DENY_CODE
 		end
 	end
 
 	-- fuck starfall
 	if path:StartWith("SF") then
-		roc_print(("Blocked starfall chip \"%s\""):format(path))
+		gmx_print(("Blocked starfall chip \"%s\""):format(path))
 		return DENY_CODE
 	end
 
 	if check_lua_impl(path, str) then
-		roc_print(("Blocked potential lua implementation \"%s\""):format(path))
+		gmx_print(("Blocked potential lua implementation \"%s\""):format(path))
 		return false
 	end
 
@@ -144,7 +144,7 @@ hook.Add("RunOnClient", "lua_filter", function(path, str)
 			local hook_name = GEN_NAME()
 			hook.Add("InitPostEntity", hook_name, function()
 				hook.Remove("InitPostEntity", hook_name)
-				LocalPlayer():ConCommand("]] .. _G.ROC_COM_NAME .. [[ hook.Run('ClientFullyInitialized')")
+				LocalPlayer():ConCommand("]] .. _G.GMX_COM_ID .. [[ hook.Run('ClientFullyInitialized')")
 			end)
 		]]
 
@@ -163,10 +163,10 @@ local MENU_SCRIPTS = {
 	"external_console.lua",
 }
 
-local SCRIPTS_PATH = "roc/roc_scripts/"
+local SCRIPTS_PATH = "gmx/gmx_scripts/"
 for _, file_name in ipairs(MENU_SCRIPTS) do
 	include(SCRIPTS_PATH .. file_name)
-	roc_print("Running \"" .. file_name .. "\"")
+	gmx_print("Running \"" .. file_name .. "\"")
 end
 
 local CLIENT_SCRIPTS = {
@@ -176,22 +176,22 @@ local CLIENT_SCRIPTS = {
 	"misc.lua",
 }
 hook.Add("ClientFullyInitialized", "block_server_cmds", function()
-	roc_print("Client fully initialized")
+	gmx_print("Client fully initialized")
 
 	for _, file_name in ipairs(CLIENT_SCRIPTS) do
 		local code = file.Read("lua/" .. SCRIPTS_PATH .. file_name, "MOD")
 		RunOnClient("", "", code)
-		roc_print("Running \"" .. file_name .. "\" on client")
+		gmx_print("Running \"" .. file_name .. "\" on client")
 	end
 end)
 
 local has_io_events = pcall(require, "io_events")
 if has_io_events then
-	hook.Remove("FileChanged", "reload_roc")
-	hook.Add("FileChanged", "reload_roc", function(path, event_type)
+	hook.Remove("FileChanged", "reload_gmx")
+	hook.Add("FileChanged", "reload_gmx", function(path, event_type)
+		if path ~= "lua/gmx/gmx.lua" or event_type ~= "CHANGED" then return end
 
-		if path ~= "lua/roc/roc_x64.lua" or event_type ~= "CHANGED" then return end
-		roc_print("Reloading everything")
-		include("roc/roc_x64.lua")
+		gmx_print("Reloading everything")
+		include("gmx/gmx.lua")
 	end)
 end

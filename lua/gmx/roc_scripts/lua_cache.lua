@@ -2,13 +2,13 @@ require("stringtable")
 
 local HEADER_COLOR = Color(255, 0, 0)
 local BODY_COLOR = Color(197, 53, 17)
-local function roc_print(...)
+local function gmx_print(...)
 	local args = {}
 	for key, arg in pairs({ ... }) do
 		args[key] = tostring(arg)
 	end
 
-	MsgC(HEADER_COLOR, "[ROC] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
+	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
 end
 
 local function tohex(str)
@@ -77,7 +77,7 @@ local function read_lua_cache(path)
 	if hash then
 		local data, err = get_data(hash)
 		if err then
-			roc_print("error trying to open", path, err)
+			gmx_print("error trying to open", path, err)
 			return ""
 		else
 			return data
@@ -86,14 +86,14 @@ local function read_lua_cache(path)
 
 	hash = process_cached_file(path)
 	if hash == BAD then
-		roc_print("error trying to open", path, "BAD HASH")
+		gmx_print("error trying to open", path, "BAD HASH")
 		return ""
 	end
 
 	hash = tohex(hash):lower()
 	local data, err = get_data(hash)
 	if err then
-		roc_print("error trying to open", path, err)
+		gmx_print("error trying to open", path, err)
 		return ""
 	end
 

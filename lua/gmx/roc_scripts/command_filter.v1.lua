@@ -2,8 +2,8 @@ require("sourcenet")
 
 local HEADER_COLOR = Color(255, 0, 0)
 local BODY_COLOR = Color(197, 53, 17)
-local function roc_print(...)
-	MsgC(HEADER_COLOR, "[ROC] ", BODY_COLOR, ...)
+local function gmx_print(...)
+	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, ...)
 	MsgN()
 end
 
@@ -74,11 +74,11 @@ hook.Add("PreProcessMessages", "block_incoming_cmds", function(net_chan, read, w
 				return
 			end
 
-			roc_print("Blocking incoming server command " .. cmd)
+			gmx_print("Blocking incoming server command " .. cmd)
 		end)
 
 		if not success then
-			roc_print("Failed to filter message " .. msg_type)
+			gmx_print("Failed to filter message " .. msg_type)
 		end
 
 		-- copy the rest of the buffer, to not lose any remaining messages

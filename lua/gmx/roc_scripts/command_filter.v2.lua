@@ -1,14 +1,14 @@
-include("roc/deps/sourcenet/incoming.lua")
+include("gmx/deps/sourcenet/incoming.lua")
 
 local HEADER_COLOR = Color(255, 0, 0)
 local BODY_COLOR = Color(197, 53, 17)
-local function roc_print(...)
+local function gmx_print(...)
 	local args = {}
 	for key, arg in pairs({ ... }) do
 		args[key] = tostring(arg)
 	end
 
-	MsgC(HEADER_COLOR, "[ROC] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
+	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
 end
 
 local WHITELIST = {
@@ -26,5 +26,5 @@ FilterIncomingMessage(net_StringCmd, function(netchan, read, write)
 		return
 	end
 
-	roc_print(string.format("Blocked incoming server (%s) command \"%s\"", netchan:GetAddress(), cmd))
+	gmx_print(string.format("Blocked incoming server (%s) command \"%s\"", netchan:GetAddress(), cmd))
 end)
