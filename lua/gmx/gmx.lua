@@ -99,7 +99,6 @@ local CLIENT_SCRIPTS = {
 	"lua_cache.lua",
 	--"command_filter.v1.lua",
 	"command_filter.v2.lua",
-	"misc.lua",
 }
 hook.Add("ClientFullyInitialized", "block_server_cmds", function()
 	gmx_print("Client fully initialized")
