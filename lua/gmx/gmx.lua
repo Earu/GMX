@@ -13,12 +13,11 @@ if jit.arch ~= "x64" and not system.IsWindows() then
 	gmx_print("GMX is not supported on this platform.")
 	return
 else
-	gmx_print([[
+	MsgC(HEADER_COLOR, [[
 
 ============================================================
-=						G	M	X						  =
-============================================================
-	]])
+=                     G     M     X                        =
+============================================================]] .. "\n")
 end
 
 require("roc")
