@@ -1,7 +1,3 @@
-if jit.arch ~= "x64" then return end
-
-require("roc")
-
 local HEADER_COLOR = Color(255, 157, 0)
 local BODY_COLOR = Color(255, 196, 0)
 function gmx_print(...)
@@ -12,6 +8,13 @@ function gmx_print(...)
 
 	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
 end
+
+if jit.arch ~= "x64" and not system.IsWindows() then
+	gmx_print("GMX is not supported on this platform.")
+	return
+end
+
+require("roc")
 
 concommand.Add("gmx_file", function(_, _, _, path)
 	if file.Exists(path, "MOD") then
