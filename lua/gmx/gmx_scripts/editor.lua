@@ -803,9 +803,9 @@ local function init_editor()
 	EDITOR = editor
 end
 
-concommand.Add("roc_editor", init_editor)
+concommand.Add("gmx_editor", init_editor)
 
-concommand.Add("roc_explore_server_files", function()
+concommand.Add("gmx_explore_server_files", function()
 	RunOnClient("", "", GEN_CODE .. [[
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(800, 400)
