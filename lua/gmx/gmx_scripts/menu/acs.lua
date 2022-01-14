@@ -1,4 +1,4 @@
-hook.Add("RunOnClient", "acs", function(source, script)
+hook.Add("RunOnClient", "gmx_acs", function(source, script)
 	source = source:lower()
 
 	if source:find("cl_anticheat.lua") and script:find("Awesome AntiCheat Plugin - AACP") or source:find("cl_settingsderma.lua") then return false end -- Awesome Anti-Cheat Plugin (AACP)
@@ -181,7 +181,7 @@ hook.Add("RunOnClient", "acs", function(source, script)
 
 	-- General annoyances
 	if script:find("while true do end") then
-		gmx_print("ACS", "The server attempted to crash you.", source)
+		gmx.Print("ACS", "The server attempted to crash you.", source)
 		return false
 	end
 end)

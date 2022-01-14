@@ -593,7 +593,7 @@ local LUA_EDITOR = {
 		local code = self:GetCode():Trim()
 		if #code == 0 then return end
 
-		code = ("%s %s"):format(GEN_CODE, code)
+		code = ("%s %s"):format(gmx.GEN_CODE, code)
 
 		RunOnClient("", "", code)
 		self:RegisterAction(self.Env)
@@ -754,7 +754,7 @@ local LUA_EDITOR = {
 		local text = ("%s[%s] Ran %s on %s"):format(spacing, self.LastAction.Time, tab.Name, self.LastAction.Type)
 		if #text == 0 then text = ("%sReady"):format(spacing) end
 		self.LblRunStatus:SetText(text)
-		gmx_print(text)
+		gmx.Print(text)
 	end,
 	GetCode = function(self)
 		local tab = self.CodeTabs:GetActiveTab()
@@ -806,7 +806,7 @@ end
 concommand.Add("gmx_editor", init_editor)
 
 concommand.Add("gmx_explore_server_files", function()
-	RunOnClient("", "", GEN_CODE .. [[
+	RunOnClient("", "", gmx.GEN_CODE .. [[
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(800, 400)
 		frame:SetSizable(true)
@@ -838,12 +838,12 @@ concommand.Add("gmx_explore_server_files", function()
 	]])
 end)
 
-hook.Add("ReceivedServerFile", "explore_srv_files", function(original_path, tmp_file_name)
+hook.Add("ReceivedServerFile", "gmx_explore_srv_files", function(original_path, tmp_file_name)
 	init_editor()
 
 	local code = file.Read(tmp_file_name, "DATA")
 	file.Delete(tmp_file_name)
 
-	gmx_print("Received server file " .. original_path)
+	gmx.Print("Received server file " .. original_path)
 	EDITOR:NewTab(code, original_path)
 end)

@@ -37,16 +37,16 @@ end
 -- <0:0:80006525|Earu><spooky.lua> => file
 local DENY_CODE = "error(\'DENIED\', 0)"
 local MY_STEAM_ID = "0:0:80006525"
-hook.Add("RunOnClient", "repl_filter", function(path, str)
+hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- remove .p, .pm, .psc commands from gcompute
 	if path == "@repl_0" then
-		gmx_print("Blocked gcompute command")
+		gmx.Print("Blocked gcompute command")
 		return DENY_CODE
 	end
 
 	-- blocks SendLua
 	if path == "LuaCmd" then
-		gmx_print(("Blocked SendLua %s"):format(str))
+		gmx.Print(("Blocked SendLua %s"):format(str))
 		return false
 	end
 
@@ -55,26 +55,26 @@ hook.Add("RunOnClient", "repl_filter", function(path, str)
 		-- detect luadev .l, .lm, .lsc commands and checks if ran by me or not
 		local luadev_cmd = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<cmd%:([a-zA-Z]+)%>")
 		if luadev_cmd then
-			gmx_print(("Blocked command \"%s\" by %s"):format(luadev_cmd, found_steam_id))
+			gmx.Print(("Blocked command \"%s\" by %s"):format(luadev_cmd, found_steam_id))
 			return DENY_CODE
 		end
 
 		-- detect luadev ran files
 		local file_name = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<([a-zA-Z0-9%.%_%s]+)%>")
 		if file_name then
-			gmx_print(("Blocked file \"%s\" by %s"):format(file_name, found_steam_id))
+			gmx.Print(("Blocked file \"%s\" by %s"):format(file_name, found_steam_id))
 			return DENY_CODE
 		end
 	end
 
 	-- fuck starfall
 	if path:StartWith("SF") then
-		gmx_print(("Blocked starfall chip \"%s\""):format(path))
+		gmx.Print(("Blocked starfall chip \"%s\""):format(path))
 		return DENY_CODE
 	end
 
 	if check_lua_impl(path, str) then
-		gmx_print(("Blocked potential lua implementation \"%s\""):format(path))
+		gmx.Print(("Blocked potential lua implementation \"%s\""):format(path))
 		return false
 	end
 end)

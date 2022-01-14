@@ -22,7 +22,7 @@ if not is_gterm_running() then
 	if success then gterm_pid = pid end
 end
 
-hook.Add("Think", "external_console", function()
+hook.Add("Think", "gmx_external_console", function()
 	local key_name = input.LookupBinding("toggleconsole")
 	if not key_name then return end
 
