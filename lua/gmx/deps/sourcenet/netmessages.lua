@@ -2023,8 +2023,8 @@ NET_MESSAGES = {
 						end
 					elseif self.msgtype == 1 then
 						buffer:WriteString(self.path)
-						buffer:WriteUInt(self.length)
-						buffer:WriteBytes(self.data)
+						buffer:WriteUInt(self.length or 0)
+						buffer:WriteBytes(self.data "")
 					elseif self.msgtype == 3 then
 						if self.data ~= nil then
 							buffer:WriteBits(self.data)
@@ -2066,59 +2066,6 @@ for net_messages_prefix, net_messages in pairs(NET_MESSAGES) do
 		end
 	end
 end
-
-local NET_MESSAGES_NATIVE_CONSTRUCTORS = {
-	NET = {
-		[net_NOP] = NET_MESSAGES_CONSTRUCTORS.NET[net_NOP],
-		[net_Disconnect] = NET_Disconnect,
-		[net_File] = NET_File,
-		[net_Tick] = NET_Tick,
-		[net_StringCmd] = NET_StringCmd,
-		[net_SetConVar] = NET_SetConVar,
-		[net_SignonState] = NET_SignonState
-	},
-
-	CLC = {
-		[clc_ClientInfo] = CLC_ClientInfo,
-		[clc_Move] = CLC_Move,
-		[clc_VoiceData] = CLC_VoiceData,
-		[clc_BaselineAck] = CLC_BaselineAck,
-		[clc_ListenEvents] = CLC_ListenEvents,
-		[clc_RespondCvarValue] = CLC_RespondCvarValue,
-		[clc_FileCRCCheck] = CLC_FileCRCCheck,
-		[clc_CmdKeyValues] = CLC_CmdKeyValues,
-		[clc_FileMD5Check] = CLC_FileMD5Check,
-		[clc_GMod_ClientToServer] = CLC_GMod_ClientToServer
-	},
-
-	SVC = {
-		[svc_Print] = SVC_Print,
-		[svc_ServerInfo] = SVC_ServerInfo,
-		[svc_SendTable] = SVC_SendTable,
-		[svc_ClassInfo] = SVC_ClassInfo,
-		[svc_SetPause] = SVC_SetPause,
-		[svc_CreateStringTable] = SVC_CreateStringTable,
-		[svc_UpdateStringTable] = SVC_UpdateStringTable,
-		[svc_VoiceInit] = SVC_VoiceInit,
-		[svc_VoiceData] = SVC_VoiceData,
-		[svc_Sounds] = SVC_Sounds,
-		[svc_SetView] = SVC_SetView,
-		[svc_FixAngle] = SVC_FixAngle,
-		[svc_CrosshairAngle] = SVC_CrosshairAngle,
-		[svc_BSPDecal] = SVC_BSPDecal,
-		[svc_UserMessage] = SVC_UserMessage,
-		[svc_EntityMessage] = SVC_EntityMessage,
-		[svc_GameEvent] = SVC_GameEvent,
-		[svc_PacketEntities] = SVC_PacketEntities,
-		[svc_TempEntities] = SVC_TempEntities,
-		[svc_Prefetch] = SVC_Prefetch,
-		[svc_Menu] = SVC_Menu,
-		[svc_GameEventList] = SVC_GameEventList,
-		[svc_GetCvarValue] = SVC_GetCvarValue,
-		[svc_CmdKeyValues] = SVC_CmdKeyValues,
-		[svc_GMod_ServerToClient] = SVC_GMod_ServerToClient
-	}
-}
 
 function NetMessage(netchan, msgtype, server)
 	local constructor = NET_MESSAGES_CONSTRUCTORS.NET[msgtype]
