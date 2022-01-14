@@ -167,4 +167,11 @@ local zip_path = ("data/%s/%s.zip"):format(archives_path, os.date("%x"):gsub("/"
 local package_path = ("data/%s/tmp/"):format(archives_path)
 
 create_tmp_package()
+file.Write(("%s/metadata.json"):format(package_path), util.TableToJSON({
+	date = os.date("%x"),
+	address = srv_ip,
+	hostname = GetHostName(),
+	map = game.GetMap(),
+}))
+
 Zip(zip_path, package_path, true)
