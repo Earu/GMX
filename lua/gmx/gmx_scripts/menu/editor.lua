@@ -832,7 +832,7 @@ concommand.Add("gmx_explore_server_files", function()
 
 				local tmp_file_name = GEN_NAME() .. ".txt"
 				file.Write(tmp_file_name, code)
-				LocalPlayer():ConCommand("]] .. _G.GMX_COM_ID .. [[ hook.Run('ReceivedServerFile', '" .. path .. "', '" .. tmp_file_name .. "')")
+				LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('ReceivedServerFile', '" .. path .. "', '" .. tmp_file_name .. "')")
 			end
 		end
 	]])
