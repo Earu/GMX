@@ -128,7 +128,8 @@ end
 require("zip")
 
 local srv_ip = game.GetIPAddress()
-local archives_path = ("Archives/%s"):format(srv_ip:gsub("%.","_"):gsub("%:", "_"))
+local short_host_name = GetHostName():sub(1, 15):gsub("[%s%-%/%\\%[%]%:]", "_"):gsub("_+", "_"):gsub("_$", "")
+local archives_path = ("Archives/%s_%s"):format(srv_ip:gsub("%.","_"):gsub("%:", "_"), short_host_name)
 file.CreateDir(archives_path)
 
 local function create_tmp_package(res, dir)
@@ -167,11 +168,11 @@ local zip_path = ("data/%s/%s.zip"):format(archives_path, os.date("%x"):gsub("/"
 local package_path = ("data/%s/tmp/"):format(archives_path)
 
 create_tmp_package()
-file.Write(("%s/metadata.json"):format(package_path), util.TableToJSON({
+file.Write(("%s/metadata.json"):format(archives_path), util.TableToJSON({
 	date = os.date("%x"),
 	address = srv_ip,
 	hostname = GetHostName(),
 	map = game.GetMap(),
-}))
+}, true))
 
 Zip(zip_path, package_path, true)
