@@ -31,6 +31,24 @@ local function check_lua_impl(path, str)
 	return res
 end
 
+gmx.NextGComputeCommandAllowed = false
+gmx.AddClientInitScript([[
+	local function is_gcompute_cmd(msg)
+		if msg:match("^[%!%.%/]") then
+			local cmd = msg:sub(2):Split(" ")[1]:lower():Trim()
+			return cmd == "pm" or cmd == "psc"
+		end
+
+		return false
+	end
+
+	-- before networked, only trust easychat
+	hook.Add("ECShouldSendMessage", GEN_NAME(), function(msg)
+		if not is_gcompute_cmd(msg) then return end
+		LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ gmx.NextGComputeCommandAllowed = true")
+	end)
+]])
+
 -- LuaCmd => SendLuas
 -- @repl_0 => command
 -- <0:0:80006525|Earu><cmd:lsc> => command
@@ -40,6 +58,11 @@ local MY_STEAM_ID = "0:0:80006525"
 hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- remove .p, .pm, .psc commands from gcompute
 	if path == "@repl_0" then
+		if gmx.NextGComputeCommandAllowed then
+			gmx.NextGComputeCommandAllowed = false
+			return str
+		end
+
 		gmx.Print("Blocked gcompute command")
 		return DENY_CODE
 	end

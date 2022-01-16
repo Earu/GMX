@@ -87,7 +87,7 @@ function gmx.AddClientInitScript(code)
 	table.insert(gmx.InitScripts, code)
 end
 
-gmx.AddClientInitScript(gmx.GEN_CODE .. "\n" .. [[
+gmx.AddClientInitScript([[
 	local hook_name = GEN_NAME()
 	hook.Add("InitPostEntity", hook_name, function()
 		hook.Remove("InitPostEntity", hook_name)
@@ -97,6 +97,7 @@ gmx.AddClientInitScript(gmx.GEN_CODE .. "\n" .. [[
 
 hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	if path == "lua/includes/init.lua" then
+		str = str .. "\n" .. gmx.GEN_CODE .. "\n"
 		return str .. "\n" .. table.concat(gmx.InitScripts, "\n")
 	end
 end)
