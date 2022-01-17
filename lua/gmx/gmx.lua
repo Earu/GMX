@@ -82,7 +82,9 @@ if not gmx.ComIdentifier then
 	end)
 end
 
+gmx.ScriptsPath = "gmx/gmx_scripts/"
 gmx.InitScripts = {}
+
 function gmx.AddClientInitScript(code)
 	table.insert(gmx.InitScripts, code)
 end
@@ -95,6 +97,13 @@ gmx.AddClientInitScript([[
 	end)
 ]])
 
+local init_scripts_path = "lua/" .. gmx.ScriptsPath .. "client/init/"
+for _, file_name in pairs(file.Find(init_scripts_path .. "*.lua", "MOD")) do
+	local code = file.Read(init_scripts_path .. file_name, "MOD")
+	gmx.Print("Adding \"" .. file_name .. "\" to client init")
+	gmx.AddClientInitScript(code)
+end
+
 hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	if path == "lua/includes/init.lua" then
 		str = str .. "\n" .. gmx.GEN_CODE .. "\n"
@@ -102,31 +111,24 @@ hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	end
 end)
 
-gmx.ScriptsPath = "gmx/gmx_scripts/"
-gmx.MenuScripts = {
-	"acs.lua",
-	"repl_filter.lua",
-	"editor.lua",
-	"external_console.lua",
-	"errors.lua",
-}
-
 gmx.ClientScripts = {
 	"lua_cache.lua",
 	--"command_filter.v1.lua",
 	"command_filter.v2.lua",
 }
 
-for _, file_name in ipairs(gmx.MenuScripts) do
-	include(gmx.ScriptsPath .. "/menu/" .. file_name)
+local menu_scripts_path = gmx.ScriptsPath .. "/menu/"
+for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
+	include(menu_scripts_path .. file_name)
 	gmx.Print("Running \"" .. file_name .. "\"")
 end
 
 hook.Add("ClientFullyInitialized", "gmx_client_scripts", function()
 	gmx.Print("Client fully initialized")
 
-	for _, file_name in ipairs(gmx.ClientScripts) do
-		local code = file.Read("lua/" .. gmx.ScriptsPath .. "/client/" .. file_name, "MOD")
+	local client_scripts_path = "lua/" .. gmx.ScriptsPath .. "/client/"
+	for _, file_name in pairs(file.Find(client_scripts_path .. "*.lua", "MOD")) do
+		local code = file.Read(client_scripts_path .. file_name, "MOD")
 		RunOnClient("", "", code)
 		gmx.Print("Running \"" .. file_name .. "\" on client")
 	end
