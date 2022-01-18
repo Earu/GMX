@@ -113,7 +113,6 @@ end)
 
 gmx.ClientScripts = {
 	"lua_cache.lua",
-	--"command_filter.v1.lua",
 	"command_filter.v2.lua",
 }
 
@@ -133,15 +132,3 @@ hook.Add("ClientFullyInitialized", "gmx_client_scripts", function()
 		gmx.Print("Running \"" .. file_name .. "\" on client")
 	end
 end)
-
--- auto reload
-local has_io_events = pcall(require, "io_events")
-if has_io_events then
-	hook.Remove("FileChanged", "gmx_auto_reload")
-	hook.Add("FileChanged", "gmx_auto_reload", function(path, event_type)
-		if path ~= "lua/gmx/gmx.lua" or event_type ~= "CHANGED" then return end
-
-		gmx.Print("Reloading everything")
-		include("gmx/gmx.lua")
-	end)
-end
