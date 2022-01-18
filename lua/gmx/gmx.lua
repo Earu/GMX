@@ -65,7 +65,7 @@ end)
 gmx.GEN_CODE = [[
 	local BASE = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	local function GEN_NAME()
-		local len = math.random(16, 32)
+		local len = math.random(32, 64)
 		local ret = ""
 		for _ = 0, len do
 			ret = ret .. BASE[math.random(#BASE)]
