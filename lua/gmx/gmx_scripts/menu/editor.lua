@@ -823,27 +823,16 @@ concommand.Add("gmx_explore_server_files", function()
 
 		function browser:OnSelect(path, pnl)
 			if file.Exists(path, "LUA") then
-				local code = file.Read(path, "LUA")
-				if not code then return end
-
-				if not code or #code:Trim() == 0 then
-					code = "-- content not networked"
-				end
-
-				local tmp_file_name = GEN_NAME() .. ".txt"
-				file.Write(tmp_file_name, code)
-				LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('ReceivedServerFile', '" .. path .. "', '" .. tmp_file_name .. "')")
+				LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('OpenServerFile', '" .. path .. "')")
 			end
 		end
 	]])
 end)
 
-hook.Add("ReceivedServerFile", "gmx_explore_srv_files", function(original_path, tmp_file_name)
+hook.Add("OpenServerFile", "gmx_explore_srv_files", function(original_path)
 	init_editor()
 
-	local code = file.Read(tmp_file_name, "DATA")
-	file.Delete(tmp_file_name)
-
+	local code = gmx.ReadFromLuaCache(original_path)
 	gmx.Print("Received server file " .. original_path)
 	EDITOR:NewTab(code, original_path)
 end)

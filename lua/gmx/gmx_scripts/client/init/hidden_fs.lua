@@ -9,22 +9,22 @@ end)
 -- detours because fshook is wonku
 
 local read_detours = {
-	{ fn = "Read", default = nil },
-	{ fn = "Time", default = 0 },
-	{ fn = "IsDir", default = false },
-	{ fn = "Exists", default = false },
-	{ fn = "AsyncRead", default = FSASYNC_ERR_FAILURE or -5 },
-	{ fn = "Rename", default = false },
-	{ fn = "Size", default = 0 },
-	{ fn = "CompileFile", default = function() end, global = true },
-	{ fn = "include", default = nil, global = true },
+	{ FunctionName = "Read", Default = nil },
+	{ FunctionName = "Time", Default = 0 },
+	{ FunctionName = "IsDir", Default = false },
+	{ FunctionName = "Exists", Default = false },
+	{ FunctionName = "AsyncRead", Default = FSASYNC_ERR_FAILURE or -5 },
+	{ FunctionName = "Rename", Default = false },
+	{ FunctionName = "Size", Default = 0 },
+	{ FunctionName = "CompileFile", Default = function() end, global = true },
+	{ FunctionName = "include", Default = nil, global = true },
 }
 
 for _, detour in ipairs(read_detours) do
-	local old_fn = detour.global and _G[detour.fn] or _G.file[detour.fn]
+	local old_fn = detour.global and _G[detour.FunctionName] or _G.file[detour.FunctionName]
 	if old_fn then
-		_G.file[detour.fn] = function(path, ...)
-			if hook.Run("ShouldHideFile", path) then return detour.default end
+		_G.file[detour.FunctionName] = function(path, ...)
+			if hook.Run("ShouldHideFile", path) then return detour.Default end
 			return old_fn(path, ...)
 		end
 	end

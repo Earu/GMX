@@ -93,7 +93,7 @@ gmx.AddClientInitScript([[
 	local hook_name = GEN_NAME()
 	hook.Add("InitPostEntity", hook_name, function()
 		hook.Remove("InitPostEntity", hook_name)
-		LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('ClientFullyInitialized')")
+		LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('ClientFullyInitialized', '" .. game.GetIPAddress() .. "', '" .. GetHostName():sub(1, 15) .. "')")
 	end)
 ]])
 
