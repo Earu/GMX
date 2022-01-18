@@ -3,7 +3,7 @@ require("zip")
 local function create_tmp_package(base_path)
 	local files = gmx.GetServerLuaFiles()
 	for _, path_info in pairs(files) do
-		local code = gmx.ReadFromLuaCache(path_info.VirtualPath, true)
+		local code = gmx.ReadFromLuaCache(path_info.VirtualPath, false)
 		if not code or #code == 0 then
 			code = " -- could not read this file"
 		end

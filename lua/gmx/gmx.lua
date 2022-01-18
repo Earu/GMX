@@ -111,11 +111,6 @@ hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	end
 end)
 
-gmx.ClientScripts = {
-	"lua_cache.lua",
-	"command_filter.v2.lua",
-}
-
 local menu_scripts_path = gmx.ScriptsPath .. "/menu/"
 for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
 	include(menu_scripts_path .. file_name)
