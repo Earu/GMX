@@ -1,8 +1,5 @@
 require("sourcenet")
 
--- Debug ConVar
-local sourcenet_netmessage_info = CreateConVar("sourcenet_netmessage_info", "0")
-
 local function log2(val)
 	return math.ceil(math.log(val) / math.log(2))
 end
@@ -16,12 +13,6 @@ MAX_USERMESSAGE_BITS = 11
 MAX_ENTITYMESSAGE_BITS = 11
 MAX_SERVER_CLASS_BITS = 9
 MAX_EDICT_BITS = 13
-
-function SourceNetMsg(msg)
-	if sourcenet_netmessage_info:GetInt() ~= 0 then
-		Msg("[snmi] " .. msg .. "\n")
-	end
-end
 
 NET_MESSAGES = {
 	NET = {
