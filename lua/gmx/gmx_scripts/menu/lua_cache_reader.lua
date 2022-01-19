@@ -137,8 +137,8 @@ gmx.GetServerLuaFiles = get_server_lua_files
 
 local path_lookup_cache = {}
 local path_lookup_cached = false
-function gmx.ReadFromLuaCache(path)
-	local code = read_lua_cache(path)
+function gmx.ReadFromLuaCache(path, print_errors)
+	local code = read_lua_cache(path, print_errors)
 	if not code or #code == 0 then
 		if IsInGame() then
 			if not path_lookup_cached then

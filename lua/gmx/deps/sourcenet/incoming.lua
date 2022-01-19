@@ -1,9 +1,4 @@
-if SERVER then
-	include("server.lua")
-else
-	include("client.lua")
-end
-
+include("client.lua")
 include("netmessages.lua")
 
 -- Initialization
@@ -18,7 +13,7 @@ local NET_MESSAGES_INSTANCES = {}
 local function GetNetMessageInstance(netchan, msgtype)
 	local handler = NET_MESSAGES_INSTANCES[msgtype]
 	if handler == nil then
-		handler = NetMessage(netchan, msgtype, not SERVER)
+		handler = NetMessage(netchan, msgtype, true)
 		NET_MESSAGES_INSTANCES[msgtype] = handler
 	else
 		handler:Reset()
@@ -38,12 +33,8 @@ local function GetIncomingCopyTableForMessageType(msgtype)
 		return NET_MESSAGES_INCOMING_COPY.NET
 	end
 
-	if CLIENT and NET_MESSAGES.SVC[msgtype] ~= nil then
+	if MENU_DLL and NET_MESSAGES.SVC[msgtype] ~= nil then
 		return NET_MESSAGES_INCOMING_COPY.SVC
-	end
-
-	if SERVER and NET_MESSAGES.CLC[msgtype] ~= nil then
-		return NET_MESSAGES_INCOMING_COPY.CLC
 	end
 
 	return nil
@@ -55,10 +46,10 @@ local function DefaultCopy(netchan, read, write, handler)
 end
 
 hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localchan)
+	if not IsInGame() then return end
+
 	local islocal = netchan == localchan
-	if not game.IsDedicated() and ((islocal and SERVER) or (not islocal and CLIENT)) then
-		return
-	end
+	if not islocal and MENU_DLL then return end
 
 	while read:GetNumBitsLeft() >= NET_MESSAGE_BITS do
 		local msgtype = read:ReadUInt(NET_MESSAGE_BITS)
