@@ -1,4 +1,4 @@
-hook.Add("ShouldHideFile", GEN_NAME(), function(path)
+hook.Add("ShouldHideFile", GMX_HANDLE, function(path)
 	path = path:lower()
 
 	-- hide gmx files
@@ -6,7 +6,7 @@ hook.Add("ShouldHideFile", GEN_NAME(), function(path)
 	if path:match("lua/bin") then return true end
 end)
 
--- detours because fshook is wonku
+-- detours because fshook is wonky
 
 local read_detours = {
 	{ FunctionName = "Read", Default = nil },

@@ -62,21 +62,20 @@ concommand.Add("gmx_lua_menu", function(_, _, _, lua)
 	gmx.Print("Menu running: " .. lua)
 end)
 
-gmx.GEN_CODE = [[
-	local BASE = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	local function GEN_NAME()
-		local len = math.random(32, 64)
-		local ret = ""
-		for _ = 0, len do
-			ret = ret .. BASE[math.random(#BASE)]
-		end
 
-		return ret
+local BASE = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+function gmx.GenerateUID()
+	local len = math.random(32, 64)
+	local ret = ""
+	for _ = 0, len do
+		ret = ret .. BASE[math.random(#BASE)]
 	end
-]]
+
+	return ret
+end
 
 if not gmx.ComIdentifier then
-	RunStringEx(gmx.GEN_CODE .. "gmx.ComIdentifier = GEN_NAME()")
+	gmx.ComIdentifier = gmx.GenerateUID()
 	concommand.Add(gmx.ComIdentifier, function(_, _, _, lua)
 		RunStringEx(lua)
 	end)
@@ -90,9 +89,8 @@ function gmx.AddClientInitScript(code)
 end
 
 gmx.AddClientInitScript([[
-	local hook_name = GEN_NAME()
-	hook.Add("InitPostEntity", hook_name, function()
-		hook.Remove("InitPostEntity", hook_name)
+	hook.Add("InitPostEntity", GMX_HANDLE, function()
+		hook.Remove("InitPostEntity", GMX_HANDLE)
 		LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('ClientFullyInitialized', '" .. game.GetIPAddress() .. "', '" .. GetHostName():sub(1, 15) .. "')")
 	end)
 ]])
@@ -106,7 +104,7 @@ end
 
 hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	if path == "lua/includes/init.lua" then
-		str = str .. "\n" .. gmx.GEN_CODE .. "\n"
+		str = str .. "\nlocal GMX_HANDLE = { IsValid = function() return true end }\n"
 		return str .. "\n" .. table.concat(gmx.InitScripts, "\n")
 	end
 end)
