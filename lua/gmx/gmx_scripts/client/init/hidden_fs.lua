@@ -1,4 +1,4 @@
-hook.Add("ShouldHideFile", GMX_HANDLE, function(path)
+hook.Add("ShouldHideFile", GMX_HANDLE, function(_, path)
 	path = path:lower()
 
 	-- hide gmx files

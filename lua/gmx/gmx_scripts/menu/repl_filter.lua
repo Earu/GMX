@@ -45,7 +45,7 @@ gmx.AddClientInitScript([[
 	end
 
 	-- before networked, only trust easychat
-	hook.Add("ECShouldSendMessage", GMX_HANDLE, function(msg)
+	hook.Add("ECShouldSendMessage", GMX_HANDLE, function(_, msg)
 		if not is_gcompute_cmd(msg) then return end
 		LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ gmx.NextGComputeCommandAllowed = true")
 	end)
