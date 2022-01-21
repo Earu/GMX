@@ -1,7 +1,7 @@
 require("luaerror")
 
 local luaerror = _G.luaerror
-luaerror = nil -- dont want none of that global stuff
+_G.luaerror = nil -- dont want none of that global stuff
 
 luaerror.EnableCompiletimeDetour(true)
 luaerror.EnableRuntimeDetour(true)
