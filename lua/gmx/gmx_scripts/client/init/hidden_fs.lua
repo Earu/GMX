@@ -6,8 +6,21 @@ hook.Add("ShouldHideFile", GMX_HANDLE, function(_, path)
 	if path:match("lua/bin") then return true end
 end)
 
--- detours because fshook is wonky
+-- hide our detours
+local debug_info_cache = {}
+local old_debug_getinfo = debug.getinfo
+function debug.getinfo(fn, ...)
+	if isfunction(fn) and debug_info_cache[fn] then
+		return debug_info_cache[fn]
+	else
+		return old_debug_getinfo(fn, ...)
+	end
+end
 
+-- dont reveal ourselves
+debug_info_cache[debug.getinfo] = old_debug_getinfo(old_debug_getinfo)
+
+-- detours because fshook is wonky
 local read_detours = {
 	{ FunctionName = "Read", Default = nil },
 	{ FunctionName = "Time", Default = 0 },
@@ -23,10 +36,13 @@ local read_detours = {
 for _, detour in ipairs(read_detours) do
 	local old_fn = detour.global and _G[detour.FunctionName] or _G.file[detour.FunctionName]
 	if old_fn then
-		_G.file[detour.FunctionName] = function(path, ...)
+		local new_fn = function(path, ...)
 			if hook.Run("ShouldHideFile", path) then return detour.Default end
 			return old_fn(path, ...)
 		end
+
+		_G.file[detour.FunctionName] = new_fn
+		debug_info_cache[new_fn] = old_debug_getinfo(old_fn)
 	end
 end
 
@@ -34,10 +50,13 @@ local write_detours = { "Append", "Write", "Open", "Delete", "CreateDir" }
 for _, detour in ipairs(write_detours) do
 	local old_fn = _G.file[detour]
 	if old_fn then
-		_G.file[detour] = function(path, ...)
+		local new_fn = function(path, ...)
 			if hook.Run("ShouldHideFile", path) then return false end
 			return old_fn(path, ...)
 		end
+
+		_G.file[detour] = new_fn
+		debug_info_cache[new_fn] = old_debug_getinfo(old_fn)
 	end
 end
 
@@ -64,3 +83,5 @@ function file.Find(pattern, ...)
 
 	return final_files, final_dirs
 end
+
+debug_info_cache[file.Find] = old_debug_getinfo(old_file_find)
