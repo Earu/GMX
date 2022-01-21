@@ -3,10 +3,16 @@ require("luaerror")
 local luaerror = _G.luaerror
 
 -- dont want none of that global stuff
-_G.luaerror = nil
-if _G.MODULES then
-	_G.MODULES.luaerror = nil
+local function remove_global_stuff()
+	_G.luaerror = nil
+
+	if _G._MODULES and _G._MODULES.luaerror then
+		_G._MODULES.luaerror = nil
+		timer.Simple(0.5, remove_global_stuff)
+	end
 end
+
+remove_global_stuff()
 
 luaerror.EnableCompiletimeDetour(true)
 luaerror.EnableRuntimeDetour(true)
