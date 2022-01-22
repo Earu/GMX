@@ -102,11 +102,17 @@ for _, file_name in pairs(file.Find(init_scripts_path .. "*.lua", "MOD")) do
 	gmx.AddClientInitScript(code)
 end
 
+local init_scripts_ran = false
 hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
-	if path == "lua/includes/init.lua" then
+	if not init_scripts_ran then
+		init_scripts_ran = true
 		str = str .. "\nlocal GMX_HANDLE = { IsValid = function() return true end }\n"
 		return str .. "\n" .. table.concat(gmx.InitScripts, "\n")
 	end
+end)
+
+hook.Add("ClientStateDestroyed", "gmx_client_init_scripts", function()
+	init_scripts_ran = false
 end)
 
 local menu_scripts_path = gmx.ScriptsPath .. "/menu/"

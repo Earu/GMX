@@ -806,7 +806,7 @@ end
 concommand.Add("gmx_editor", init_editor)
 
 concommand.Add("gmx_explore_server_files", function()
-	RunOnClient("", "", gmx.GEN_CODE .. [[
+	RunOnClient("", "", [[
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(800, 400)
 		frame:SetSizable(true)
