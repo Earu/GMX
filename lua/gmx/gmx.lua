@@ -104,7 +104,7 @@ end
 
 local init_scripts_ran = false
 hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
-	if not init_scripts_ran then
+	if not init_scripts_ran and path:EndsWith("lua/includes/init.lua") then
 		init_scripts_ran = true
 		str = str .. "\nlocal GMX_HANDLE = { IsValid = function() return true end }\n"
 		return str .. "\n" .. table.concat(gmx.InitScripts, "\n")
