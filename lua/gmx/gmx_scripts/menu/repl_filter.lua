@@ -17,7 +17,7 @@ local WHITELIST = {
 local cache = {}
 local CERTAINTY_THRESHOLD = 0.75
 local function check_lua_impl(path, str)
-	local start_pos, end_pos = path:match("lua/")
+	local start_pos, end_pos = path:find("lua/")
 	if start_pos and end_pos then
 		path = path:sub(end_pos + 1)
 	end
