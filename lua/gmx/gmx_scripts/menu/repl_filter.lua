@@ -10,14 +10,18 @@ local LUAJIT_OP_CODES = {
 }
 
 local WHITELIST = {
-	["lua/pac3/libraries/luadata.lua"] = true, -- old data format, not lua imp
-	["addons/glib-master/lua/glib/lua/decompiler/opcode.lua"] = true, -- decompiler, not lua impl
-	["glib/lua/decompiler/opcode.lua"] = true, -- same
+	["pac3/libraries/luadata.lua"] = true, -- old data format, not lua imp
+	["glib/lua/decompiler/opcode.lua"] = true, -- decompiler, not lua impl
 }
 
 local cache = {}
 local CERTAINTY_THRESHOLD = 0.75
 local function check_lua_impl(path, str)
+	local start_pos, end_pos = path:match("lua/")
+	if start_pos and end_pos then
+		path = path:sub(end_pos + 1)
+	end
+
 	if WHITELIST[path] then return false end
 	if cache[path] then return cache[path] end
 
