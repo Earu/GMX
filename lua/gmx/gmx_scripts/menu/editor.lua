@@ -593,8 +593,6 @@ local LUA_EDITOR = {
 		local code = self:GetCode():Trim()
 		if #code == 0 then return end
 
-		code = ("%s %s"):format(gmx.GEN_CODE, code)
-
 		RunOnClient("", "", code)
 		self:RegisterAction(self.Env)
 	end,
