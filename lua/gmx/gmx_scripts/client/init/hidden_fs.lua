@@ -1,10 +1,10 @@
-hook.Add("ShouldHideFile", GMX_HANDLE, function(_, path)
+local function should_hide(path)
 	path = path:lower()
 
 	-- hide gmx files
 	if path:match("gmx") then return true end
 	if path:match("lua/bin") then return true end
-end)
+end
 
 -- hide our detours
 local debug_info_cache = {}
@@ -37,7 +37,7 @@ for _, detour in ipairs(read_detours) do
 	local old_fn = detour.global and _G[detour.FunctionName] or _G.file[detour.FunctionName]
 	if old_fn then
 		local new_fn = function(path, ...)
-			if hook.Run("ShouldHideFile", path) then return detour.Default end
+			if should_hide(path) then return detour.Default end
 			return old_fn(path, ...)
 		end
 
@@ -51,7 +51,7 @@ for _, detour in ipairs(write_detours) do
 	local old_fn = _G.file[detour]
 	if old_fn then
 		local new_fn = function(path, ...)
-			if hook.Run("ShouldHideFile", path) then return false end
+			if should_hide(path) then return false end
 			return old_fn(path, ...)
 		end
 
@@ -71,13 +71,13 @@ function file.Find(pattern, ...)
 
 	local final_files = {}
 	for _, file_name in pairs(files) do
-		if hook.Run("ShouldHideFile", base_path .. file_name) then continue end
+		if should_hide(base_path .. file_name) then continue end
 		table.insert(final_files, file_name)
 	end
 
 	local final_dirs = {}
 	for _, dir_name in pairs(dirs) do
-		if hook.Run("ShouldHideFile", base_path .. dir_name) then continue end
+		if should_hide(base_path .. dir_name) then continue end
 		table.insert(final_dirs, dir_name)
 	end
 
