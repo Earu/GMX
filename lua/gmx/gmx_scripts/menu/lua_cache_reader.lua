@@ -16,7 +16,10 @@ local function get_server_lua_files()
 	if not IsInGame() then return {} end
 
 	local success, string_tbl = pcall(StringTable, "client_lua_files")
-	if not success then return {} end
+	if not success then
+		gmx.Print("Unable to load string table for client_lua_files")
+		return {}
+	end
 
 	local server_file_paths = {}
 	local tbl = string_tbl:GetTableStrings()
@@ -42,7 +45,10 @@ local function process_cached_file(path)
 	if not IsInGame() then return "" end
 
 	local success, string_tbl = pcall(StringTable, "client_lua_files")
-	if not success then return "" end
+	if not success then
+		gmx.Print("Unable to load string table for client_lua_files")
+		return ""
+	end
 
 	if path_cache == nil then
 		path_cache = {}
@@ -139,25 +145,24 @@ local path_lookup_cache = {}
 local path_lookup_cached = false
 function gmx.ReadFromLuaCache(path, print_errors)
 	local code = read_lua_cache(path, print_errors)
-	if not code or #code == 0 then
-		if IsInGame() then
-			if not path_lookup_cached then
-				local file_paths = get_server_lua_files()
-				for _, path_info in pairs(file_paths) do
-					path_lookup_cache[path_info.VirtualPath] = path_info.Path
-				end
+	if code and #code > 0 then return code end
 
-				path_lookup_cached = true
-			end
+	if not IsInGame() then return "" end
 
-			local real_path = path_lookup_cache[path]
-			return file.Read(real_path, "MOD")
+	if not path_lookup_cached then
+		local file_paths = get_server_lua_files()
+		for _, path_info in pairs(file_paths) do
+			path_lookup_cache[path_info.VirtualPath] = path_info.Path
 		end
 
-		return ""
-	else
-		return code
+		path_lookup_cached = true
 	end
+
+	local real_path = path_lookup_cache[path]
+	code = read_lua_cache(real_path, print_errors)
+	if code and #code > 0 then return code end
+
+	return file.Read(real_path, "MOD")
 end
 
 hook.Add("ClientStateDestroyed", "gmx_clear_path_lookup_cache", function()
