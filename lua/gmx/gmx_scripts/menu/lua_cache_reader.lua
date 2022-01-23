@@ -97,9 +97,8 @@ end
 
 local BAD = ("\0"):rep(32)
 local cache = {}
-local function read_lua_cache(path, print_errors)
+local function read_lua_cache(path)
 	if isfunction(path) then path = debug.getinfo(path).source end
-	if print_errors == nil then print_errors = true end
 
 	path = path:gsub("^lua/",""):gsub("^gamemodes/",""):gsub("%.lua$","")
 
@@ -107,36 +106,29 @@ local function read_lua_cache(path, print_errors)
 	if hash then
 		local data, err = get_data(hash)
 		if err then
-			if print_errors then
-				gmx.Print("Error trying to open", path, err)
-			end
-			return ""
+			return false, ("Error trying to open %s: %s"):format(path, err)
 		else
-			return data
+			return true, data
 		end
 	end
 
 	hash = process_cached_file(path)
 	if hash == BAD then
-		if print_errors then
-			gmx.Print("Error trying to open", path, "BAD HASH")
-		end
-
-		return ""
+		return false, ("Error trying to open %s: %s"):format(path, "BAD HASH")
 	end
 
 	hash = tohex(hash):lower()
 	local data, err = get_data(hash)
 	if err then
-		if print_errors then
-			gmx.Print("Error trying to open", path, err)
-		end
+		return false, ("Error trying to open %s: %s"):format(path, err)
+	end
 
-		return ""
+	if not data or #data == 0 then
+		return false, ("Error trying to open %s: %s"):format(path, "No data")
 	end
 
 	cache[path] = hash
-	return data
+	return true, data
 end
 
 gmx.GetServerLuaFiles = get_server_lua_files
@@ -144,10 +136,16 @@ gmx.GetServerLuaFiles = get_server_lua_files
 local path_lookup_cache = {}
 local path_lookup_cached = false
 function gmx.ReadFromLuaCache(path, print_errors)
-	local code = read_lua_cache(path, print_errors)
-	if code and #code > 0 then return code end
+	if not IsInGame() then
+		if print_errors then
+			gmx.Print("Cannot read lua cache: Not in game")
+		end
 
-	if not IsInGame() then return "" end
+		return ""
+	end
+
+	local succ, code = read_lua_cache(path)
+	if succ then return code end
 
 	if not path_lookup_cached then
 		local file_paths = get_server_lua_files()
@@ -159,10 +157,20 @@ function gmx.ReadFromLuaCache(path, print_errors)
 	end
 
 	local real_path = path_lookup_cache[path]
-	code = read_lua_cache(real_path, print_errors)
-	if code and #code > 0 then return code end
+	succ, code = read_lua_cache(real_path)
+	if succ then return code end
 
-	return file.Read(real_path, "MOD")
+	local err = code
+	code = file.Read(real_path, "MOD") -- last resort for local files
+	if not code or #code == 0 then
+		if print_errors then
+			gmx.Print(err) -- code is the error if read_lua_cache fails
+		end
+
+		return ""
+	end
+
+	return code
 end
 
 hook.Add("ClientStateDestroyed", "gmx_clear_path_lookup_cache", function()
