@@ -1,16 +1,5 @@
 include("gmx/deps/sourcenet/incoming.lua")
 
-local HEADER_COLOR = Color(255, 157, 0)
-local BODY_COLOR = Color(255, 196, 0)
-local function gmx_print(...)
-	local args = {}
-	for key, arg in pairs({ ... }) do
-		args[key] = tostring(arg)
-	end
-
-	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
-end
-
 local WHITELIST = {
 	dsp_player = true,
 	gmod_toolmode = true,
@@ -25,7 +14,7 @@ hook.Add("ClientFullyInitialized", "gmx_fix_timeout", function()
 	]])
 end)
 
-FilterIncomingMessage(net_StringCmd, function(netchan, read, write)
+FilterIncomingMessage(net_StringCmd, function(net_chan, read, write)
 	local cmd = read:ReadString()
 	local real_cmd = cmd:Split(" ")[1]:lower():Trim()
 	if WHITELIST[real_cmd] then
@@ -34,5 +23,5 @@ FilterIncomingMessage(net_StringCmd, function(netchan, read, write)
 		return
 	end
 
-	gmx_print(string.format("Blocked incoming server (%s) command \"%s\"", netchan:GetAddress(), cmd))
+	gmx.Print(string.format("Blocked incoming server (%s) command \"%s\"", net_chan:GetAddress(), cmd))
 end)
