@@ -20,7 +20,7 @@ end
 -- dont reveal ourselves
 debug_info_cache[debug.getinfo] = old_debug_getinfo(old_debug_getinfo)
 
--- detours because fshook is wonky
+-- detours
 local read_detours = {
 	{ FunctionName = "Read", Default = nil },
 	{ FunctionName = "Time", Default = 0 },
