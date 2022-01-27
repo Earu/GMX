@@ -19,6 +19,7 @@ local firewall_rules = {
 	["drive.google.com"]     = { method = "GET", type = "ALLOW" },
 	["i.imgur.com"]          = { method = "GET", type = "ALLOW" },
 	["sprays.xerasin.com"]   = { method = "*",   type = "ALLOW" },
+	["rain.piaempi.gay"]     = { method = "GEt", type = "ALLOW" },
 
 	-- metastruct
 	["g1.metastruct.net"]    = { method = "*",   type = "ALLOW" },
