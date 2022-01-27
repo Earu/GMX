@@ -14,11 +14,14 @@ local firewall_rules = {
 
 	-- trusted
 	["api.betterttv.net"] =  {method = "GET", type = "ALLOW" },
-	["g2.metastruct.net"] = { method = "*", type = "ALLOW" },
 	["translate.yandex.net"] = { method = "GET", type = "ALLOW" },
 	["api.frankerfacez.com"] = { method = "GET", type = "ALLOW" },
-	["metastruct.github.io"] = { method = "GET", type = "ALLOW" },
 
+	-- metastruct
+	["g1.metastruct.net"] = { method = "*", type = "ALLOW" },
+	["g2.metastruct.net"] = { method = "*", type = "ALLOW" },
+	["g3.metastruct.net"] = { method = "*", type = "ALLOW" },
+	["metastruct.github.io"] = { method = "GET", type = "ALLOW" },
 }
 
 hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method)
