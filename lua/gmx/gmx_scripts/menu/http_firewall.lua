@@ -10,16 +10,16 @@ local firewall_rules = {
 	["api.github.com"]            = { method = "*",   type = "ALLOW" },
 	["raw.githubusercontent.com"] = { method = "*",   type = "ALLOW" },
 	["gitlab.com"]                = { method = "*",   type = "ALLOW" },
-	["api.github.com"]            = { method = "*",   type = "ALLOW" },
 
 	-- trusted
-	["api.betterttv.net"]    = { method = "GET", type = "ALLOW" },
-	["translate.yandex.net"] = { method = "GET", type = "ALLOW" },
-	["api.frankerfacez.com"] = { method = "GET", type = "ALLOW" },
-	["drive.google.com"]     = { method = "GET", type = "ALLOW" },
-	["i.imgur.com"]          = { method = "GET", type = "ALLOW" },
-	["sprays.xerasin.com"]   = { method = "*",   type = "ALLOW" },
-	["rain.piaempi.gay"]     = { method = "GEt", type = "ALLOW" },
+	["api.betterttv.net"]              = { method = "GET", type = "ALLOW" },
+	["translate.yandex.net"]           = { method = "GET", type = "ALLOW" },
+	["api.frankerfacez.com"]           = { method = "GET", type = "ALLOW" },
+	["drive.google.com"]               = { method = "GET", type = "ALLOW" },
+	["i.imgur.com"]                    = { method = "GET", type = "ALLOW" },
+	["sprays.xerasin.com"]             = { method = "*",   type = "ALLOW" },
+	["rain.piaempi.gay"]               = { method = "GET", type = "ALLOW" },
+	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
 
 	-- metastruct
 	["g1.metastruct.net"]    = { method = "*",   type = "ALLOW" },
@@ -43,7 +43,7 @@ hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method)
 			return true
 		end
 	else
-		gmx.Print("Blocking request because no rule was defined:", method, domain, url)
+		gmx.Print("Blocking HTTP request because no rule was defined:", method, domain, url)
 		return true
 	end
 end)
