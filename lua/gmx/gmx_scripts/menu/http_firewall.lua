@@ -18,6 +18,7 @@ local firewall_rules = {
 	["api.frankerfacez.com"] = { method = "GET", type = "ALLOW" },
 	["drive.google.com"]     = { method = "GET", type = "ALLOW" },
 	["i.imgur.com"]          = { method = "GET", type = "ALLOW" },
+	["sprays.xerasin.com"]   = { method = "*",   type = "ALLOW" },
 
 	-- metastruct
 	["g1.metastruct.net"]    = { method = "*",   type = "ALLOW" },
@@ -32,15 +33,16 @@ hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method)
 	local rule = firewall_rules[domain]
 	if rule then
 		if rule.type == "DENY" and (rule.method == "*" or rule.method == method) then
-			gmx.Print("HTTP request blocked: ", method, url)
+			gmx.Print("HTTP request blocked:", method, url)
 			return true
 		end
 
 		if rule.type == "ALLOW" and rule.method ~= method and rule.method ~= "*" then
-			gmx.Print("HTTP request blocked: ", method, url)
+			gmx.Print("HTTP request blocked:", method, url)
 			return true
 		end
 	else
-		gmx.Print("Blocking request because no rule was defined", method, domain, url)
+		gmx.Print("Blocking request because no rule was defined:", method, domain, url)
+		return true
 	end
 end)
