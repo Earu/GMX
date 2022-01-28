@@ -6,10 +6,11 @@ local firewall_rules = {
 	["dl.cloudsmith.io"] = { method = "*", type = "DENY" },
 
 	-- dev stuff
-	["gitlab.com"]                = { method = "*",   type = "ALLOW" },
-	["api.github.com"]            = { method = "*",   type = "ALLOW" },
-	["raw.githubusercontent.com"] = { method = "*",   type = "ALLOW" },
-	["github.githubassets.com"]   = { method = "*",   type = "ALLOW" },
+	["gitlab.com"]                = { method = "*", type = "ALLOW" },
+	["api.github.com"]            = { method = "*", type = "ALLOW" },
+	["raw.githubusercontent.com"] = { method = "*", type = "ALLOW" },
+	["github.githubassets.com"]   = { method = "*", type = "ALLOW" },
+	["github.com"]                = { method = "*", type = "ALLOW" },
 
 	-- trusted
 	["api.betterttv.net"]              = { method = "GET", type = "ALLOW" },
@@ -17,11 +18,14 @@ local firewall_rules = {
 	["api.frankerfacez.com"]           = { method = "GET", type = "ALLOW" },
 	["drive.google.com"]               = { method = "GET", type = "ALLOW" },
 	["i.imgur.com"]                    = { method = "GET", type = "ALLOW" },
+	["puu.sh"]                         = { method = "GET", type = "ALLOW" },
 	["sprays.xerasin.com"]             = { method = "*",   type = "ALLOW" },
 	["rain.piaempi.gay"]               = { method = "GET", type = "ALLOW" },
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
 	["steamcommunity-a.akamaihd.net"]  = { method = "GET", type = "ALLOW" },
 	["dl.dropboxusercontent.com"]      = { method = "GET", type = "ALLOW" },
+	["www.dropbox.com"]                = { method = "GET", type = "ALLOW" },
+	["dl.dropbox.com"]                 = { method = "GET", type = "ALLOW" },
 
 	-- metastruct
 	["g1.metastruct.net"]    = { method = "*",   type = "ALLOW" },
@@ -29,6 +33,7 @@ local firewall_rules = {
 	["g2cf.metastruct.net"]  = { method = "*",   type = "ALLOW" },
 	["g3.metastruct.net"]    = { method = "*",   type = "ALLOW" },
 	["metastruct.github.io"] = { method = "GET", type = "ALLOW" },
+	["0.0.0.0"]              = { method = "GET", type = "ALLOW" }, -- Metastruct weird override thing
 }
 
 hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method)
