@@ -593,7 +593,7 @@ local LUA_EDITOR = {
 		local code = self:GetCode():Trim()
 		if #code == 0 then return end
 
-		RunOnClient("", "", code)
+		RunOnClient(code)
 		self:RegisterAction(self.Env)
 	end,
 	CloseCurrentTab = function(self)
@@ -804,7 +804,7 @@ end
 concommand.Add("gmx_editor", init_editor)
 
 concommand.Add("gmx_explore_server_files", function()
-	RunOnClient("", "", [[
+	RunOnClient([[
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(800, 400)
 		frame:SetSizable(true)

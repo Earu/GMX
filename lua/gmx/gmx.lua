@@ -22,7 +22,7 @@ else
 ============================================================]] .. "\n")
 end
 
-require("roc")
+require("rocx")
 
 concommand.Add("gmx", function()
 	PrintTable(gmx)
@@ -35,7 +35,7 @@ end)
 concommand.Add("gmx_file", function(_, _, _, path)
 	if file.Exists(path, "MOD") then
 		local lua = file.Read(path, "MOD")
-		RunOnClient("", "", lua)
+		RunOnClient(lua)
 		gmx.Print("Client running: " .. path)
 	else
 		gmx.Print("No such file: " .. path)
@@ -43,7 +43,7 @@ concommand.Add("gmx_file", function(_, _, _, path)
 end)
 
 concommand.Add("gmx_lua", function(_, _, _, lua)
-	RunOnClient("", "", lua)
+	RunOnClient(lua)
 	gmx.Print("Client running: " .. lua)
 end)
 
@@ -127,7 +127,7 @@ hook.Add("ClientFullyInitialized", "gmx_client_scripts", function()
 	local client_scripts_path = "lua/" .. gmx.ScriptsPath .. "/client/"
 	for _, file_name in pairs(file.Find(client_scripts_path .. "*.lua", "MOD")) do
 		local code = file.Read(client_scripts_path .. file_name, "MOD")
-		RunOnClient("", "", code)
+		RunOnClient(code)
 		gmx.Print("Running \"" .. file_name .. "\" on client")
 	end
 end)

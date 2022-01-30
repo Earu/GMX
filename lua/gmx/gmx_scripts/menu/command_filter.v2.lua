@@ -8,7 +8,7 @@ local WHITELIST = {
 
 -- force the client to fullupdate, or we can get stuck in some weird limbo
 hook.Add("ClientFullyInitialized", "gmx_fix_timeout", function()
-	RunOnClient("", "", [[
+	RunOnClient([[
 		LocalPlayer():ConCommand("record removeme", true)
 		RunConsoleCommand("stop")
 	]])
