@@ -93,9 +93,16 @@ local function DETOUR(container, fn_name, old_fn, new_fn)
 	end
 
 	-- string.dump
-	local fn_dump_dbg = old_string_dump(old_fn, true)
-	local fn_dump = old_string_dump(old_fn, false)
-	detour_cache[old_string_dump][new_fn] = { fn_dump_dbg, fn_dump }
+	local dumps, succ = {}, false
+	local fn_dump, fn_dump_dbg
+
+	succ, fn_dump_dbg = pcall(old_string_dump, old_fn, true)
+	if succ then table.insert(dumps, fn_dump_dbg) end
+
+	succ, fn_dump = pcall(old_string_dump, old_fn, false)
+	if succ then table.insert(dumps, fn_dump) end
+
+	detour_cache[old_string_dump][new_fn] = dumps
 
 	-- tostring
 	detour_cache[old_tostring][new_fn] = old_tostring(old_fn)
