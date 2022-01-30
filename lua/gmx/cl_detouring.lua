@@ -77,8 +77,6 @@ local function new_tostring(obj, ...)
 	end
 end
 
--- TODO: jit.util
-
 local function DETOUR(container, fn_name, old_fn, new_fn)
 	if not container then container = _G end
 	container[fn_name] = new_fn
@@ -102,6 +100,10 @@ local function DETOUR(container, fn_name, old_fn, new_fn)
 	-- tostring
 	detour_cache[old_tostring][new_fn] = old_tostring(old_fn)
 end
+
+-- TODO: properly overwrite these functions
+-- we're not sending errors anyway
+jit.util = {}
 
 -- dont reveal ourselves
 DETOUR(debug, "getinfo", old_debug_getinfo, new_debug_getinfo)
