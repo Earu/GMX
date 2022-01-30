@@ -23,6 +23,7 @@ local firewall_rules = {
 	["rain.piaempi.gay"]               = { method = "GET", type = "ALLOW" },
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
 	["steamcommunity-a.akamaihd.net"]  = { method = "GET", type = "ALLOW" },
+	["steamcommunity.com"]             = { method = "GET", type = "ALLOW" },
 	["dl.dropboxusercontent.com"]      = { method = "GET", type = "ALLOW" },
 	["www.dropbox.com"]                = { method = "GET", type = "ALLOW" },
 	["dl.dropbox.com"]                 = { method = "GET", type = "ALLOW" },
