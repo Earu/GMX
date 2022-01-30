@@ -4,6 +4,8 @@ local function should_hide(path)
 	-- hide gmx files
 	if path:match("gmx") then return true end
 	if path:match("lua/bin") then return true end
+
+	return false
 end
 
 -- detours

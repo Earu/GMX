@@ -10,7 +10,7 @@ end
 -- hide our detours
 local old_debug_getinfo = init_detour(debug.getinfo)
 local function new_debug_getinfo(fn, fields, ...)
-	if isfunction(fn) and detour_cache[old_debug_getinfo][fn] then
+	if detour_cache[old_debug_getinfo][fn] then
 		local cache = detour_cache[old_debug_getinfo][fn]
 		if not fields or #fields == 0 then
 			local ret = table_copy(cache)
@@ -45,7 +45,7 @@ end
 
 local old_debug_getupvalue = init_detour(debug.getupvalue)
 local function new_debug_getupvalue(fn, index, ...)
-	if isfunction(fn) and detour_cache[old_debug_getupvalue][fn] then
+	if detour_cache[old_debug_getupvalue][fn] then
 		if detour_cache[old_debug_getupvalue][fn][index] then
 			return unpack(detour_cache[old_debug_getupvalue][fn][index])
 		end
@@ -58,13 +58,13 @@ end
 
 local function DETOUR(container, fn_name, old_fn, new_fn)
 	if not container then container = _G end
-	container[old_fn] = new_fn
+	container[fn_name] = new_fn
 
 	local info = old_debug_getinfo(old_fn, DETOUR_OPTS)
 	detour_cache[old_debug_getinfo][new_fn] = info
 
 	for i = 1, info.nups do
-		local name, value = old_debug_getupvalue(old_fn, _)
+		local name, value = old_debug_getupvalue(old_fn, i)
 		detour_cache[old_debug_getupvalue][new_fn] = detour_cache[old_debug_getupvalue][new_fn] or {}
 		detour_cache[old_debug_getupvalue][new_fn][i] = { name, value }
 	end
