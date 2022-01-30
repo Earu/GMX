@@ -62,7 +62,6 @@ concommand.Add("gmx_lua_menu", function(_, _, _, lua)
 	gmx.Print("Menu running: " .. lua)
 end)
 
-
 local BASE = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 function gmx.GenerateUID()
 	local len = math.random(32, 64)
@@ -88,6 +87,7 @@ function gmx.AddClientInitScript(code)
 	table.insert(gmx.InitScripts, code)
 end
 
+gmx.AddClientInitScript(file.Read("gmx/client/detouring.lua", "MOD"))
 gmx.AddClientInitScript([[
 	hook.Add("InitPostEntity", GMX_HANDLE, function()
 		hook.Remove("InitPostEntity", GMX_HANDLE)
@@ -123,11 +123,4 @@ end
 
 hook.Add("ClientFullyInitialized", "gmx_client_scripts", function()
 	gmx.Print("Client fully initialized")
-
-	local client_scripts_path = "lua/" .. gmx.ScriptsPath .. "/client/"
-	for _, file_name in pairs(file.Find(client_scripts_path .. "*.lua", "MOD")) do
-		local code = file.Read(client_scripts_path .. file_name, "MOD")
-		RunOnClient(code)
-		gmx.Print("Running \"" .. file_name .. "\" on client")
-	end
 end)

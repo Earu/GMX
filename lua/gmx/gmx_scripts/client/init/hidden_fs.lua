@@ -6,20 +6,6 @@ local function should_hide(path)
 	if path:match("lua/bin") then return true end
 end
 
--- hide our detours
-local debug_info_cache = {}
-local old_debug_getinfo = debug.getinfo
-function debug.getinfo(fn, ...)
-	if isfunction(fn) and debug_info_cache[fn] then
-		return debug_info_cache[fn]
-	else
-		return old_debug_getinfo(fn, ...)
-	end
-end
-
--- dont reveal ourselves
-debug_info_cache[debug.getinfo] = old_debug_getinfo(old_debug_getinfo)
-
 -- detours
 local read_detours = {
 	{ FunctionName = "Read", Default = nil },
@@ -41,8 +27,7 @@ for _, detour in ipairs(read_detours) do
 			return old_fn(path, ...)
 		end
 
-		_G.file[detour.FunctionName] = new_fn
-		debug_info_cache[new_fn] = old_debug_getinfo(old_fn)
+		DETOUR(detour.global and _G or _G.file, detour.FunctionName, old_fn, new_fn)
 	end
 end
 
@@ -55,13 +40,12 @@ for _, detour in ipairs(write_detours) do
 			return old_fn(path, ...)
 		end
 
-		_G.file[detour] = new_fn
-		debug_info_cache[new_fn] = old_debug_getinfo(old_fn)
+		DETOUR(_G.file, detour, old_fn, new_fn)
 	end
 end
 
 local old_file_find = _G.file.Find
-function file.Find(pattern, ...)
+local function new_file_find(pattern, ...)
 	local files, dirs = old_file_find(pattern, ...)
 
 	local base_path = pattern:GetPathFromFilename()
@@ -84,4 +68,4 @@ function file.Find(pattern, ...)
 	return final_files, final_dirs
 end
 
-debug_info_cache[file.Find] = old_debug_getinfo(old_file_find)
+DETOUR(_G.file, "Find", old_file_find, new_file_find)

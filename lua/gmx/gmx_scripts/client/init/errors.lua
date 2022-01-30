@@ -31,10 +31,10 @@ end)
 
 -- override the default errors handler
 -- how do i override the original error function without breaking it?
-function ErrorNoHalt(...)
+DETOUR(nil, "ErrorNoHalt", ErrorNoHalt, function(...)
 	MsgC(COLOR_RED, ...)
-end
+end)
 
-function ErrorNoHaltWithStack(...)
+DETOUR(nil, "ErrorNoHaltWithStack", ErrorNoHaltWithStack, function(...)
 	MsgC(COLOR_RED, ...)
-end
+end)
