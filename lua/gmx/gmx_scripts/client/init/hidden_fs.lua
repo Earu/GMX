@@ -10,7 +10,7 @@ end
 
 -- detours
 local read_detours = {
-	{ FunctionName = "Read", Default = nil },
+	{ FunctionName = "Read", Default = "" },
 	{ FunctionName = "Time", Default = 0 },
 	{ FunctionName = "IsDir", Default = false },
 	{ FunctionName = "Exists", Default = false },

@@ -87,7 +87,7 @@ function gmx.AddClientInitScript(code)
 	table.insert(gmx.InitScripts, code)
 end
 
-gmx.AddClientInitScript(file.Read("lua/gmx/client/detouring.lua", "MOD"))
+gmx.AddClientInitScript(file.Read("lua/gmx/cl_detouring.lua", "MOD"))
 gmx.AddClientInitScript([[
 	local GMX_HANDLE = { IsValid = function() return true end }
 	hook.Add("InitPostEntity", GMX_HANDLE, function()
@@ -121,6 +121,6 @@ for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD
 	gmx.Print("Running \"" .. file_name .. "\"")
 end
 
-hook.Add("ClientFullyInitialized", "gmx_client_scripts", function()
+hook.Add("ClientFullyInitialized", "gmx_client_fully_init", function()
 	gmx.Print("Client fully initialized")
 end)
