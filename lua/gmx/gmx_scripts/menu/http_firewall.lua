@@ -27,6 +27,7 @@ local firewall_rules = {
 	["dl.dropboxusercontent.com"]      = { method = "GET", type = "ALLOW" },
 	["www.dropbox.com"]                = { method = "GET", type = "ALLOW" },
 	["dl.dropbox.com"]                 = { method = "GET", type = "ALLOW" },
+	["cdn.discordapp.com"]             = { method = "GET", type = "ALLOW" },
 
 	-- metastruct
 	["g1.metastruct.net"]    = { method = "*",   type = "ALLOW" },
