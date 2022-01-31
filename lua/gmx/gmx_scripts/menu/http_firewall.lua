@@ -18,6 +18,7 @@ local firewall_rules = {
 	["api.frankerfacez.com"]           = { method = "GET", type = "ALLOW" },
 	["drive.google.com"]               = { method = "GET", type = "ALLOW" },
 	["i.imgur.com"]                    = { method = "GET", type = "ALLOW" },
+	["api.imgur.com"]                  = { method = "*",   type = "ALLOW" },
 	["puu.sh"]                         = { method = "GET", type = "ALLOW" },
 	["sprays.xerasin.com"]             = { method = "*",   type = "ALLOW" },
 	["rain.piaempi.gay"]               = { method = "GET", type = "ALLOW" },
