@@ -1,5 +1,4 @@
 local detour_cache = {}
-
 local function DETOUR(container, fn_name, old_fn, new_fn)
 	if not container then container = _G end
 	container[fn_name] = new_fn
@@ -7,20 +6,25 @@ local function DETOUR(container, fn_name, old_fn, new_fn)
 end
 
 local detours = {
-	{ FunctionName = "getinfo", OriginalFunction = debug.getinfo, Container = debug },
-	{ FunctionName = "getupvalue", OriginalFunction = debug.getupvalue, Container = debug },
-	{ FunctionName = "dump", OriginalFunction = string.dump, Container = string },
-	{ FunctionName = "tostring", OriginalFunction = tostring, Container = _G },
-	{ FunctionName = "funcbc", OriginalFunction = jit.util.funcbc, Container = jit.util },
-	{ FunctionName = "funcinfo", OriginalFunction = jit.util.funcinfo, Container = jit.util },
-	{ FunctionName = "funck", OriginalFunction = jit.util.funck, Container = jit.util },
+	{ FunctionName = "getinfo",    OriginalFunction = debug.getinfo,       Container = debug, CheckRet = true },
+	{ FunctionName = "getupvalue", OriginalFunction = debug.getupvalue,    Container = debug    },
+	{ FunctionName = "dump",       OriginalFunction = string.dump,         Container = string   },
+	{ FunctionName = "tostring",   OriginalFunction = tostring,            Container = _G       },
+	{ FunctionName = "funcinfo",   OriginalFunction = jit.util.funcinfo,   Container = jit.util },
+	{ FunctionName = "funcbc",     OriginalFunction = jit.util.funcbc,     Container = jit.util },
+	{ FunctionName = "funck",      OriginalFunction = jit.util.funck,      Container = jit.util },
 	{ FunctionName = "funcuvname", OriginalFunction = jit.util.funcuvname, Container = jit.util },
 }
 
 for _, detour in ipairs(detours) do
-	local new_fn = function(fn, ...)
+	local function new_fn(fn, ...)
 		if detour_cache[fn] then
-			return detour.OriginalFunction(detour_cache[fn], ...)
+			local rets = { detour.OriginalFunction(detour_cache[fn], ...) }
+			if detour.CheckRet and rets[1] and rets[1].func then
+				rets[1].func = new_fn
+			end
+
+			return unpack(rets)
 		else
 			return detour.OriginalFunction(fn, ...)
 		end
