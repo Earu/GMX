@@ -64,7 +64,7 @@ end)
 
 local BASE = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 function gmx.GenerateUID()
-	local len = math.random(32, 64)
+	local len = math.random(8, 12)
 	local ret = ""
 	for _ = 0, len do
 		ret = ret .. BASE[math.random(#BASE)]
@@ -92,7 +92,8 @@ gmx.AddClientInitScript([[
 	local GMX_HANDLE = { IsValid = function() return true end }
 	hook.Add("InitPostEntity", GMX_HANDLE, function()
 		hook.Remove("InitPostEntity", GMX_HANDLE)
-		LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('ClientFullyInitialized', '" .. game.GetIPAddress() .. "', '" .. GetHostName():sub(1, 15) .. "')")
+		local cmd = ("hook.Run('ClientFullyInitialized', '%s', '%s')"):format(game.GetIPAddress(), GetHostName():sub(1, 15))
+		LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ " .. cmd)
 	end)
 ]])
 
