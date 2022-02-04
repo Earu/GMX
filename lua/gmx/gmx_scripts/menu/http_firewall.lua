@@ -25,14 +25,17 @@ local firewall_rules = {
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
 	["steamcommunity-a.akamaihd.net"]  = { method = "GET", type = "ALLOW" },
 	["steamcommunity.com"]             = { method = "GET", type = "ALLOW" },
+	["steamuserimages-a.akamaihd.net"] = { method = "GET", type = "ALLOW" },
 	["dl.dropboxusercontent.com"]      = { method = "GET", type = "ALLOW" },
 	["www.dropbox.com"]                = { method = "GET", type = "ALLOW" },
 	["dl.dropbox.com"]                 = { method = "GET", type = "ALLOW" },
 	["cdn.discordapp.com"]             = { method = "GET", type = "ALLOW" },
 	["pastebin.com"]                   = { method = "GET", type = "ALLOW" },
+	["tweetjs.com "]                   = { method = "*",   type = "ALLOW" },
 
 	-- metastruct
 	["g1.metastruct.net"]    = { method = "*",   type = "ALLOW" },
+	["g1cf.metastruct.net"]  = { method = "*",   type = "ALLOW" },
 	["g2.metastruct.net"]    = { method = "*",   type = "ALLOW" },
 	["g2cf.metastruct.net"]  = { method = "*",   type = "ALLOW" },
 	["g3.metastruct.net"]    = { method = "*",   type = "ALLOW" },
