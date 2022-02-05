@@ -32,6 +32,7 @@ local firewall_rules = {
 	["cdn.discordapp.com"]             = { method = "GET", type = "ALLOW" },
 	["pastebin.com"]                   = { method = "GET", type = "ALLOW" },
 	["tweetjs.com "]                   = { method = "*",   type = "ALLOW" },
+	["api.onedrive.com"]               = { method = "*",   type = "ALLOW" },
 
 	-- metastruct
 	["g1.metastruct.net"]    = { method = "*",   type = "ALLOW" },
