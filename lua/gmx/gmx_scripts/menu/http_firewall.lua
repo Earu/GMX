@@ -14,7 +14,7 @@ local firewall_rules = {
 	["github.com"]            = { method = "*", type = "ALLOW" },
 	["github.io"]             = { method = "*", type = "ALLOW" },
 
-	-- hosting
+	-- services
 	["imgur.com"]                 = { method = "*",   type = "ALLOW" },
 	["puu.sh"]                    = { method = "GET", type = "ALLOW" },
 	["akamaihd.net"]              = { method = "GET", type = "ALLOW" },
@@ -23,18 +23,16 @@ local firewall_rules = {
 	["onedrive.com"]              = { method = "*",   type = "ALLOW" },
 	["pastebin.com"]              = { method = "GET", type = "ALLOW" },
 	["drive.google.com"]          = { method = "GET", type = "ALLOW" },
-
-	-- services
-	["discordapp.com"]             = { method = "GET", type = "ALLOW" },
-	["translate.yandex.net"]           = { method = "GET", type = "ALLOW" },
+	["discordapp.com"]                 = { method = "GET", type = "ALLOW" },
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
 	["steamcommunity.com"]             = { method = "GET", type = "ALLOW" },
 
 	-- api & others
-	["tweetjs.com "]                   = { method = "*",   type = "ALLOW" },
-	["api.betterttv.net"]              = { method = "GET", type = "ALLOW" },
-	["api.frankerfacez.com"]           = { method = "GET", type = "ALLOW" },
-	["rain.piaempi.gay"]               = { method = "GET", type = "ALLOW" },
+	["translate.yandex.net"] = { method = "GET", type = "ALLOW" },
+	["tweetjs.com "]         = { method = "*",   type = "ALLOW" },
+	["api.betterttv.net"]    = { method = "GET", type = "ALLOW" },
+	["api.frankerfacez.com"] = { method = "GET", type = "ALLOW" },
+	["rain.piaempi.gay"]     = { method = "GET", type = "ALLOW" },
 
 	-- metastruct
 	["metastruct.net"]     = { method = "*",   type = "ALLOW" },
