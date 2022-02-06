@@ -8,47 +8,55 @@ local firewall_rules = {
 	["www.models-resource.com"] = { method = "*", type = "DENY" },
 
 	-- dev stuff
-	["gitlab.com"]                = { method = "*", type = "ALLOW" },
-	["api.github.com"]            = { method = "*", type = "ALLOW" },
-	["raw.githubusercontent.com"] = { method = "*", type = "ALLOW" },
-	["github.githubassets.com"]   = { method = "*", type = "ALLOW" },
-	["github.com"]                = { method = "*", type = "ALLOW" },
+	["gitlab.com"]            = { method = "*", type = "ALLOW" },
+	["githubusercontent.com"] = { method = "*", type = "ALLOW" },
+	["githubassets.com"]      = { method = "*", type = "ALLOW" },
+	["github.com"]            = { method = "*", type = "ALLOW" },
+	["github.io"]             = { method = "*", type = "ALLOW" },
 
-	-- trusted
-	["api.betterttv.net"]              = { method = "GET", type = "ALLOW" },
+	-- hosting
+	["imgur.com"]                 = { method = "*",   type = "ALLOW" },
+	["puu.sh"]                    = { method = "GET", type = "ALLOW" },
+	["akamaihd.net"]              = { method = "GET", type = "ALLOW" },
+	["dl.dropboxusercontent.com"] = { method = "GET", type = "ALLOW" },
+	["dropbox.com"]               = { method = "GET", type = "ALLOW" },
+	["onedrive.com"]              = { method = "*",   type = "ALLOW" },
+	["pastebin.com"]              = { method = "GET", type = "ALLOW" },
+	["drive.google.com"]          = { method = "GET", type = "ALLOW" },
+
+	-- services
+	["discordapp.com"]             = { method = "GET", type = "ALLOW" },
 	["translate.yandex.net"]           = { method = "GET", type = "ALLOW" },
-	["api.frankerfacez.com"]           = { method = "GET", type = "ALLOW" },
-	["drive.google.com"]               = { method = "GET", type = "ALLOW" },
-	["i.imgur.com"]                    = { method = "GET", type = "ALLOW" },
-	["api.imgur.com"]                  = { method = "*",   type = "ALLOW" },
-	["puu.sh"]                         = { method = "GET", type = "ALLOW" },
-	["sprays.xerasin.com"]             = { method = "*",   type = "ALLOW" },
-	["rain.piaempi.gay"]               = { method = "GET", type = "ALLOW" },
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
-	["steamcommunity-a.akamaihd.net"]  = { method = "GET", type = "ALLOW" },
 	["steamcommunity.com"]             = { method = "GET", type = "ALLOW" },
-	["steamuserimages-a.akamaihd.net"] = { method = "GET", type = "ALLOW" },
-	["dl.dropboxusercontent.com"]      = { method = "GET", type = "ALLOW" },
-	["www.dropbox.com"]                = { method = "GET", type = "ALLOW" },
-	["dl.dropbox.com"]                 = { method = "GET", type = "ALLOW" },
-	["cdn.discordapp.com"]             = { method = "GET", type = "ALLOW" },
-	["pastebin.com"]                   = { method = "GET", type = "ALLOW" },
+
+	-- api & others
 	["tweetjs.com "]                   = { method = "*",   type = "ALLOW" },
-	["api.onedrive.com"]               = { method = "*",   type = "ALLOW" },
+	["api.betterttv.net"]              = { method = "GET", type = "ALLOW" },
+	["api.frankerfacez.com"]           = { method = "GET", type = "ALLOW" },
+	["rain.piaempi.gay"]               = { method = "GET", type = "ALLOW" },
 
 	-- metastruct
-	["g1.metastruct.net"]    = { method = "*",   type = "ALLOW" },
-	["g1cf.metastruct.net"]  = { method = "*",   type = "ALLOW" },
-	["g2.metastruct.net"]    = { method = "*",   type = "ALLOW" },
-	["g2cf.metastruct.net"]  = { method = "*",   type = "ALLOW" },
-	["g3.metastruct.net"]    = { method = "*",   type = "ALLOW" },
-	["metastruct.github.io"] = { method = "GET", type = "ALLOW" },
-	["0.0.0.0"]              = { method = "GET", type = "ALLOW" }, -- Metastruct weird override thing
+	["metastruct.net"]     = { method = "*",   type = "ALLOW" },
+	["sprays.xerasin.com"] = { method = "*",   type = "ALLOW" },
+	["0.0.0.0"]            = { method = "GET", type = "ALLOW" }, -- Metastruct weird override thing
 }
 
+local function get_domain(sub_domain)
+	-- check if its an IP address
+	if sub_domain:match("[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.") then
+		return sub_domain
+	end
+
+	-- domain name + domain extension (.com, .net, etc)
+	local chunks = sub_domain:Split(".")
+	return chunks[#chunks]:Trim() .. "." .. chunks[#chunks - 1]:Trim()
+end
+
 hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method)
-	local domain = url:gsub("^https?://", ""):Split("/")[1]:Trim()
-	local rule = firewall_rules[domain]
+	local sub_domain = url:gsub("^https?://", ""):Split("/")[1]:Trim()
+	local domain = get_domain(sub_domain)
+	local rule = firewall_rules[sub_domain] or firewall_rules[domain] -- priority to sub domain
 	if rule then
 		if rule.type == "DENY" and (rule.method == "*" or rule.method == method) then
 			gmx.Print("HTTP request blocked:", method, url)
