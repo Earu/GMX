@@ -2,8 +2,10 @@ require("http_filter")
 
 local firewall_rules = {
 	-- weird
-	["garrysmod.io"]     = { method = "*", type = "DENY" },
-	["dl.cloudsmith.io"] = { method = "*", type = "DENY" },
+	["garrysmod.io"]            = { method = "*", type = "DENY" },
+	["dl.cloudsmith.io"]        = { method = "*", type = "DENY" },
+	["molly.network"]           = { method = "*", type = "DENY" },
+	["www.models-resource.com"] = { method = "*", type = "DENY" },
 
 	-- dev stuff
 	["gitlab.com"]                = { method = "*", type = "ALLOW" },
