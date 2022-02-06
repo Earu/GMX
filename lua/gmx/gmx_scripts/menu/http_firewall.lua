@@ -50,7 +50,7 @@ local function get_domain(sub_domain)
 
 	-- domain name + domain extension (.com, .net, etc)
 	local chunks = sub_domain:Split(".")
-	return chunks[#chunks]:Trim() .. "." .. chunks[#chunks - 1]:Trim()
+	return chunks[#chunks - 1]:Trim() .. "." .. chunks[#chunks]:Trim()
 end
 
 hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method)
