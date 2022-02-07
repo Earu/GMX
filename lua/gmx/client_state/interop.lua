@@ -1,3 +1,8 @@
+local function CMD(cmd)
+	local PLY = FindMetaTable("Player")
+	PLY.ConCommand(game.GetWorld(), cmd)
+end
+
 local LEN_NAME = 8 + 1 -- +1 for space
 local SUFFIX_LEN = #";END"
 local MAX_LEN = 255
@@ -6,7 +11,7 @@ local function PIPE(code)
 	local len = #code
 
 	if len + SUFFIX_LEN <= max then
-		LocalPlayer():ConCommand("{COM_IDENTIFIER} " .. code .. "@END")
+		CMD("{COM_IDENTIFIER} " .. code .. "@END")
 		return
 	end
 
@@ -17,7 +22,7 @@ local function PIPE(code)
 			part = part .. "@END"
 		end
 
-		LocalPlayer():ConCommand("{COM_IDENTIFIER} " .. part)
+		CMD("{COM_IDENTIFIER} " .. part)
 	end
 end
 

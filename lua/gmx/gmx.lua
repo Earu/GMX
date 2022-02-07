@@ -99,8 +99,8 @@ function gmx.AddClientInitScript(code)
 	table.insert(gmx.InitScripts, code)
 end
 
-gmx.AddClientInitScript(file.Read("lua/gmx/client_state/detouring.lua.lua", "MOD"))
 gmx.AddClientInitScript(file.Read("lua/gmx/client_state/interop.lua", "MOD"):gsub("{COM_IDENTIFIER}", gmx.ComIdentifier))
+gmx.AddClientInitScript(file.Read("lua/gmx/client_state/detouring.lua", "MOD"))
 gmx.AddClientInitScript([[
 	local GMX_HANDLE = { IsValid = function() return true end }
 	hook.Add("InitPostEntity", GMX_HANDLE, function()
