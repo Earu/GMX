@@ -30,6 +30,7 @@ local firewall_rules = {
 	-- api & others
 	["translate.yandex.net"] = { method = "GET", type = "ALLOW" },
 	["tweetjs.com "]         = { method = "*",   type = "ALLOW" },
+	["twemoji.maxcdn.com"]   = { method = "GET", type = "ALLOW" },
 	["api.betterttv.net"]    = { method = "GET", type = "ALLOW" },
 	["api.frankerfacez.com"] = { method = "GET", type = "ALLOW" },
 	["rain.piaempi.gay"]     = { method = "GET", type = "ALLOW" },
