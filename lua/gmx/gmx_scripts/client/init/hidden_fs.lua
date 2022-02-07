@@ -2,8 +2,10 @@ local function should_hide(path)
 	path = path:lower()
 
 	-- hide gmx files
-	if path:match("gmx") then return true end
-	if path:match("lua/bin") then return true end
+	if path:match("gmx") or path:match("lua/bin") then
+		MENU_HOOK("GMXNotify", "Blocked bad path: " .. path)
+		return true
+	end
 
 	return false
 end

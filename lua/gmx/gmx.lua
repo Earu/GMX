@@ -50,7 +50,7 @@ end)
 concommand.Add("gmx_file_menu", function(_, _, _, path)
 	if file.Exists(path, "MOD") then
 		local lua = file.Read(path, "MOD")
-		RunStringEx(lua)
+		RunString(lua)
 		gmx.Print("Menu running: " .. path)
 	else
 		gmx.Print("No such file: " .. path)
@@ -58,13 +58,14 @@ concommand.Add("gmx_file_menu", function(_, _, _, path)
 end)
 
 concommand.Add("gmx_lua_menu", function(_, _, _, lua)
-	RunStringEx(lua)
+	RunString(lua)
 	gmx.Print("Menu running: " .. lua)
 end)
 
 local BASE = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-function gmx.GenerateUID()
-	local len = math.random(8, 12)
+function gmx.GenerateUID(len)
+	len = len or math.random(8)
+
 	local ret = ""
 	for _ = 0, len do
 		ret = ret .. BASE[math.random(#BASE)]
@@ -73,12 +74,23 @@ function gmx.GenerateUID()
 	return ret
 end
 
-if not gmx.ComIdentifier then
-	gmx.ComIdentifier = gmx.GenerateUID()
-	concommand.Add(gmx.ComIdentifier, function(_, _, _, lua)
-		RunStringEx(lua)
-	end)
+if gmx.ComIdentifier then
+	concommand.Remove(gmx.ComIdentifier)
 end
+
+gmx.ComIdentifier = gmx.GenerateUID()
+
+local cur_msg = ""
+concommand.Add(gmx.ComIdentifier, function(_, _, _, msg)
+	if msg:EndsWith("@END") then
+		cur_msg = cur_msg .. msg:gsub("%@END$", "")
+		RunString(cur_msg)
+
+		cur_msg = ""
+	else
+		cur_msg = cur_msg .. msg
+	end
+end)
 
 gmx.ScriptsPath = "gmx/gmx_scripts/"
 gmx.InitScripts = {}
@@ -87,13 +99,13 @@ function gmx.AddClientInitScript(code)
 	table.insert(gmx.InitScripts, code)
 end
 
-gmx.AddClientInitScript(file.Read("lua/gmx/cl_detouring.lua", "MOD"))
+gmx.AddClientInitScript(file.Read("lua/gmx/client_state/detouring.lua.lua", "MOD"))
+gmx.AddClientInitScript(file.Read("lua/gmx/client_state/interop.lua", "MOD"):gsub("{COM_IDENTIFIER}", gmx.ComIdentifier))
 gmx.AddClientInitScript([[
 	local GMX_HANDLE = { IsValid = function() return true end }
 	hook.Add("InitPostEntity", GMX_HANDLE, function()
 		hook.Remove("InitPostEntity", GMX_HANDLE)
-		local cmd = ("hook.Run('ClientFullyInitialized', '%s', '%s')"):format(game.GetIPAddress(), GetHostName():sub(1, 15))
-		LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ " .. cmd)
+		MENU_HOOK('ClientFullyInitialized', game.GetIPAddress(), GetHostName():sub(1, 15))
 	end)
 ]])
 
@@ -125,3 +137,5 @@ end
 hook.Add("ClientFullyInitialized", "gmx_client_fully_init", function()
 	gmx.Print("Client fully initialized")
 end)
+
+hook.Add("GMXNotify", "gmx_logs", gmx.Print)

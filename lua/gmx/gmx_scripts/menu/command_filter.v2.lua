@@ -1,4 +1,4 @@
-include("gmx/deps/sourcenet/incoming.lua")
+include("gmx/gmx_scripts/menu/sourcenet/incoming.lua")
 
 local WHITELIST = {
 	dsp_player = true,

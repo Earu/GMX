@@ -821,7 +821,7 @@ concommand.Add("gmx_explore_server_files", function()
 
 		function browser:OnSelect(path, pnl)
 			if file.Exists(path, "LUA") then
-				LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('OpenServerFile', '" .. path .. "')")
+				LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('OpenServerFile', '" .. path .. "')@END")
 			end
 		end
 	]])
