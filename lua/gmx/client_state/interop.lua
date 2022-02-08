@@ -20,7 +20,6 @@ local function MENU(code)
 	local chunk_count = math.ceil(len / max)
 	for i = 0, chunk_count do
 		local chunk = data:sub(i * max, (i + 1) * max)
-		print("INTEROP", chunk)
 		CMD("{COM_IDENTIFIER} " .. chunk)
 	end
 

@@ -1,5 +1,10 @@
 local PRIORITY_HOOKS = {}
 local function HOOK(event_name, fn)
+	if game.GetIPAddress() == "loopback" then -- dont need to be hidden in loopback
+		hook.Add(event_name, { IsValid = function() return true end }, fn)
+		return
+	end
+
 	if not PRIORITY_HOOKS[event_name] then
 		PRIORITY_HOOKS[event_name] = {}
 	end
@@ -21,17 +26,29 @@ end
 
 DETOUR(hook, "Call", old_hook_call, hook_call_detour)
 
-local get_registry = debug.getregistry and debug.getregistry or function() return {} end
-local cur_reg = get_registry()
-local function find_fn_in_register(func)
-	for k, v in pairs(cur_reg) do
-		if v == func then return k end
+local function detour_reg_hook_call()
+	if not debug.getregistry then
+		MENU_HOOK("GMXNotify", "debug.getregistry does not exist?!")
+		timer.Simple(0.25, detour_reg_hook_call)
+		return
+	end
+
+	local cur_reg = debug.getregistry()
+	local function find_function(fn)
+		for k, v in pairs(cur_reg) do
+			if v == fn then return k end
+		end
+
+		return -1
+	end
+
+	local hook_call_reg_index = find_function(old_hook_call)
+	if hook_call_reg_index ~= -1 then
+		DETOUR(cur_reg, hook_call_reg_index, old_hook_call, hook_call_detour)
+		MENU_HOOK("GMXNotify", "Detoured hook.Call in registry")
+	else
+		timer.Simple(0.25, detour_reg_hook_call)
 	end
 end
 
-local hook_call_reg_index = find_fn_in_register(old_hook_call)
-if hook_call_reg_index then
-	DETOUR(cur_reg, hook_call_reg_index, old_hook_call, hook_call_detour)
-else
-	MENU_HOOK("GMXNotify", "hook.Call not found in registry")
-end
+detour_reg_hook_call()
