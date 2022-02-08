@@ -17,24 +17,22 @@ remove_global_stuff()
 luaerror.EnableCompiletimeDetour(true)
 luaerror.EnableRuntimeDetour(true)
 
-local COLOR_RED = Color(255, 0, 0, 255)
-hook.Add("LuaError", GMX_HANDLE, function(_, fullerror)
-	MsgC(COLOR_RED, fullerror, "\n")
+HOOK("LuaError", function(_, full_error)
+	MENU_HOOK("GMXNotify", fullerror)
 	return true
 end)
 
-hook.Add("ShutDown", GMX_HANDLE, function()
+HOOK("ShutDown", function()
 	luaerror.EnableRuntimeDetour(false)
 	luaerror.EnableCompiletimeDetour(false)
-	hook.Remove("Luaerror", GMX_HANDLE)
 end)
 
 -- override the default errors handler
 -- how do i override the original error function without breaking it?
 DETOUR(nil, "ErrorNoHalt", ErrorNoHalt, function(...)
-	MsgC(COLOR_RED, ...)
+	MENU_HOOK("GMXNotify", ...)
 end)
 
 DETOUR(nil, "ErrorNoHaltWithStack", ErrorNoHaltWithStack, function(...)
-	MsgC(COLOR_RED, ...)
+	MENU_HOOK("GMXNotify", ...)
 end)

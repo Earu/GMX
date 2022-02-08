@@ -6,7 +6,7 @@ end
 local LEN_NAME = 8 + 1 -- +1 for space
 local SUFFIX_LEN = #";END"
 local MAX_LEN = 255
-local function PIPE(code)
+local function MENU(code)
 	local max = MAX_LEN - LEN_NAME
 	local len = #code
 
@@ -32,5 +32,5 @@ local function MENU_HOOK(name, ...)
 		args[k] = ("\"%s\""):format(tostring(v))
 	end
 
-	PIPE([[hook.Run("]] .. name .. [[", ]] .. table.concat(args, ", ") .. [[)]])
+	MENU([[hook.Run("]] .. name .. [[", ]] .. table.concat(args, ", ") .. [[)]])
 end

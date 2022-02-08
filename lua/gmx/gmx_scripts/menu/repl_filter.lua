@@ -51,10 +51,10 @@ gmx.AddClientInitScript([[
 	end
 
 	-- before networked, only trust easychat
-	hook.Add("ECShouldSendMessage", GMX_HANDLE, function(_, msg)
+	HOOK("ECShouldSendMessage", function(_, msg)
 		if not is_gcompute_cmd(msg) then return end
-		PIPE("gmx.NextGComputeCommandAllowed = true")
-		MENU_HOOK("GMXNotify", "Tmp allowing GCompute command")
+		MENU("gmx.NextGComputeCommandAllowed = true")
+		MENU_HOOK("GMXNotify", "Temporarily allowing GCompute command")
 	end)
 ]])
 
@@ -99,11 +99,11 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 		end
 	end
 
-	-- fuck starfall
-	if path:StartWith("SF") then
+	-- starfall, its more annoying to block it than not...
+	--[[if path:StartWith("SF") then
 		gmx.Print(("Blocked starfall chip \"%s\""):format(path))
 		return DENY_CODE
-	end
+	end]]--
 
 	if check_lua_impl(path, str) then
 		gmx.Print(("Blocked potential lua implementation \"%s\""):format(path))
