@@ -804,7 +804,7 @@ end
 concommand.Add("gmx_editor", init_editor)
 
 concommand.Add("gmx_explore_server_files", function()
-	RunOnClient([[
+	RunOnClient(gmx.INTEROP_CODE .. [[
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(800, 400)
 		frame:SetSizable(true)
@@ -821,7 +821,7 @@ concommand.Add("gmx_explore_server_files", function()
 
 		function browser:OnSelect(path, pnl)
 			if file.Exists(path, "LUA") then
-				LocalPlayer():ConCommand("]] .. gmx.ComIdentifier .. [[ hook.Run('OpenServerFile', '" .. path .. "')@END")
+				MENU_HOOK("OpenServerFile", path)
 			end
 		end
 	]])

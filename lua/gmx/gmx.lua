@@ -98,9 +98,11 @@ function gmx.AddClientInitScript(code)
 	table.insert(gmx.InitScripts, code)
 end
 
+gmx.INTEROP_CODE = file.Read("lua/gmx/client_state/interop.lua", "MOD"):gsub("{COM_IDENTIFIER}", gmx.ComIdentifier)
+
 gmx.AddClientInitScript(file.Read("lua/gmx/client_state/detouring.lua", "MOD"))
+gmx.AddClientInitScript(gmx.INTEROP_CODE)
 gmx.AddClientInitScript(file.Read("lua/gmx/client_state/hook.lua", "MOD"))
-gmx.AddClientInitScript(file.Read("lua/gmx/client_state/interop.lua", "MOD"):gsub("{COM_IDENTIFIER}", gmx.ComIdentifier))
 gmx.AddClientInitScript([[
 	HOOK("InitPostEntity", function()
 		MENU_HOOK('ClientFullyInitialized', game.GetIPAddress(), GetHostName():sub(1, 15))
