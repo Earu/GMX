@@ -9,8 +9,8 @@ end
 
 local old_hook_call = hook.Call
 local function hook_call_detour(event_name, gm, ...)
-if PRIORITY_HOOKS[event_name] then
-	for _, fn in ipairs(PRIORITY_HOOKS[event_name]) do
+	if PRIORITY_HOOKS[event_name] then
+		for _, fn in ipairs(PRIORITY_HOOKS[event_name]) do
 			local ret = fn(...)
 			if ret ~= nil then return ret end
 		end
