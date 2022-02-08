@@ -51,7 +51,7 @@ gmx.AddClientInitScript([[
 	end
 
 	-- before networked, only trust easychat
-	HOOK("ECShouldSendMessage", function(_, msg)
+	HOOK("ECShouldSendMessage", function(msg)
 		if not is_gcompute_cmd(msg) then return end
 		MENU("gmx.NextGComputeCommandAllowed = true")
 		MENU_HOOK("GMXNotify", "Temporarily allowing GCompute command")
