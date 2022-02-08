@@ -1,7 +1,10 @@
 local PRIORITY_HOOKS = {}
 local function HOOK(event_name, fn)
 	if game.GetIPAddress() == "loopback" then -- dont need to be hidden in loopback
-		hook.Add(event_name, { IsValid = function() return true end }, fn)
+		hook.Add(event_name, { IsValid = function() return true end }, function(_, ...)
+			fn(...)
+		end)
+
 		return
 	end
 

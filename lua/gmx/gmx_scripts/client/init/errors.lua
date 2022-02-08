@@ -19,6 +19,8 @@ luaerror.EnableRuntimeDetour(true)
 
 local COLOR_RED = Color(255, 0, 0)
 HOOK("LuaError", function(_, full_error)
+	if not isstring(full_error) then return true end
+
 	MsgC(COLOR_RED, full_error .. "\n")
 	return true
 end)
