@@ -1,6 +1,10 @@
 local PRIORITY_HOOKS = {}
 local function HOOK(event_name, fn)
-	if game.GetIPAddress() == "loopback" then -- dont need to be hidden in loopback
+	-- can't detour hook.Call in singleplayer/p2p hosting server as
+	-- hook.Call doesn't appear in the registry clientside when that's
+	-- the case, but it doesn't really matter in a singleplayer game
+	-- or p2p when hosting anyway...
+	if game.GetIPAddress() == "loopback" then
 		hook.Add(event_name, { IsValid = function() return true end }, function(_, ...)
 			fn(...)
 		end)
