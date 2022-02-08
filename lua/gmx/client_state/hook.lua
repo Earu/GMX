@@ -40,16 +40,15 @@ local function detour_reg_hook_call()
 		return
 	end
 
+	local hook_call_reg_index = -1
 	local cur_reg = debug.getregistry()
-	local function find_function(fn)
-		for k, v in pairs(cur_reg) do
-			if v == fn then return k end
+	for k, v in pairs(cur_reg) do
+		if v == fn then
+			hook_call_reg_index = k
+			break
 		end
-
-		return -1
 	end
 
-	local hook_call_reg_index = find_function(old_hook_call)
 	if hook_call_reg_index ~= -1 then
 		DETOUR(cur_reg, hook_call_reg_index, old_hook_call, hook_call_detour)
 		MENU_HOOK("GMXNotify", "Detoured hook.Call in registry")
