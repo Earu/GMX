@@ -30,4 +30,8 @@ local function find_fn_in_register(func)
 end
 
 local hook_call_reg_index = find_fn_in_register(old_hook_call)
-DETOUR(cur_reg, hook_call_reg_index, old_hook_call, hook_call_detour)
+if hook_call_reg_index then
+	DETOUR(cur_reg, hook_call_reg_index, old_hook_call, hook_call_detour)
+else
+	MENU_HOOK("GMXNotify", "hook.Call not found in registry")
+end

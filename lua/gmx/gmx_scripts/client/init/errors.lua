@@ -17,7 +17,7 @@ remove_global_stuff()
 luaerror.EnableCompiletimeDetour(true)
 luaerror.EnableRuntimeDetour(true)
 
-HOOK("LuaError", function(_, full_error)
+--[[HOOK("LuaError", function(_, full_error)
 	MENU_HOOK("GMXNotify", fullerror)
 	return true
 end)
@@ -35,4 +35,4 @@ end)
 
 DETOUR(nil, "ErrorNoHaltWithStack", ErrorNoHaltWithStack, function(...)
 	MENU_HOOK("GMXNotify", ...)
-end)
+end)]]

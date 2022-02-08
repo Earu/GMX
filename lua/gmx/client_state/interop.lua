@@ -3,27 +3,28 @@ local function CMD(cmd)
 	PLY.ConCommand(game.GetWorld(), cmd)
 end
 
-local LEN_NAME = 8 + 1 -- +1 for space
-local SUFFIX_LEN = #";END"
-local MAX_LEN = 255
+local B64_ENCODE = util.Base64Encode -- extra sensible, always use the cached version
+local LEN_NAME = #"{COM_IDENTIFIER}" + 1 -- +1 for space
+local SUFFIX_LEN = #"@END"
+local MAX_LEN = 250
 local function MENU(code)
+	local data = B64_ENCODE(code):gsub("\n", "")
 	local max = MAX_LEN - LEN_NAME
-	local len = #code
+	local len = #data
 
 	if len + SUFFIX_LEN <= max then
-		CMD("{COM_IDENTIFIER} " .. code .. "@END")
+		CMD("{COM_IDENTIFIER} " .. data .. "@END")
 		return
 	end
 
-	local chunk_count = math.ceil(len + SUFFIX_LEN / max)
-	for i = 1, chunk_count do
-		local part = code:sub((i - 1) * max, i * max)
-		if i == chunk_count then
-			part = part .. "@END"
-		end
-
-		CMD("{COM_IDENTIFIER} " .. part)
+	local chunk_count = math.ceil(len / max)
+	for i = 0, chunk_count do
+		local chunk = data:sub(i * max, (i + 1) * max)
+		print("INTEROP", chunk)
+		CMD("{COM_IDENTIFIER} " .. chunk)
 	end
+
+	CMD("{COM_IDENTIFIER} @END")
 end
 
 local function MENU_HOOK(name, ...)
@@ -32,5 +33,10 @@ local function MENU_HOOK(name, ...)
 		args[k] = ("\"%s\""):format(tostring(v))
 	end
 
-	MENU([[hook.Run("]] .. name .. [[", ]] .. table.concat(args, ", ") .. [[)]])
+	local code = [[hook.Run("]] .. name .. [[", ]] .. table.concat(args, ", ") .. [[)]]
+	if table.Count(args) == 0 then
+		code = [[hook.Run("]] .. name .. [[")]]
+	end
+
+	MENU(code)
 end

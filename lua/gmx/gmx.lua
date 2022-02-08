@@ -81,14 +81,16 @@ end
 gmx.ComIdentifier = gmx.GenerateUID()
 
 local cur_msg = ""
-concommand.Add(gmx.ComIdentifier, function(_, _, _, msg)
-	if msg:EndsWith("@END") then
-		cur_msg = cur_msg .. msg:gsub("%@END$", "")
-		RunString(cur_msg)
+concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
+	if data:match("%@END$") then
+		cur_msg = cur_msg .. data:gsub("%@END$", "")
+
+		local code = util.Base64Decode(cur_msg)
+		RunString(code)
 
 		cur_msg = ""
 	else
-		cur_msg = cur_msg .. msg
+		cur_msg = cur_msg .. data
 	end
 end)
 
@@ -100,8 +102,8 @@ function gmx.AddClientInitScript(code)
 end
 
 gmx.AddClientInitScript(file.Read("lua/gmx/client_state/detouring.lua", "MOD"))
-gmx.AddClientInitScript(file.Read("lua/gmx/client_state/hook.lua", "MOD"))
 gmx.AddClientInitScript(file.Read("lua/gmx/client_state/interop.lua", "MOD"):gsub("{COM_IDENTIFIER}", gmx.ComIdentifier))
+gmx.AddClientInitScript(file.Read("lua/gmx/client_state/hook.lua", "MOD"))
 gmx.AddClientInitScript([[
 	HOOK("InitPostEntity", function()
 		MENU_HOOK('ClientFullyInitialized', game.GetIPAddress(), GetHostName():sub(1, 15))
