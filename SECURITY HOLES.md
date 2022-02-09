@@ -47,3 +47,14 @@
 	- Fixed with knowledged gathered from scripthook
 - **REPL lua RCE**
 	- Fixed with RunOnClient hook (rocx)
+
+## References for future AC
+- you can also check commandnumber of usercmd, and if it ever goes lower the player is cheating
+tick count of usercmd is used for lag compensation
+and typically only increases
+i've heard that during lag it will decrease, but i'm not sure
+
+- i know specifically you can make a check for ttt
+and anyone using world clicker angles
+
+- ![](https://i.imgur.com/P0w8FRs.png)
