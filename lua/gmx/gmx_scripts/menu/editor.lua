@@ -804,7 +804,7 @@ end
 concommand.Add("gmx_editor", init_editor)
 
 concommand.Add("gmx_explore_server_files", function()
-	RunOnClient(gmx.INTEROP_CODE .. [[
+	gmx.RunOnClient([[
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(800, 400)
 		frame:SetSizable(true)
@@ -824,7 +824,7 @@ concommand.Add("gmx_explore_server_files", function()
 				MENU_HOOK("OpenServerFile", path)
 			end
 		end
-	]])
+	]], { "interop" })
 end)
 
 hook.Add("OpenServerFile", "gmx_explore_srv_files", function(original_path)

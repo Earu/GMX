@@ -1,3 +1,5 @@
+if not system.IsWindows() then return end
+
 require("xconsole")
 require("proc")
 

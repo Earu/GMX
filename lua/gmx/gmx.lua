@@ -11,8 +11,8 @@ function gmx.Print(...)
 	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
 end
 
-if jit.arch ~= "x64" and not system.IsWindows() then
-	gmx.Print("GMX is not supported on this platform.")
+if jit.arch ~= "x64" then
+	gmx.Print("GMX is not supported on this architecture (" .. jit.arch .. ").")
 	return
 else
 	MsgC(HEADER_COLOR, [[
@@ -91,6 +91,27 @@ concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
 	end
 end)
 
+function gmx.PrepareCode(code, deps)
+	if not deps then deps = {} end
+
+	local outs = {}
+	for _, dep in ipairs(deps) do
+		local path = ("lua/gmx/client_state/%s.lua"):format(dep)
+		if file.Exists(path, "MOD") then
+			local content = file.Read(path, "MOD"):gsub("{COM_IDENTIFIER}", gmx.ComIdentifier)
+			table.insert(outs, content)
+		end
+	end
+
+	table.insert(outs, code)
+	return table.concat(outs, "\n")
+end
+
+function gmx.RunOnClient(code, deps)
+	local final_code = gmx.PrepareCode(code, deps)
+	RunOnClient(final_code)
+end
+
 gmx.ScriptsPath = "gmx/gmx_scripts/"
 gmx.InitScripts = {}
 
@@ -98,16 +119,11 @@ function gmx.AddClientInitScript(code)
 	table.insert(gmx.InitScripts, code)
 end
 
-gmx.INTEROP_CODE = file.Read("lua/gmx/client_state/interop.lua", "MOD"):gsub("{COM_IDENTIFIER}", gmx.ComIdentifier)
-
-gmx.AddClientInitScript(file.Read("lua/gmx/client_state/detouring.lua", "MOD"))
-gmx.AddClientInitScript(gmx.INTEROP_CODE)
-gmx.AddClientInitScript(file.Read("lua/gmx/client_state/hook.lua", "MOD"))
-gmx.AddClientInitScript([[
+gmx.AddClientInitScript(gmx.PrepareCode([[
 	HOOK("InitPostEntity", function()
 		MENU_HOOK('ClientFullyInitialized', game.GetIPAddress(), GetHostName():sub(1, 15))
 	end)
-]])
+]], { "detouring", "interop", "hook" }))
 
 local init_scripts_path = "lua/" .. gmx.ScriptsPath .. "client/init/"
 for _, file_name in pairs(file.Find(init_scripts_path .. "*.lua", "MOD")) do
