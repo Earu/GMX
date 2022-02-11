@@ -1,3 +1,5 @@
+if not system.IsWindows() then return end
+
 include("gmx/gmx_scripts/menu/sourcenet/incoming.lua")
 
 local WHITELIST = {
