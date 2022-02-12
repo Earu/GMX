@@ -43,7 +43,7 @@ function PrintTable(tbl)
 	MsgC(HEADER_COLOR, "{\n")
 
 	local min_equal_pos = compute_min_equal_print_pos(tbl)
-	for key, value in pairs(gmx) do
+	for key, value in pairs(tbl) do
 		local comment = type(value)
 		if isfunction(value) then
 			local info = debug.getinfo(value)
