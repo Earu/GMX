@@ -25,5 +25,5 @@ FilterIncomingMessage(net_StringCmd, function(net_chan, read, write)
 		return
 	end
 
-	gmx.Print(string.format("Blocked incoming server (%s) command \"%s\"", net_chan:GetAddress(), cmd))
+	gmx.Print(("Blocked incoming server (%s) command \"%s\""):format(net_chan:GetAddress(), cmd))
 end)
