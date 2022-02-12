@@ -47,12 +47,16 @@ function PrintTable(tbl)
 		local comment = type(value)
 		if isfunction(value) then
 			local info = debug.getinfo(value)
-			comment = info.short_src .. ":" .. info.linedefined
+			if info.short_src == "[C]" then
+				comment = "Native"
+			else
+				comment = info.short_src .. ":" .. info.linedefined
+			end
 		end
 
 		local value_str = tostring(value)
 		local spacing_info = ""
-		if #value_str < 24 then
+		if #value_str < 24 or #value_str > 24 then
 			spacing_info = string.rep(" ", 24 - #value_str)
 		end
 
