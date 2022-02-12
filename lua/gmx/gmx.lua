@@ -2,13 +2,14 @@ gmx = {}
 
 local HEADER_COLOR = Color(255, 157, 0)
 local BODY_COLOR = Color(255, 196, 0)
+local EXTRA_COLOR = Color(255, 255, 255)
 function gmx.Print(...)
 	local args = {}
 	for key, arg in pairs({ ... }) do
 		args[key] = tostring(arg)
 	end
 
-	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, table.concat(args, "\t") .. "\n")
+	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, args[1] .. "\t", EXTRA_COLOR, table.concat(args, "\t", 2)  .. "\n")
 end
 
 if jit.arch ~= "x64" then
@@ -24,54 +25,6 @@ end
 
 require("rocx")
 
-local function compute_min_equal_print_pos(tbl)
-	local min = 0
-	for key, _ in pairs(tbl) do
-		local key_len = #tostring(key) + 2 -- '[' + ']'
-		if key_len > min then
-			min = key_len
-		end
-	end
-
-	return min
-end
-
-local WHITE_COLOR = Color(255, 255, 255)
-local GRAY_COLOR = Color(155, 155, 155)
-function PrintTable(tbl)
-	MsgC(GRAY_COLOR, "-- " .. tostring(tbl) .. "\n")
-	MsgC(HEADER_COLOR, "{\n")
-
-	local min_equal_pos = compute_min_equal_print_pos(tbl)
-	for key, value in pairs(tbl) do
-		local comment = type(value)
-		if isfunction(value) then
-			local info = debug.getinfo(value)
-			if info.short_src == "[C]" then
-				comment = "Native"
-			else
-				comment = info.short_src .. ":" .. info.linedefined
-			end
-		end
-
-		local value_str = tostring(value)
-		local spacing_info = ""
-		if #value_str < 24 or #value_str > 24 then
-			spacing_info = string.rep(" ", 24 - #value_str)
-		end
-
-		local key_name = tostring(key)
-		local key_len = #key_name + 2
-		local spacing_value = ""
-		if key_len < min_equal_pos then
-			spacing_value = string.rep(" ", min_equal_pos - key_len)
-		end
-
-		MsgC(HEADER_COLOR, "\t[", WHITE_COLOR, key_name, HEADER_COLOR, "]", WHITE_COLOR, spacing_value .. " = ", BODY_COLOR, value_str, GRAY_COLOR, spacing_info .. " -- " .. comment .. "\n")
-	end
-	MsgC(HEADER_COLOR, "}\n")
-end
-
 concommand.Add("gmx", function(_, _, _, cmd)
 	cmd = cmd:Trim()
 	if #cmd == 0 then
@@ -85,30 +38,33 @@ concommand.Add("gmx", function(_, _, _, cmd)
 	end
 
 	if file.Exists(cmd, "MOD") then
+		gmx.Print("Menu running:", cmd)
 		local lua = file.Read(cmd, "MOD")
-		RunString(lua)
-		gmx.Print("Menu running: " .. cmd)
+		RunString(lua, "gmx")
 
 		return
 	end
 
-	RunString(cmd)
-	gmx.Print("Menu running: " .. cmd)
+	gmx.Print("Menu running:", cmd)
+	local err = RunString([[print(select(1, ]] .. cmd .. [[))]], "gmx", false)
+	if err then
+		RunString(cmd, "gmx")
+	end
 end)
 
 concommand.Add("gmx_file", function(_, _, _, path)
 	if file.Exists(path, "MOD") then
 		local lua = file.Read(path, "MOD")
 		RunOnClient(lua)
-		gmx.Print("Client running: " .. path)
+		gmx.Print("Client running:", path)
 	else
-		gmx.Print("No such file: " .. path)
+		gmx.Print("No such file:", path)
 	end
 end)
 
 concommand.Add("gmx_lua", function(_, _, _, lua)
 	RunOnClient(lua)
-	gmx.Print("Client running: " .. lua)
+	gmx.Print("Client running:", lua)
 end)
 
 local BASE = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -133,7 +89,7 @@ local cur_msg = ""
 concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
 	if data:match("%@END$") then
 		cur_msg = cur_msg .. data:gsub("%@END$", "")
-		RunString(util.Base64Decode(cur_msg))
+		RunString(util.Base64Decode(cur_msg), "gmx_interop")
 		cur_msg = ""
 	else
 		cur_msg = cur_msg .. data

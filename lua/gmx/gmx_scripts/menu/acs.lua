@@ -181,7 +181,7 @@ hook.Add("RunOnClient", "gmx_acs", function(source, script)
 
 	-- General annoyances
 	if script:find("while true do end") then
-		gmx.Print("ACS", "The server attempted to crash you.", source)
+		gmx.Print("The server attempted to crash you.", source)
 		return false
 	end
 end)
