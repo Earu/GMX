@@ -24,12 +24,72 @@ end
 
 require("rocx")
 
-concommand.Add("gmx", function()
-	PrintTable(gmx)
-end)
+local function compute_min_equal_print_pos(tbl)
+	local min = 0
+	for key, _ in pairs(tbl) do
+		local key_len = #tostring(key) + 2 -- '[' + ']'
+		if key_len > min then
+			min = key_len
+		end
+	end
 
-concommand.Add("gmx_reload", function()
-	include("gmx/gmx.lua")
+	return min
+end
+
+local WHITE_COLOR = Color(255, 255, 255)
+local GRAY_COLOR = Color(155, 155, 155)
+function PrintTable(tbl)
+	MsgC(GRAY_COLOR, "-- " .. tostring(tbl) .. "\n")
+	MsgC(HEADER_COLOR, "{\n")
+
+	local min_equal_pos = compute_min_equal_print_pos(tbl)
+	for key, value in pairs(gmx) do
+		local comment = type(value)
+		if isfunction(value) then
+			local info = debug.getinfo(value)
+			comment = info.short_src .. ":" .. info.linedefined
+		end
+
+		local value_str = tostring(value)
+		local spacing_info = ""
+		if #value_str < 24 then
+			spacing_info = string.rep(" ", 24 - #value_str)
+		end
+
+		local key_name = tostring(key)
+		local key_len = #key_name + 2
+		local spacing_value = ""
+		if key_len < min_equal_pos then
+			spacing_value = string.rep(" ", min_equal_pos - key_len)
+		end
+
+		MsgC(HEADER_COLOR, "\t[", WHITE_COLOR, key_name, HEADER_COLOR, "]", WHITE_COLOR, spacing_value .. " = ", BODY_COLOR, value_str, GRAY_COLOR, spacing_info .. " -- " .. comment .. "\n")
+	end
+	MsgC(HEADER_COLOR, "}\n")
+end
+
+concommand.Add("gmx", function(_, _, _, cmd)
+	cmd = cmd:Trim()
+	if #cmd == 0 then
+		PrintTable(gmx)
+		return
+	end
+
+	if cmd == "reload" then
+		include("gmx/gmx.lua")
+		return
+	end
+
+	if file.Exists(cmd, "MOD") then
+		local lua = file.Read(cmd, "MOD")
+		RunString(lua)
+		gmx.Print("Menu running: " .. cmd)
+
+		return
+	end
+
+	RunString(cmd)
+	gmx.Print("Menu running: " .. cmd)
 end)
 
 concommand.Add("gmx_file", function(_, _, _, path)
@@ -47,24 +107,9 @@ concommand.Add("gmx_lua", function(_, _, _, lua)
 	gmx.Print("Client running: " .. lua)
 end)
 
-concommand.Add("gmx_file_menu", function(_, _, _, path)
-	if file.Exists(path, "MOD") then
-		local lua = file.Read(path, "MOD")
-		RunString(lua)
-		gmx.Print("Menu running: " .. path)
-	else
-		gmx.Print("No such file: " .. path)
-	end
-end)
-
-concommand.Add("gmx_lua_menu", function(_, _, _, lua)
-	RunString(lua)
-	gmx.Print("Menu running: " .. lua)
-end)
-
 local BASE = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 function gmx.GenerateUID(len)
-	len = len or math.random(8)
+	len = len or 8
 
 	local ret = ""
 	for _ = 0, len do
@@ -123,7 +168,12 @@ gmx.AddClientInitScript(gmx.PrepareCode([[
 	HOOK("InitPostEntity", function()
 		MENU_HOOK('ClientFullyInitialized', game.GetIPAddress(), GetHostName():sub(1, 15))
 	end)
-]], { "detouring", "interop", "hook" }))
+]], {
+	-- the order matter
+	"detouring",
+	"interop",
+	"hooking"
+}))
 
 local init_scripts_path = "lua/" .. gmx.ScriptsPath .. "client/init/"
 for _, file_name in pairs(file.Find(init_scripts_path .. "*.lua", "MOD")) do
