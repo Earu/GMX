@@ -62,6 +62,7 @@ function PrintTable(tbl)
 
 		MsgC(HEADER_COLOR, "\t[", WHITE_COLOR, key_name, HEADER_COLOR, "]", WHITE_COLOR, spacing_value .. " = ", value_color, value_str, GRAY_COLOR, spacing_info .. " -- " .. comment .. "\n")
 	end
+
 	MsgC(HEADER_COLOR, "}\n")
 end
 
@@ -85,6 +86,20 @@ local function get_function_source(fn)
 	return fn_source, file_path, start_line, end_line
 end
 
+local function markup_keyword(match)
+	local start_pos, end_pos = match:find("[a-zA-Z]+")
+	return ("%s<KEYWORD>%s</KEYWORD>%s"):format(
+		match:sub(1, start_pos - 1),
+		match:sub(start_pos, end_pos),
+		match:sub(end_pos + 1, #match)
+	)
+end
+
+local LUA_KEYWORDS = {
+	"if", "then", "else", "elseif", "end", "do", "for", "while",
+	"function", "local", "repeat", "until", "return", "not", "or", "and"
+}
+local BASE_PATTERN = "[\n\t%s%)%(%{%}%,]"
 function PrintFunction(fn)
 	local fn_source, file_path, start_line, end_line = get_function_source(fn)
 	local header = "-- " .. tostring(fn)
@@ -95,7 +110,35 @@ function PrintFunction(fn)
 	end
 
 	MsgC(GRAY_COLOR, header .. "\n")
-	MsgC(BODY_COLOR, fn_source .. "\n")
+
+	for _, keyword in ipairs(LUA_KEYWORDS) do
+		local pattern_body = ("%s%s%s"):format(BASE_PATTERN, keyword, BASE_PATTERN)
+		local pattern_start = ("^%s%s"):format(keyword, BASE_PATTERN)
+		local pattern_end = ("%s%s$"):format(BASE_PATTERN, keyword)
+		fn_source = fn_source
+			:gsub(pattern_body, markup_keyword)
+			:gsub(pattern_start, markup_keyword)
+			:gsub(pattern_end, markup_keyword)
+	end
+
+	local start_pos, end_pos
+	repeat
+		local new_start_pos, new_end_pos = fn_source:find("<KEYWORD>(.-)</KEYWORD>", end_pos and end_pos + 1 or 1)
+		if new_start_pos then
+			MsgC(WHITE_COLOR, fn_source:sub(end_pos and end_pos + 1 or 1, new_start_pos - 1))
+		else
+			MsgC(WHITE_COLOR, fn_source:sub(end_pos and end_pos + 1 or 1))
+		end
+
+		if new_start_pos and new_end_pos then
+			local keyword = fn_source:sub(new_start_pos, new_end_pos):gsub("<KEYWORD>", ""):gsub("</KEYWORD>", "")
+			MsgC(HEADER_COLOR, keyword)
+		end
+
+		start_pos, end_pos = new_start_pos, new_end_pos
+	until not start_pos and not end_pos
+
+	MsgC("\n")
 end
 
 debug.setmetatable(function() end, {
