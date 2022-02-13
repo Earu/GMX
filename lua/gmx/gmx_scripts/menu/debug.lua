@@ -110,6 +110,7 @@ function PrintFunction(fn)
 	end
 
 	MsgC(GRAY_COLOR, header .. "\n")
+	if file_path == "Native" or file_path == "Anonymous" then return end
 
 	for _, keyword in ipairs(LUA_KEYWORDS) do
 		local pattern_body = ("%s%s%s"):format(BASE_PATTERN, keyword, BASE_PATTERN)
