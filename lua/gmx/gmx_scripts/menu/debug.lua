@@ -88,8 +88,9 @@ end
 
 local function markup_keyword(match)
 	local start_pos, end_pos = match:find("[a-zA-Z]+")
-	return ("%s<KEYWORD>%s</KEYWORD>%s"):format(
+	return ("%s<color=%d,%d,%d>%s</color>%s"):format(
 		match:sub(1, start_pos - 1),
+		BODY_COLOR.r, BODY_COLOR.g, BODY_COLOR.b,
 		match:sub(start_pos, end_pos),
 		match:sub(end_pos + 1, #match)
 	)
@@ -112,6 +113,7 @@ function PrintFunction(fn)
 	MsgC(GRAY_COLOR, header .. "\n")
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
+	-- keywords
 	for _, keyword in ipairs(LUA_KEYWORDS) do
 		local pattern_body = ("%s%s%s"):format(BASE_PATTERN, keyword, BASE_PATTERN)
 		local pattern_start = ("^%s%s"):format(keyword, BASE_PATTERN)
@@ -122,9 +124,34 @@ function PrintFunction(fn)
 			:gsub(pattern_end, markup_keyword)
 	end
 
+	-- strings
+	do
+		fn_source = fn_source:gsub("[\"\'].-[\"\']", function(match)
+			return ("<color=%d,%d,%d>%s</color>"):format(
+				HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
+				match
+			)
+		end)
+
+		fn_source = fn_source:gsub("%[%[.-%]%]", function(match)
+			return ("<color=%d,%d,%d>%s</color>"):format(
+				HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
+				match
+			)
+		end)
+	end
+
+	-- syntax
+	fn_source = fn_source:gsub("[%[%(%)%]%{%}%.]", function(match)
+		return ("<color=%d,%d,%d>%s</color>"):format(
+			HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
+			match
+		)
+	end)
+
 	local start_pos, end_pos
 	repeat
-		local new_start_pos, new_end_pos = fn_source:find("<KEYWORD>(.-)</KEYWORD>", end_pos and end_pos + 1 or 1)
+		local new_start_pos, new_end_pos = fn_source:find("%<color%=%d+%,%d+%,%d+%>(.-)%<%/color%>", end_pos and end_pos + 1 or 1)
 		if new_start_pos then
 			MsgC(WHITE_COLOR, fn_source:sub(end_pos and end_pos + 1 or 1, new_start_pos - 1))
 		else
@@ -132,8 +159,14 @@ function PrintFunction(fn)
 		end
 
 		if new_start_pos and new_end_pos then
-			local keyword = fn_source:sub(new_start_pos, new_end_pos):gsub("<KEYWORD>", ""):gsub("</KEYWORD>", "")
-			MsgC(HEADER_COLOR, keyword)
+			local r, g, b = 255, 255, 255
+			local chunk = fn_source:sub(new_start_pos, new_end_pos)
+			chunk:gsub("%<color%=(%d+)%,(%d+)%,(%d+)%>", function(input_r, input_g, input_b)
+				r, g, b = tonumber(input_r) or 255, tonumber(input_g) or 255, tonumber(input_b) or 255
+			end)
+
+			chunk = chunk:gsub("%<color%=%d+%,%d+%,%d+%>", ""):gsub("%<%/color%>", "")
+			MsgC(Color(r, g, b, 255), chunk)
 		end
 
 		start_pos, end_pos = new_start_pos, new_end_pos
