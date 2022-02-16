@@ -56,7 +56,7 @@ gmx.AddClientInitScript([[
 		MENU("gmx.NextGComputeCommandAllowed = true")
 		MENU_HOOK("GMXNotify", "Temporarily allowing GCompute command")
 	end)
-]])
+]], true)
 
 -- LuaCmd => SendLuas
 -- @repl_0 => command

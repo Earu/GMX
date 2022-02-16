@@ -2,26 +2,10 @@
 
 *Security Issues that I've found and need fixing*
 
-1) **menu.lua needs to have its actual content hidden away, replaced by the original**
-	- Save the original in gmx and replace in calls to file.Read, file.Size etc?
-	- Change the path to the original version? Need to call original fs functions for this?
-
-2) **The file system needs to be detoured before anything in init is ran, so that an override of the default gmod lua files cant tell**
-	- This can be done, detouring.lua does not rely on anything part of the modules loaded in init.lua
-
-3) **Need to make sure that adding content to init.lua does not reveal us**
-	- Length of the string ran somehow (?):
-		- Probably not as the function running init.lua is ran on the engine side where lua scripts don't have any access
-	- Checking extra local variables in an overriden init.lua files:
-		- Most likely yes, need to cleanup behind ourselves => How do I override hooks without revealing myself?
-		- Is the timer enough on its own? What about registry finding us?
-		- We can run our own version of init.lua and all the default gmod modules, any override by any addon is then removed
-			- However this is also how we can get detected as well... What do?
-
-4) **Scattered lua implementation**
+1) **Scattered lua implementation**
 	- Bypasses repl_filter checks
 
-5) **Potential jit.util checks with fast addresses etc...**
+2) **Potential jit.util checks with fast addresses etc...**
 	- Experiment
 
 ## Patched
@@ -47,6 +31,10 @@
 	- Fixed with knowledged gathered from scripthook
 - **REPL lua RCE**
 	- Fixed with RunOnClient hook (rocx)
+- **Checking menu.lua**
+	- Fixed by detouring fs before init.lua
+- **Checking init.lua**
+	- Fixed by scoping the added code
 
 ## References for future AC
 - you can also check commandnumber of usercmd, and if it ever goes lower the player is cheating
