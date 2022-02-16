@@ -14,8 +14,8 @@ end
 
 remove_global_stuff()
 
-luaerror.EnableCompiletimeDetour(true)
-luaerror.EnableRuntimeDetour(true)
+--luaerror.EnableCompiletimeDetour(true)
+--luaerror.EnableRuntimeDetour(true)
 
 local COLOR_RED = Color(255, 0, 0)
 HOOK("LuaError", function(_, full_error)

@@ -97,6 +97,7 @@ concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
 end)
 
 function gmx.PrepareCode(code, deps)
+	if not code then code = "" end
 	if not deps then deps = {} end
 
 	local outs = {}
@@ -117,36 +118,65 @@ function gmx.RunOnClient(code, deps)
 	RunOnClient(final_code)
 end
 
-gmx.ScriptsPath = "gmx/gmx_scripts/"
-gmx.InitScripts = {}
+gmx.ScriptsPath = "gmx/gmx_scripts"
+gmx.PreInitScripts = {}
+gmx.PostInitScripts = {}
 
-function gmx.AddClientInitScript(code)
-	table.insert(gmx.InitScripts, code)
+function gmx.AddClientInitScript(code, after_init)
+	if not after_init then
+		table.insert(gmx.PreInitScripts, code)
+	else
+		table.insert(gmx.PostInitScripts, code)
+	end
 end
 
-gmx.AddClientInitScript(gmx.PrepareCode([[
-	HOOK("InitPostEntity", function()
-		MENU_HOOK('ClientFullyInitialized', game.GetIPAddress(), GetHostName():sub(1, 15))
-	end)
-]], {
-	-- the order matter
-	"detouring",
-	"interop",
-	"hooking"
-}))
+local init_scripts_path = ("lua/%s/client"):format(gmx.ScriptsPath)
+function gmx.LoadClientInitScripts(after_init)
+	local path = init_scripts_path .. (after_init and "/post_init/" or "/pre_init/")
+	for _, file_name in pairs(file.Find(path .. "*.lua", "MOD")) do
+		local code = file.Read(path .. file_name, "MOD")
+		gmx.Print(("Adding \"%s\" to client %s-init"):format(file_name, after_init and "post" or "pre"))
+		gmx.AddClientInitScript(code, after_init)
+	end
+end
 
-local init_scripts_path = "lua/" .. gmx.ScriptsPath .. "client/init/"
-for _, file_name in pairs(file.Find(init_scripts_path .. "*.lua", "MOD")) do
-	local code = file.Read(init_scripts_path .. file_name, "MOD")
-	gmx.Print("Adding \"" .. file_name .. "\" to client init")
-	gmx.AddClientInitScript(code)
+-- pre-init
+do
+	gmx.AddClientInitScript(gmx.PrepareCode(nil, {
+		"util",
+		"detouring",
+		"interop"
+	}), false)
+
+	gmx.LoadClientInitScripts(false)
+end
+
+-- post-init
+do
+	gmx.AddClientInitScript(gmx.PrepareCode([[
+		HOOK("InitPostEntity", function()
+			MENU_HOOK('ClientFullyInitialized', game.GetIPAddress(), GetHostName():sub(1, 15))
+		end)
+	]], {
+		-- the order matter
+		"util",
+		"detouring",
+		"interop",
+		"hooking"
+	}), true)
+
+	gmx.LoadClientInitScripts(true)
 end
 
 local init_scripts_ran = false
 hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	if not init_scripts_ran and path:EndsWith("lua/includes/init.lua") then
 		init_scripts_ran = true
-		return str .. "\n" .. table.concat(gmx.InitScripts, "\n")
+		return ("do\n%s\nend\n%s\ndo\n%s\nend"):format(
+			table.concat(gmx.PreInitScripts, "\n"),
+			str,
+			table.concat(gmx.PostInitScripts, "\n")
+		)
 	end
 end)
 
@@ -154,10 +184,10 @@ hook.Add("ClientStateDestroyed", "gmx_client_init_scripts", function()
 	init_scripts_ran = false
 end)
 
-local menu_scripts_path = gmx.ScriptsPath .. "/menu/"
+local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
 for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
 	include(menu_scripts_path .. file_name)
-	gmx.Print("Running \"" .. file_name .. "\"")
+	gmx.Print(("Running \"%s\""):format(file_name))
 end
 
 hook.Add("ClientFullyInitialized", "gmx_client_fully_init", function()
