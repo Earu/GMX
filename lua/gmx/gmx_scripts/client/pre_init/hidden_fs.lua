@@ -8,6 +8,7 @@ local BAD_PATHS = {
 	"lua/bin/.*stringtable.*%.dll$",
 	"lua/bin/.*zip.*%.dll$",
 	"lua/bin/.*xconsole.*%.dll$",
+	"lua/menu/_menu.lua$",
 }
 
 local function should_hide(path)
@@ -49,38 +50,6 @@ local read_detours = {
 	{ FunctionName = "include", Default = nil, Global = true, BasePath = VFS_UNIVERSE["lua"] },
 }
 
-local fopen = file.Open
-local function get_safe_menu_lua_content()
-	local f = fopen("lua/menu/menu.lua", "rb", "MOD")
-	local actual_content = f:Read(f:Size())
-
-	f:Close()
-
-	local lines = STR_SPLIT(actual_content, "\n")
-	local should_delete = false
-	for i, line in ipairs(lines) do
-		if string.match(line, "gmx") or string.match(line, "require%(") or should_delete then
-			table.remove(lines, i)
-			should_delete = true
-		end
-	end
-
-	return table.concat(lines, "\n") .. "\n"
-end
-
-local function hide_gmx_start(fn_name, ...)
-	if fn_name == "Size" then
-		return true, #get_safe_menu_lua_content()
-	elseif fn_name == "AsyncRead" then
-		local args = { ... }
-		local file_name, game_path, callback = args[1], args[2], args[3]
-		callback(file_name, game_path, FSASYNC_OK, get_safe_menu_lua_content())
-		return true, FSASYNC_OK
-	end
-
-	return false
-end
-
 for _, detour in ipairs(read_detours) do
 	local old_fn = detour.Global and _G[detour.FunctionName] or _G.file[detour.FunctionName]
 	if old_fn then
@@ -105,8 +74,7 @@ for _, detour in ipairs(read_detours) do
 			if should_hide(full_path) then return detour.Default end
 
 			if full_path == "garrysmod/lua/menu/menu.lua" then
-				local handled, ret = hide_gmx_start(detour.FunctionName, ...)
-				if handled then return ret end
+				path = string.gsub(path, "menu.lua$", "_menu.lua")
 			end
 
 			return old_fn(path, universe, ...)
@@ -116,7 +84,7 @@ for _, detour in ipairs(read_detours) do
 	end
 end
 
-local write_detours = { "Open", "Delete", "CreateDir", "Rename" }
+local write_detours = { "Delete", "CreateDir", "Rename" }
 for _, detour in ipairs(write_detours) do
 	local old_fn = _G.file[detour]
 	if old_fn then
@@ -129,12 +97,35 @@ for _, detour in ipairs(write_detours) do
 			full_path = VFS_UNIVERSE["data"] .. full_path
 			if should_hide(full_path) then return false end
 
+			if full_path == "garrysmod/lua/menu/menu.lua" then
+				path = string.gsub(path, "menu.lua$", "_menu.lua")
+			end
+
 			return old_fn(path, ...)
 		end
 
 		DETOUR(_G.file, detour, old_fn, new_fn)
 	end
 end
+
+local old_file_open = _G.file.Open
+local function new_file_open(file_name, mode, universe, ...)
+	local full_path = STR_TRIM(file_name)
+	if string.match(full_path, "^%/+") then
+		full_path = string.gsub(full_path, "^%/+", "")
+	end
+
+	full_path = VFS_UNIVERSE[string.lower(universe or "")] .. full_path
+	if should_hide(full_path) then return end
+
+	if full_path == "garrysmod/lua/menu/menu.lua" then
+		file_name = string.gsub(file_name, "menu.lua$", "_menu.lua")
+	end
+
+	return old_file_open(file_name, mode, universe, ...)
+end
+
+DETOUR(_G.file, "Open", old_file_open, new_file_open)
 
 local old_file_find = _G.file.Find
 local function new_file_find(pattern, universe, ...)
