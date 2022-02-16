@@ -103,7 +103,8 @@ end
 
 local LUA_KEYWORDS = {
 	"if", "then", "else", "elseif", "end", "do", "for", "while", "in",
-	"function", "local", "repeat", "until", "return", "not", "or", "and"
+	"function", "local", "repeat", "until", "return", "not", "or", "and",
+	"false", "true"
 }
 local BASE_PATTERN = "[\n\t%s%)%(%{%}%,]"
 function PrintFunction(fn)
@@ -118,8 +119,8 @@ function PrintFunction(fn)
 	MsgC(GRAY_COLOR, header .. "\n")
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
-	-- syntax
-	fn_source = fn_source:gsub("[%[%(%)%]%{%}%.%=%,%/%*%-%+%;%%%!%~%&%|%#]", function(match)
+	-- syntax and numbe rliterals
+	fn_source = fn_source:gsub("[%[%(%)%]%{%}%.%=%,%/%*%-%+%;%%%!%~%&%|%#0-9]", function(match)
 		return ("<color=%d,%d,%d>%s</color>"):format(
 			HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
 			match
@@ -136,7 +137,8 @@ function PrintFunction(fn)
 			:gsub(pattern_start, markup_keyword)
 			:gsub(pattern_end, markup_keyword)
 	end
-	-- strings
+
+	-- strings literals
 	do
 		fn_source = fn_source:gsub("[\"\'].-[\"\']", function(match)
 			return ("<color=%d,%d,%d>%s</color>"):format(
