@@ -119,7 +119,7 @@ function PrintFunction(fn)
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
 	-- syntax
-	fn_source = fn_source:gsub("[%[%(%)%]%{%}%.%=%,]", function(match)
+	fn_source = fn_source:gsub("[%[%(%)%]%{%}%.%=%,%/%*%-%+%;%%%!%~%&%|%#]", function(match)
 		return ("<color=%d,%d,%d>%s</color>"):format(
 			HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
 			match
