@@ -2,7 +2,6 @@ require("luaerror")
 
 local luaerror = _G.luaerror
 
--- dont want none of that global stuff
 local function remove_global_stuff()
 	_G.luaerror = nil
 
@@ -14,8 +13,8 @@ end
 
 remove_global_stuff()
 
---luaerror.EnableCompiletimeDetour(true)
---luaerror.EnableRuntimeDetour(true)
+luaerror.EnableCompiletimeDetour(true)
+luaerror.EnableRuntimeDetour(true)
 
 local COLOR_RED = Color(255, 0, 0)
 HOOK("LuaError", function(_, full_error)
@@ -30,8 +29,6 @@ HOOK("ShutDown", function()
 	luaerror.EnableCompiletimeDetour(false)
 end)
 
--- override the default errors handler
--- how do i override the original error function without breaking it?
 DETOUR(nil, "ErrorNoHalt", ErrorNoHalt, function(...)
 	MsgC(COLOR_RED, ...)
 end)
