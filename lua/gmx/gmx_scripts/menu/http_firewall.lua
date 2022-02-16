@@ -36,6 +36,7 @@ local firewall_rules = {
 	["api.betterttv.net"]    = { method = "GET", type = "ALLOW" },
 	["api.frankerfacez.com"] = { method = "GET", type = "ALLOW" },
 	["rain.piaempi.gay"]     = { method = "GET", type = "ALLOW" },
+	["zombie.computer"]      = { method = "GET", type = "ALLOW" },
 
 	-- metastruct
 	["metastruct.net"]     = { method = "*",   type = "ALLOW" },
