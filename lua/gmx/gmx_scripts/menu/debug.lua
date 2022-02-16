@@ -96,8 +96,13 @@ local function markup_keyword(match)
 	)
 end
 
+local function sanitize_content(match)
+	local ret = match:gsub("%<color%=%d+%,%d+%,%d+%>", ""):gsub("%<%/color%>", "")
+	return ret
+end
+
 local LUA_KEYWORDS = {
-	"if", "then", "else", "elseif", "end", "do", "for", "while",
+	"if", "then", "else", "elseif", "end", "do", "for", "while", "in",
 	"function", "local", "repeat", "until", "return", "not", "or", "and"
 }
 local BASE_PATTERN = "[\n\t%s%)%(%{%}%,]"
@@ -113,6 +118,14 @@ function PrintFunction(fn)
 	MsgC(GRAY_COLOR, header .. "\n")
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
+	-- syntax
+	fn_source = fn_source:gsub("[%[%(%)%]%{%}%.%=%,]", function(match)
+		return ("<color=%d,%d,%d>%s</color>"):format(
+			HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
+			match
+		)
+	end)
+
 	-- keywords
 	for _, keyword in ipairs(LUA_KEYWORDS) do
 		local pattern_body = ("%s%s%s"):format(BASE_PATTERN, keyword, BASE_PATTERN)
@@ -123,31 +136,22 @@ function PrintFunction(fn)
 			:gsub(pattern_start, markup_keyword)
 			:gsub(pattern_end, markup_keyword)
 	end
-
 	-- strings
 	do
 		fn_source = fn_source:gsub("[\"\'].-[\"\']", function(match)
 			return ("<color=%d,%d,%d>%s</color>"):format(
 				HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
-				match
+				sanitize_content(match)
 			)
 		end)
 
 		fn_source = fn_source:gsub("%[%[.-%]%]", function(match)
 			return ("<color=%d,%d,%d>%s</color>"):format(
 				HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
-				match
+				sanitize_content(match)
 			)
 		end)
 	end
-
-	-- syntax
-	fn_source = fn_source:gsub("[%[%(%)%]%{%}%.]", function(match)
-		return ("<color=%d,%d,%d>%s</color>"):format(
-			HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
-			match
-		)
-	end)
 
 	local start_pos, end_pos
 	repeat
@@ -165,7 +169,7 @@ function PrintFunction(fn)
 				r, g, b = tonumber(input_r) or 255, tonumber(input_g) or 255, tonumber(input_b) or 255
 			end)
 
-			chunk = chunk:gsub("%<color%=%d+%,%d+%,%d+%>", ""):gsub("%<%/color%>", "")
+			chunk = sanitize_content(chunk)
 			MsgC(Color(r, g, b, 255), chunk)
 		end
 
