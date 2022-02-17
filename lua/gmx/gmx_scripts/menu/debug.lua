@@ -20,6 +20,7 @@ local HEADER_COLOR = Color(255, 157, 0)
 local BODY_COLOR = Color(255, 196, 0)
 local WHITE_COLOR = Color(255, 255, 255)
 local GRAY_COLOR = Color(155, 155, 155)
+local RED_COLOR = Color(199, 116, 78)
 local VALUE_SPACING_MAX, INFO_SPACING_MAX = 40, 24
 function PrintTable(tbl)
 	MsgC(GRAY_COLOR, "-- " .. tostring(tbl) .. "\n")
@@ -39,8 +40,10 @@ function PrintTable(tbl)
 		end
 
 		local value_color = BODY_COLOR
-		if not istable(value) and not isfunction(value) then
+		if isstring(value) then
 			value_color = HEADER_COLOR
+		elseif isnumber(value) or isbool(value) then
+			value_color = RED_COLOR
 		end
 
 		local value_str = tostring(value)
@@ -88,17 +91,32 @@ end
 
 local function markup_keyword(match)
 	local start_pos, end_pos = match:find("[a-zA-Z]+")
+	local keyword = match:sub(start_pos, end_pos)
+	local color = (keyword == "true" or keyword == "false") and RED_COLOR or BODY_COLOR
 	return ("%s<color=%d,%d,%d>%s</color>%s"):format(
 		match:sub(1, start_pos - 1),
-		BODY_COLOR.r, BODY_COLOR.g, BODY_COLOR.b,
-		match:sub(start_pos, end_pos),
+		color.r, color.g, color.b,
+		keyword,
 		match:sub(end_pos + 1, #match)
 	)
 end
 
-local function sanitize_content(match)
+local function sanitize_content(match, remove_string_markers)
 	local ret = match:gsub("%<color%=%d+%,%d+%,%d+%>", ""):gsub("%<%/color%>", "")
+	if remove_string_markers then
+		ret = ret:gsub("[\"']", "")
+	end
+
 	return ret
+end
+
+local function markup_with_color(color, remove_string_markers)
+	return function(match)
+		return ("<color=%d,%d,%d>%s</color>"):format(
+			color.r, color.g, color.b,
+			sanitize_content(match, remove_string_markers)
+		)
+	end
 end
 
 local LUA_KEYWORDS = {
@@ -106,7 +124,7 @@ local LUA_KEYWORDS = {
 	"function", "local", "repeat", "until", "return", "not", "or", "and",
 	"false", "true"
 }
-local BASE_PATTERN = "[\n\t%s%)%(%{%}%,]"
+local BASE_LUA_KEYWORD_PATTERN = "[\n\t%s%)%(%{%}%,%<%>]"
 function PrintFunction(fn)
 	local fn_source, file_path, start_line, end_line = get_function_source(fn)
 	local header = "-- " .. tostring(fn)
@@ -119,19 +137,19 @@ function PrintFunction(fn)
 	MsgC(GRAY_COLOR, header .. "\n")
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
-	-- syntax and numbe rliterals
-	fn_source = fn_source:gsub("[%[%(%)%]%{%}%.%=%,%/%*%-%+%;%%%!%~%&%|%#0-9]", function(match)
-		return ("<color=%d,%d,%d>%s</color>"):format(
-			HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
-			match
-		)
-	end)
+	-- number literals
+	--[[fn_source = fn_source
+		:gsub("[0-9]*%.[0-9]+", markup_with_color(RED_COLOR))
+		:gsub("[0-9]+[^%.]", markup_with_color(RED_COLOR))]]
+
+	-- syntax
+	fn_source = fn_source:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(HEADER_COLOR))
 
 	-- keywords
 	for _, keyword in ipairs(LUA_KEYWORDS) do
-		local pattern_body = ("%s%s%s"):format(BASE_PATTERN, keyword, BASE_PATTERN)
-		local pattern_start = ("^%s%s"):format(keyword, BASE_PATTERN)
-		local pattern_end = ("%s%s$"):format(BASE_PATTERN, keyword)
+		local pattern_body = ("%s%s%s"):format(BASE_LUA_KEYWORD_PATTERN, keyword, BASE_LUA_KEYWORD_PATTERN)
+		local pattern_start = ("^%s%s"):format(keyword, BASE_LUA_KEYWORD_PATTERN)
+		local pattern_end = ("%s%s$"):format(BASE_LUA_KEYWORD_PATTERN, keyword)
 		fn_source = fn_source
 			:gsub(pattern_body, markup_keyword)
 			:gsub(pattern_start, markup_keyword)
@@ -139,21 +157,17 @@ function PrintFunction(fn)
 	end
 
 	-- strings literals
-	do
-		fn_source = fn_source:gsub("[\"\'].-[\"\']", function(match)
-			return ("<color=%d,%d,%d>%s</color>"):format(
-				HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
-				sanitize_content(match)
-			)
-		end)
+	fn_source = fn_source
+		:gsub("'.-'", markup_with_color(HEADER_COLOR))
+		:gsub("\".-\"", markup_with_color(HEADER_COLOR))
+		:gsub("[^%-]%[%[.-%]%]", markup_with_color(HEADER_COLOR))
 
-		fn_source = fn_source:gsub("%[%[.-%]%]", function(match)
-			return ("<color=%d,%d,%d>%s</color>"):format(
-				HEADER_COLOR.r, HEADER_COLOR.g, HEADER_COLOR.b,
-				sanitize_content(match)
-			)
-		end)
-	end
+	-- comments
+	fn_source = fn_source
+		:gsub("%-%-[^%[%]]-\n", markup_with_color(GRAY_COLOR, true))
+		:gsub("%/%/.-\n", markup_with_color(GRAY_COLOR, true))
+		:gsub("%-%-%[%[.-%]%]", markup_with_color(GRAY_COLOR, true))
+		:gsub("%/%*.-%*%/", markup_with_color(GRAY_COLOR, true))
 
 	local start_pos, end_pos
 	repeat
