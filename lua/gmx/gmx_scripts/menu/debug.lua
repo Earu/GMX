@@ -127,23 +127,25 @@ local LUA_KEYWORDS = {
 local BASE_LUA_KEYWORD_PATTERN = "[\n\t%s%)%(%{%}%,%<%>]"
 function PrintFunction(fn)
 	local fn_source, file_path, start_line, end_line = get_function_source(fn)
-	local header = "-- " .. tostring(fn)
+	local fn_address = tostring(fn):gsub("function%:%s", "")
+	MsgC(GRAY_COLOR, ("-- %s\n"):format(fn_address))
 	if file_path ~= "Native" and file_path ~= "Anonymous" then
-		header = header .. " (" .. file_path .. ":" .. start_line .. "-" .. end_line .. ")"
+		MsgC(GRAY_COLOR, ("-- %s:%d-%d\n"):format(file_path, start_line, end_line))
 	else
-		header = header .. " (" .. file_path .. ")"
+		MsgC(GRAY_COLOR, ("-- %s\n"):format(file_path))
 	end
 
-	MsgC(GRAY_COLOR, header .. "\n")
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
-	-- number literals
-	--[[fn_source = fn_source
-		:gsub("[0-9]*%.[0-9]+", markup_with_color(RED_COLOR))
-		:gsub("[0-9]+[^%.]", markup_with_color(RED_COLOR))]]
-
 	-- syntax
-	fn_source = fn_source:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(HEADER_COLOR))
+	fn_source = fn_source
+		:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(HEADER_COLOR))
+		:gsub("[^%[]%[[^%[]",function(match) -- table indexing [
+			return match[1] .. markup_with_color(HEADER_COLOR, true)(match[2]) .. match[3]
+		end)
+		:gsub("[^%]]%][^%]]",function(match) -- table indexing ]
+			return match[1] .. markup_with_color(HEADER_COLOR, true)(match[2]) .. match[3]
+		end)
 
 	-- keywords
 	for _, keyword in ipairs(LUA_KEYWORDS) do
