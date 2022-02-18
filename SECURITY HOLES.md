@@ -5,9 +5,6 @@
 1) **Scattered lua implementation**
 	- Bypasses repl_filter checks
 
-2) **Potential jit.util checks with fast addresses etc...**
-	- Experiment
-
 ## Patched
 - **Running concommands and known cvar to detect whether someone has the RunOnClient function**
 	- Deny access to said concommands
@@ -35,6 +32,8 @@
 	- Fixed by detouring fs before init.lua
 - **Checking init.lua**
 	- Fixed by scoping the added code
+- **jit.util fast address stuff**
+	- Not usable to detect gmx
 
 ## References for future AC
 - you can also check commandnumber of usercmd, and if it ever goes lower the player is cheating
