@@ -1,11 +1,18 @@
 
-local BLUE_COLOR = Color(0, 122, 204)
+local BLUE_COLOR = Color(255, 157, 0) --Color(0, 122, 204)
 local GREEN_COLOR = Color(141, 210, 138)
 local GRAY_COLOR = Color(75, 75, 75)
 local WHITE_COLOR = Color(255, 255, 255)
 
 local TAB_COLOR = Color(45, 45, 45)
 local TAB_OUTLINE_COLOR = Color(0, 0, 0, 0)
+
+surface.CreateFont("gmx_lua_editor", {
+	font = "Tahoma",
+	extended = true,
+	size = 15,
+	weight = 600,
+})
 
 -- LuaFileBrowserDividerBar
 do
@@ -407,6 +414,7 @@ local LUA_EDITOR = {
 		self.RunButton = self:Add("DButton")
 		self.RunButton:SetText("")
 		self.RunButton:SetTextColor(WHITE_COLOR)
+		self.RunButton:SetFont("gmx_lua_editor")
 		self.RunButton:SetSize(200, 25)
 		self.RunButton:SetPos(150, 5)
 		self.RunButton.DoClick = function() self:RunCode() end
@@ -449,6 +457,7 @@ local LUA_EDITOR = {
 		self.MenuFile.Paint = menu_paint
 		for _, option in ipairs(options) do
 			option:SetTextColor(WHITE_COLOR)
+			option:SetFont("gmx_lua_editor")
 			option.Paint = option_paint
 		end
 
@@ -456,6 +465,7 @@ local LUA_EDITOR = {
 		for _, panel in pairs(self.MenuBar:GetChildren()) do
 			if panel.ClassName == "DButton" then
 				panel:SetTextColor(WHITE_COLOR)
+				panel:SetFont("gmx_lua_editor")
 				panel:SetSize(50, 25)
 				panel.Paint = menu_button_paint
 			end
@@ -480,7 +490,7 @@ local LUA_EDITOR = {
 			draw.NoTexture()
 			surface.DrawPoly(run_triangle)
 
-			surface.SetFont("DermaDefault")
+			surface.SetFont("gmx_lua_editor")
 			surface.SetTextColor(WHITE_COLOR)
 			surface.SetTextPos(75, 3)
 			surface.DrawText("Run Code")
@@ -507,6 +517,7 @@ local LUA_EDITOR = {
 		self.LblRunStatus:SetTextColor(WHITE_COLOR)
 		self.LblRunStatus:Dock(BOTTOM)
 		self.LblRunStatus:SetSize(self:GetWide(), 25)
+		self.LblRunStatus:SetFont("gmx_lua_editor")
 		self.LblRunStatus:SetText(("%sReady"):format((" "):rep(3)))
 		self.LblRunStatus.Paint = function(_, w, h)
 			surface.SetDrawColor(BLUE_COLOR)
@@ -516,6 +527,7 @@ local LUA_EDITOR = {
 		self.ThemeSelector = self:Add("DComboBox")
 		self.ThemeSelector:AddChoice("vs-dark", nil, true)
 		self.ThemeSelector:SetTextColor(WHITE_COLOR)
+		self.ThemeSelector:SetFont("gmx_lua_editor")
 		self.ThemeSelector:SetWide(100)
 		self.ThemeSelector.DropButton.Paint = drop_button_paint
 		self.ThemeSelector.Paint = combo_box_paint
@@ -531,6 +543,7 @@ local LUA_EDITOR = {
 
 		self.LangSelector = self:Add("DComboBox")
 		self.LangSelector:SetTextColor(WHITE_COLOR)
+		self.LangSelector:SetFont("gmx_lua_editor")
 		self.LangSelector:SetWide(100)
 		self.LangSelector.DropButton.Paint = drop_button_paint
 		self.LangSelector.Paint = combo_box_paint
@@ -705,12 +718,14 @@ local LUA_EDITOR = {
 		self.CodeTabs:SetActiveTab(tab)
 		local tab_w = tab:GetWide()
 		tab:SetTextColor(WHITE_COLOR)
+		tab:SetFont("gmx_lua_editor")
 
 		local close_btn = tab:Add("DButton")
 		close_btn:SetPos(tab_w - 20, 0)
 		close_btn:SetSize(20, 20)
 		close_btn:SetText("x")
 		close_btn:SetTextColor(WHITE_COLOR)
+		close_btn:SetFont("gmx_lua_editor")
 		close_btn.Paint = function() end
 		close_btn.DoClick = function()
 			if #self.CodeTabs:GetItems() > 1 then
@@ -781,6 +796,7 @@ local function init_editor()
 
 	local p = vgui.Create("DFrame")
 	p:SetTitle("Lua Editor")
+	p.lblTitle:SetFont("gmx_lua_editor")
 	p:SetSize(1200, 1000)
 	p:SetSizable(true)
 	p:Center()
