@@ -1,7 +1,6 @@
 local COLOR_WHITE = Color(255, 255, 255, 255)
 local COLOR_BG_HOVERED = Color(255, 157, 0)
 local COLOR_HOVERED = Color(255, 196, 0)
-local COLOR_BLACK = Color(0, 0, 0, 255)
 
 local bg = vgui.Create("DPanel")
 bg:SetSize(ScrW(), ScrH())
