@@ -2,6 +2,7 @@ if jit.arch ~= "x64" then
 	include("_menu.lua")
 end
 
+include("menu/loading.lua")
 include("menu_save.lua")
 include("menu_demo.lua")
 include("menu_addon.lua")
