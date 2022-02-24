@@ -2,12 +2,11 @@ local BAD_PATHS = {
 	".*gmx.*",
 	"lua/bin/.*luaerror.*%.dll$",
 	"lua/bin/.*http_filter.*%.dll$",
-	"lua/bin/.*proc.*%.dll$",
+	"lua/bin/.*enginespew.*%.dll$",
 	"lua/bin/.*rocx.*%.dll$",
 	"lua/bin/.*sourcenet.*%.dll$",
 	"lua/bin/.*stringtable.*%.dll$",
 	"lua/bin/.*zip.*%.dll$",
-	"lua/bin/.*xconsole.*%.dll$",
 	"lua/menu/_menu.lua$",
 }
 

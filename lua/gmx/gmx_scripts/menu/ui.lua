@@ -50,9 +50,8 @@ surface.CreateFont("gmx_info", {
 	shadow = true,
 })
 
-
 local New2d
-do
+do -- game of life
 	New2d = {}
 
 	local ometa = {}
@@ -272,3 +271,85 @@ end)
 add_button("Exit", 50, 500, 300, 50, function()
 	RunGameUICommand("Quit")
 end)
+
+do -- console
+	require("enginespew")
+
+	surface.CreateFont("gmx_console", {
+		font = "Arial",
+		extended = true,
+		size = 18,
+		weight = 600,
+		antialias = true,
+		shadow = true,
+	})
+
+	local console = vgui.Create("DPanel")
+	console:SetSize(ScrW() / 3, ScrH() - 10)
+	console:SetPos(ScrW() - console:GetWide(), 0)
+	console:SetKeyboardInputEnabled(true)
+	console:SetMouseInputEnabled(true)
+
+	function console:Paint(w, h)
+		surface.SetDrawColor(255, 157, 0, 50)
+		surface.DrawLine(0, 0, 0, h)
+
+		surface.SetDrawColor(255, 157, 0, 1)
+		surface.DrawRect(0, 0, w, h)
+	end
+
+	local console_input = console:Add("DTextEntry")
+	console_input:Dock(BOTTOM)
+	console_input:SetTall(30)
+	console_input:SetFont("gmx_console")
+	console_input:SetTextColor(COLOR_WHITE)
+	console_input:SetUpdateOnType(true)
+	console_input:SetKeyboardInputEnabled(true)
+	console_input:SetMouseInputEnabled(true)
+
+	function console_input:Paint(w, h)
+		surface.SetDrawColor(255, 157, 0, 50)
+		surface.DrawOutlinedRect(0, 0, w, h)
+
+		self:DrawTextEntryText(COLOR_WHITE, COLOR_HOVERED, COLOR_BG_HOVERED)
+	end
+
+	local console_output = console:Add("RichText")
+	console_output:Dock(FILL)
+	console_output:DockMargin(10, 10, 0, 0)
+	console_output:SetFontInternal("gmx_info")
+
+	function console_output:PerformLayout()
+		self:SetFontInternal("gmx_console")
+		self:SetUnderlineFont("gmx_console")
+	end
+
+	hook.Add("EngineSpew", "gmx_console", function(log_type, log_msg, log_grp, log_lvl, r, g, b)
+		if not IsValid(console_output) then return end
+		if log_type == 0 then return end -- ignore these?
+
+		if r == 0 and g == 0 and b == 0 then
+			r, g, b = 255, 255, 255
+		end
+
+		console_output:InsertColorChange(r, g, b, 255)
+		console_output:AppendText(log_msg)
+	end)
+
+	local loading_state = false
+	hook.Add("DrawOverlay", "gmx_console", function()
+		if not IsValid(console) then return end
+
+		local loading = IsInLoading()
+		if loading ~= loading_state then
+			loading_state = loading
+			console:SetPaintedManually(loading)
+			console_output:SetPaintedManually(loading)
+		end
+
+		if loading then
+			console:PaintManual()
+			console_output:PaintManual()
+		end
+	end)
+end
