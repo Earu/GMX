@@ -347,6 +347,8 @@ do -- console
 	console_input:SetUpdateOnType(true)
 	console_input:SetKeyboardInputEnabled(true)
 	console_input:SetMouseInputEnabled(true)
+	console_input:SetHistoryEnabled(true)
+	console_input.HistoryPos = 0
 
 	function console_input:Think()
 		local bind = input.LookupBinding("toggleconsole")
@@ -371,8 +373,16 @@ do -- console
 		for i, completion in pairs(cur_completions) do
 			surface.SetTextColor(i == cur_selection and COLOR_BG_HOVERED or COLOR_WHITE)
 			local tw, th = surface.GetTextSize(completion)
-			surface.SetTextPos(-75 - tw, i * (th + 5))
+
+			local x, y = -75 - tw, -i * (th + 5)
+			surface.SetTextPos(x, y)
 			surface.DrawText(completion)
+
+			if i == cur_selection then
+				surface.SetDrawColor(COLOR_BG_HOVERED)
+				surface.DrawOutlinedRect(x - 5, y, tw + 5, th + 2)
+			end
+
 		end
 
 		surface.DisableClipping(false)
@@ -383,7 +393,30 @@ do -- console
 		cur_selection = -1
 	end
 
+	function console_input:HandleHistory(key_code)
+		if key_code == KEY_ENTER or key_code == KEY_PAD_ENTER then
+			self:AddHistory(self:GetText())
+			self.HistoryPos = 0
+		end
+
+		if key_code == KEY_ESCAPE then
+			self.HistoryPos = 0
+		end
+
+		if not self.HistoryPos then return end
+
+		if key_code == KEY_UP then
+			self.HistoryPos = self.HistoryPos - 1
+			self:UpdateFromHistory()
+		elseif key_code == KEY_DOWN then
+			self.HistoryPos = self.HistoryPos + 1
+			self:UpdateFromHistory()
+		end
+	end
+
 	function console_input:OnKeyCodeTyped(key_code)
+		self:HandleHistory(key_code)
+
 		if key_code == KEY_ENTER or key_code == KEY_PAD_ENTER then
 			self:OnEnter()
 			return
