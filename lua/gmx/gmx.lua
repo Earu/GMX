@@ -33,6 +33,7 @@ concommand.Add("gmx", function(_, _, _, cmd)
 	end
 
 	if cmd == "reload" then
+		hook.Run("GMXReload")
 		include("gmx/gmx.lua")
 		return
 	end

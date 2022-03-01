@@ -394,7 +394,6 @@ local LUA_EDITOR = {
 		Type = "",
 		Time = ""
 	},
-	Env = "self",
 	Init = function(self)
 		self.MenuBar = self:Add("DMenuBar")
 		self.MenuBar:Dock(NODOCK)
@@ -411,13 +410,21 @@ local LUA_EDITOR = {
 		table.insert(options, self.MenuFile:AddOption("Close Current (Ctrl + W)", function() self:CloseCurrentTab() end))
 		table.insert(options, self.MenuFile:AddOption("Open File (Ctrl + O)", function() self:OpenFile() end))
 
-		self.RunButton = self:Add("DButton")
-		self.RunButton:SetText("")
-		self.RunButton:SetTextColor(WHITE_COLOR)
-		self.RunButton:SetFont("gmx_lua_editor")
-		self.RunButton:SetSize(200, 25)
-		self.RunButton:SetPos(150, 5)
-		self.RunButton.DoClick = function() self:RunCode() end
+		self.RunClientButton = self:Add("DButton")
+		self.RunClientButton:SetText("")
+		self.RunClientButton:SetTextColor(WHITE_COLOR)
+		self.RunClientButton:SetFont("gmx_lua_editor")
+		self.RunClientButton:SetSize(200, 25)
+		self.RunClientButton:SetPos(150, 5)
+		self.RunClientButton.DoClick = function() self:RunCode() end
+
+		self.RunMenuButton = self:Add("DButton")
+		self.RunMenuButton:SetText("")
+		self.RunMenuButton:SetTextColor(WHITE_COLOR)
+		self.RunMenuButton:SetFont("gmx_lua_editor")
+		self.RunMenuButton:SetSize(200, 25)
+		self.RunMenuButton:SetPos(350, 5)
+		self.RunMenuButton.DoClick = function() self:RunCode(true) end
 
 		local function menu_paint(_, w, h)
 			surface.SetDrawColor(GRAY_COLOR)
@@ -476,7 +483,7 @@ local LUA_EDITOR = {
 			{ x = 10, y = 5 },
 			{ x = 20, y = 10 }
 		}
-		self.RunButton.Paint = function(s, w, h)
+		local function paint_run_btn(s, w, h, txt)
 			surface.DisableClipping(true)
 
 			surface.SetDrawColor(GRAY_COLOR)
@@ -493,10 +500,13 @@ local LUA_EDITOR = {
 			surface.SetFont("gmx_lua_editor")
 			surface.SetTextColor(WHITE_COLOR)
 			surface.SetTextPos(75, 3)
-			surface.DrawText("Run Code")
+			surface.DrawText(txt)
 
 			surface.DisableClipping(false)
 		end
+
+		self.RunClientButton.Paint = function(s, w, h) paint_run_btn(s, w, h, "Run on Client") end
+		self.RunMenuButton.Paint = function(s, w, h) paint_run_btn(s, w, h, "Run on Menu") end
 
 		self.CodeTabs = self:Add("DPropertySheet")
 		self.CodeTabs:SetPos(0, 35)
@@ -602,12 +612,17 @@ local LUA_EDITOR = {
 		self.ThemeSelector:SetPos(x + bound_w - self.ThemeSelector:GetWide() - 5, y + 1)
 		self.LangSelector:SetPos(x + bound_w - self.ThemeSelector:GetWide() - 10 - self.LangSelector:GetWide(), y + 1)
 	end,
-	RunCode = function(self)
+	RunCode = function(self, run_on_menu)
 		local code = self:GetCode():Trim()
 		if #code == 0 then return end
 
-		RunOnClient(code)
-		self:RegisterAction(self.Env)
+		if run_on_menu then
+			RunString(code)
+			self:RegisterAction("menu")
+		else
+			RunOnClient(code)
+			self:RegisterAction("self")
+		end
 	end,
 	CloseCurrentTab = function(self)
 		if #self.CodeTabs:GetItems() > 1 then
@@ -797,7 +812,7 @@ local function init_editor()
 	local p = vgui.Create("DFrame")
 	p:SetTitle("Lua Editor")
 	p.lblTitle:SetFont("gmx_lua_editor")
-	p:SetSize(1200, 1000)
+	p:SetSize(ScrW() / 2, ScrW() / 3)
 	p:SetSizable(true)
 	p:Center()
 	p:MakePopup()

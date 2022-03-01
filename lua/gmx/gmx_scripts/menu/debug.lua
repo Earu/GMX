@@ -23,6 +23,11 @@ local GRAY_COLOR = Color(155, 155, 155)
 local RED_COLOR = Color(199, 116, 78)
 local VALUE_SPACING_MAX, INFO_SPACING_MAX = 40, 24
 function PrintTable(tbl)
+	if not istable(tbl) then
+		print(tbl)
+		return
+	end
+
 	MsgC(GRAY_COLOR, "-- " .. tostring(tbl) .. "\n")
 	MsgC(HEADER_COLOR, "{\n")
 
@@ -126,6 +131,11 @@ local LUA_KEYWORDS = {
 }
 local BASE_LUA_KEYWORD_PATTERN = "[\n\t%s%)%(%{%}%,%<%>]"
 function PrintFunction(fn)
+	if not isfunction(fn) then
+		print(fn)
+		return
+	end
+
 	local fn_source, file_path, start_line, end_line = get_function_source(fn)
 	local fn_address = tostring(fn):gsub("function%:%s", "")
 	MsgC(GRAY_COLOR, ("-- %s\n"):format(fn_address))
