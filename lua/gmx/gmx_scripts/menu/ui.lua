@@ -310,17 +310,7 @@ do -- console
 	console_input_header:SetSize(75, 30)
 	console_input_header:SetPos(0, console:GetTall() - 30)
 
-	local run_triangle = {
-		{ x = 10, y = 15 },
-		{ x = 10, y = 5 },
-		{ x = 20, y = 10 }
-	}
 	function console_input_header:Paint(w, h)
-		draw.NoTexture()
-		surface.SetDrawColor(65, 40, 0, 200)
-		surface.DrawRect(0, 0, w, h)
-		surface.DrawPoly(run_triangle)
-
 		surface.SetDrawColor(255, 157, 0, 200)
 		surface.DrawLine(0, 0, 0, h)
 
@@ -491,7 +481,7 @@ do -- console
 	end
 
 	local loading_state = false
-	local has_init = false
+	local has_init = IsInGame()
 	hook.Add("DrawOverlay", "gmx_console", function()
 		if not IsValid(console) then return end
 
@@ -513,7 +503,7 @@ do -- console
 	end)
 
 	hook.Add("ClientStateDestroyed", "gmx_console", function()
-		has_init = true
+		has_init = false
 	end)
 
 	concommand.Remove("gmx_toggleconsole")
