@@ -42,10 +42,10 @@ surface.CreateFont("gmx_button", {
 })
 
 surface.CreateFont("gmx_info", {
-	font = "Arial",
+	font = "Roboto",
 	extended = true,
-	size = 15,
-	weight = 600,
+	size = 16,
+	weight = 500,
 	antialias = true,
 	shadow = true,
 })
@@ -276,30 +276,71 @@ do -- console
 	require("enginespew")
 
 	surface.CreateFont("gmx_console", {
-		font = "Arial",
+		font = "Roboto",
 		extended = true,
 		size = 18,
-		weight = 600,
+		weight = 500,
 		antialias = true,
 		shadow = true,
 	})
 
-	local console = vgui.Create("DPanel")
+	local console = vgui.Create("DFrame")
 	console:SetSize(ScrW() / 3, ScrH() - 10)
 	console:SetPos(ScrW() - console:GetWide(), 0)
+	console:DockPadding(0, 0, 0, 0)
 	console:SetKeyboardInputEnabled(true)
 	console:SetMouseInputEnabled(true)
+	console.lblTitle:Hide()
+	console.btnClose:Hide()
+	console.btnMaxim:Hide()
+	console.btnMinim:Hide()
 
 	function console:Paint(w, h)
-		surface.SetDrawColor(255, 157, 0, 50)
+		surface.SetDrawColor(143, 99, 29, 201)
 		surface.DrawLine(0, 0, 0, h)
 
-		surface.SetDrawColor(255, 157, 0, 1)
+		surface.SetDrawColor(65, 40, 0, 200)
 		surface.DrawRect(0, 0, w, h)
+	end
+
+	local console_input_header = console:Add("DLabel")
+	console_input_header:SetFont("gmx_console")
+	console_input_header:SetTextColor(COLOR_WHITE)
+	console_input_header:SetText("")
+	console_input_header:SetSize(75, 30)
+	console_input_header:SetPos(0, console:GetTall() - 30)
+
+	local run_triangle = {
+		{ x = 10, y = 15 },
+		{ x = 10, y = 5 },
+		{ x = 20, y = 10 }
+	}
+	function console_input_header:Paint(w, h)
+		draw.NoTexture()
+		surface.SetDrawColor(65, 40, 0, 200)
+		surface.DrawRect(0, 0, w, h)
+		surface.DrawPoly(run_triangle)
+
+		surface.SetDrawColor(255, 157, 0, 200)
+		surface.DrawLine(0, 0, 0, h)
+
+		surface.DisableClipping(true)
+		surface.DrawLine(0, 0, console:GetWide(), 0)
+		surface.DrawLine(0, h - 1, console:GetWide(), h - 1)
+		surface.DrawLine(w - 12, 0, w, h / 2)
+		surface.DrawLine(w - 12, h, w, h / 2)
+		surface.DisableClipping(false)
+
+		surface.SetTextColor(COLOR_WHITE)
+		surface.SetFont("gmx_console")
+		local tw, th = surface.GetTextSize("Console")
+		surface.SetTextPos(w / 2 - tw / 2 - 5, h / 2 - th / 2)
+		surface.DrawText("Console")
 	end
 
 	local console_input = console:Add("DTextEntry")
 	console_input:Dock(BOTTOM)
+	console_input:DockMargin(75, 0, 0, 0)
 	console_input:SetTall(30)
 	console_input:SetFont("gmx_console")
 	console_input:SetTextColor(COLOR_WHITE)
@@ -307,11 +348,58 @@ do -- console
 	console_input:SetKeyboardInputEnabled(true)
 	console_input:SetMouseInputEnabled(true)
 
-	function console_input:Paint(w, h)
-		surface.SetDrawColor(255, 157, 0, 50)
-		surface.DrawOutlinedRect(0, 0, w, h)
+	function console_input:Think()
+		local bind = input.LookupBinding("toggleconsole")
+		if not bind then return end
 
+		local key_code = input.GetKeyCode(bind)
+		if input.IsButtonDown(key_code) then
+			gui.ActivateGameUI()
+			console:MakePopup()
+			self:RequestFocus()
+		end
+	end
+
+	local cur_completions = {}
+	local cur_selection = -1
+	function console_input:Paint(w, h)
 		self:DrawTextEntryText(COLOR_WHITE, COLOR_HOVERED, COLOR_BG_HOVERED)
+
+		surface.SetFont("gmx_console")
+		surface.DisableClipping(true)
+
+		for i, completion in pairs(cur_completions) do
+			surface.SetTextColor(i == cur_selection and COLOR_BG_HOVERED or COLOR_WHITE)
+			local tw, th = surface.GetTextSize(completion)
+			surface.SetTextPos(-75 - tw, i * (th + 5))
+			surface.DrawText(completion)
+		end
+
+		surface.DisableClipping(false)
+	end
+
+	function console_input:OnValueChange(text)
+		cur_completions = ConsoleAutoComplete(text) or {}
+		cur_selection = -1
+	end
+
+	function console_input:OnKeyCodeTyped(key_code)
+		if key_code == KEY_ENTER or key_code == KEY_PAD_ENTER then
+			self:OnEnter()
+			return
+		end
+
+		if key_code ~= KEY_TAB then return end
+
+		cur_selection = cur_selection - 1
+		if cur_selection > #cur_completions or cur_selection <= 0 then
+			cur_selection = #cur_completions
+		end
+
+		timer.Simple(0, function()
+			self:SetCaretPos(#self:GetText())
+			self:RequestFocus()
+		end)
 	end
 
 	local console_output = console:Add("RichText")
@@ -336,11 +424,40 @@ do -- console
 		console_output:AppendText(log_msg)
 	end)
 
+	function console_input:OnEnter()
+		local cmd = self:GetText()
+		if cur_selection > 0 then
+			self:SetText(cur_completions[cur_selection])
+			cur_selection = -1
+			cur_completions = {}
+
+			timer.Simple(0, function()
+				self:SetCaretPos(#self:GetText())
+				self:RequestFocus()
+			end)
+
+			return
+		end
+
+		RunGameUICommand("engine " .. cmd)
+		self:SetText("")
+
+		console_output:InsertColorChange(255, 255, 255, 255)
+		console_output:AppendText((">> %s\n"):format(cmd))
+
+		cur_selection = -1
+		cur_completions = {}
+
+		console:MakePopup()
+		self:RequestFocus()
+	end
+
 	local loading_state = false
+	local has_init = false
 	hook.Add("DrawOverlay", "gmx_console", function()
 		if not IsValid(console) then return end
 
-		local loading = IsInLoading()
+		local loading = IsInLoading() or (IsInGame() and not has_init)
 		if loading ~= loading_state then
 			loading_state = loading
 			console:SetPaintedManually(loading)
@@ -351,5 +468,38 @@ do -- console
 			console:PaintManual()
 			console_output:PaintManual()
 		end
+	end)
+
+	hook.Add("ClientFullyInitialized", "gmx_console", function()
+		has_init = true
+	end)
+
+	hook.Add("ClientStateDestroyed", "gmx_console", function()
+		has_init = true
+	end)
+
+	concommand.Remove("gmx_toggleconsole")
+	concommand.Add("gmx_toggleconsole", function()
+		if gui.IsGameUIVisible() and IsInGame() then
+			gui.HideGameUI()
+			return
+		end
+
+		gui.ActivateGameUI()
+		if not IsValid(console_input) then return end
+
+		console:MakePopup()
+		console_input:RequestFocus()
+	end)
+
+	RunGameUICommand("engine alias toggleconsole gmx_toggleconsole")
+	RunGameUICommand("engine alias showconsole gmx_toggleconsole")
+
+	console:MakePopup()
+
+	hook.Add("GMXReload", "gmx_console", function()
+		if not IsValid(bg) then return end
+		bg:Remove()
+		console:Remove()
 	end)
 end
