@@ -63,7 +63,27 @@ gmx.AddClientInitScript([[
 -- <0:0:80006525|Earu><cmd:lsc> => command
 -- <0:0:80006525|Earu><spooky.lua> => file
 local DENY_CODE = "error(\'DENIED\', 0)"
-local MY_STEAM_ID = "0:0:80006525"
+local STEAM_ID_WHITELIST = {
+	["0:0:80006525"] = true,
+}
+
+local function update_whitelist(str, allow)
+	if not str then return end
+	local steam_id = str:match("%d+:%d+:%d+")
+	if not steam_id then return end
+
+	gmx.Print("Repl", "Updating whitelist for ", steam_id, allow)
+	STEAM_ID_WHITELIST[steam_id:gsub("STEAM_", ""):Trim()] = allow and true or nil
+end
+
+concommand.Add("gmx_repl_allow", function(_, _, _, str)
+	update_whitelist(str, true)
+end)
+
+concommand.Add("gmx_repl_deny", function(_, _, _, str)
+	update_whitelist(str, false)
+end)
+
 hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- remove .p, .pm, .psc commands from gcompute
 	if path == "@repl_0" then
@@ -83,7 +103,7 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	end
 
 	local found_steam_id = path:match("[0-9]%:[0-9]%:[0-9]+")
-	if found_steam_id and found_steam_id ~= MY_STEAM_ID then
+	if found_steam_id and not STEAM_ID_WHITELIST[found_steam_id] then
 		-- detect luadev .l, .lm, .lsc commands and checks if ran by me or not
 		local luadev_cmd = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<cmd%:([a-zA-Z]+)%>")
 		if luadev_cmd then
