@@ -545,8 +545,22 @@ do -- repl cache
 		frame:DockPadding(0, 25, 0, 0)
 		frame:Center()
 		frame.btnMinim:Hide()
-		frame.btnMaxim:Hide()
-		frame.btnClose.Paint = function()
+
+		function frame.btnMaxim.Paint()
+			surface.SetTextColor(COLOR_BG_HOVERED)
+			surface.SetTextPos(10, 5)
+			surface.SetFont("DermaDefaultBold")
+			surface.DrawText("↻")
+		end
+
+		frame.btnMaxim:SetEnabled(true)
+		function frame.btnMaxim:DoClick()
+			gmx.ReplFilterCache = {}
+			hook.Run("GMXReplFilterCacheChanged")
+			gmx.Print("Cleared repl lua cache")
+		end
+
+		function frame.btnClose:Paint()
 			surface.SetTextColor(COLOR_BG_HOVERED)
 			surface.SetTextPos(10, 5)
 			surface.SetFont("DermaDefaultBold")
