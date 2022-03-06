@@ -25,6 +25,7 @@ end
 
 require("rocx")
 
+concommand.Remove("gmx")
 concommand.Add("gmx", function(_, _, _, cmd)
 	cmd = cmd:Trim()
 	if #cmd == 0 then
@@ -53,6 +54,7 @@ concommand.Add("gmx", function(_, _, _, cmd)
 	end
 end)
 
+concommand.Remove("gmx_file")
 concommand.Add("gmx_file", function(_, _, _, path)
 	if file.Exists(path, "MOD") then
 		local lua = file.Read(path, "MOD")
@@ -63,6 +65,7 @@ concommand.Add("gmx_file", function(_, _, _, path)
 	end
 end)
 
+concommand.Remove("gmx_lua")
 concommand.Add("gmx_lua", function(_, _, _, lua)
 	RunOnClient(lua)
 	gmx.Print("Client running:", lua)

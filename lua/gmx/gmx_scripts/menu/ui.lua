@@ -188,32 +188,32 @@ function bg:Paint(w, h)
 
 	surface.SetFont("gmx_info")
 
-	surface.SetTextPos(55, 620)
+	surface.SetTextPos(55, 640)
 	surface.DrawText("FPS: " .. math.Round(1 / FrameTime()))
 
-	surface.SetTextPos(55, 640)
+	surface.SetTextPos(55, 660)
 	surface.DrawText("OS: " .. jit.os)
 
-	surface.SetTextPos(55, 660)
+	surface.SetTextPos(55, 680)
 	surface.DrawText("Arch: " .. jit.arch)
 
-	surface.SetTextPos(55, 680)
+	surface.SetTextPos(55, 700)
 	surface.DrawText("LuaJIT: " .. jit.version)
 
-	surface.SetTextPos(55, 700)
+	surface.SetTextPos(55, 720)
 	surface.DrawText("Lua Version: " .. _VERSION)
 
-	surface.SetTextPos(55, 720)
+	surface.SetTextPos(55, 740)
 	surface.DrawText("GMod Version: " .. VERSIONSTR)
 
-	surface.SetTextPos(55, 740)
+	surface.SetTextPos(55, 760)
 	surface.DrawText("GMod Branch: " .. BRANCH)
 
 	if IsInGame() then
-		surface.SetTextPos(55, 780)
+		surface.SetTextPos(55, 800)
 		surface.DrawText("Game IP: " .. current_ip)
 
-		surface.SetTextPos(55, 800)
+		surface.SetTextPos(55, 820)
 		surface.DrawText("Game Hostname: " .. current_hostname)
 	end
 end
@@ -264,11 +264,15 @@ add_button("Explore Server Files", 50, 380, 300, 50, function()
 	RunConsoleCommand("gmx_explore_server_files")
 end)
 
-add_button("Settings", 50 , 440, 300, 50, function()
+add_button("Repl Cache", 50, 440, 300, 50, function()
+	RunConsoleCommand("gmx_repl_cache")
+end)
+
+add_button("Settings", 50 , 500, 300, 50, function()
 	RunGameUICommand("OpenOptionsDialog")
 end)
 
-add_button("Exit", 50, 500, 300, 50, function()
+add_button("Exit", 50, 560, 300, 50, function()
 	RunGameUICommand("Quit")
 end)
 
@@ -529,5 +533,111 @@ do -- console
 		if not IsValid(bg) then return end
 		bg:Remove()
 		console:Remove()
+	end)
+end
+
+do -- repl cache
+	local function create_lua_cache_panel()
+		local frame = vgui.Create("DFrame")
+		frame:SetSize(600, 300)
+		frame:SetTitle("Lua Repl Cache")
+		frame:MakePopup()
+		frame:DockPadding(0, 25, 0, 0)
+		frame:Center()
+		frame.btnMinim:Hide()
+		frame.btnMaxim:Hide()
+		frame.btnClose.Paint = function()
+			surface.SetTextColor(COLOR_BG_HOVERED)
+			surface.SetTextPos(10, 5)
+			surface.SetFont("DermaDefaultBold")
+			surface.DrawText("X")
+		end
+
+		function frame:Paint(w, h)
+			surface.SetDrawColor(65, 40, 0, 200)
+			surface.DrawRect(0, 0, w, h)
+
+			surface.SetDrawColor(143, 99, 29, 201)
+			surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
+		end
+
+		local list_view = frame:Add("DListView")
+		list_view:Dock(FILL)
+		list_view:SetMultiSelect(true)
+		function list_view:Paint() end
+
+		local columns = {}
+		table.insert(columns, list_view:AddColumn("ID"))
+		table.insert(columns, list_view:AddColumn("Name"))
+		table.insert(columns, list_view:AddColumn("Method"))
+		for _, column in ipairs(columns) do
+			column.Header:SetTextColor(COLOR_WHITE)
+			column.Header:SetFont("gmx_info")
+			column.Header:SetTall(30)
+			function column.Header:Paint(w, h)
+				surface.SetDrawColor(255, 157, 0, 200)
+				surface.DrawOutlinedRect(0, 0, w, h)
+			end
+		end
+
+		local btn_open = frame:Add("DButton")
+		btn_open:Dock(BOTTOM)
+		btn_open:SetText("Open")
+		btn_open:SetSize(frame:GetWide(), 30)
+		btn_open:SetFont("gmx_info")
+		btn_open:SetTextColor(COLOR_WHITE)
+
+		for i, data in ipairs(gmx.ReplFilterCache) do
+			local line = list_view:AddLine(tostring(i), data.Path, data.Method)
+			for _, column in pairs(line.Columns) do
+				column:SetTextColor(COLOR_WHITE)
+			end
+
+			function line:Paint(w, h)
+				if self:IsHovered() or self:IsLineSelected() then
+					self:SetCursor("hand")
+					surface.SetDrawColor(255, 157, 0, 200)
+					surface.DrawRect(0, 0, w, h)
+				end
+			end
+		end
+
+		function btn_open:Paint(w, h)
+			surface.SetDrawColor(65, 40, 0, 200)
+			surface.DrawRect(0, 0, w, h)
+
+			surface.SetDrawColor(255, 157, 0, 200)
+			surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
+		end
+
+		function btn_open:DoClick()
+			local selected = list_view:GetSelected()
+			if not selected or #selected == 0 then return end
+
+			for _, line in pairs(selected) do
+				local id = tonumber(line:GetColumnText(1)) or -1
+				if id == -1 then continue end
+
+				local data = gmx.ReplFilterCache[id]
+				if not data then continue end
+
+				gmx.OpenCodeTab(data.Path, data.Lua)
+			end
+		end
+
+		function list_view:DoDoubleClick(_, line)
+			local id = tonumber(line:GetColumnText(1)) or -1
+			if id == -1 then return end
+
+			local data = gmx.ReplFilterCache[id]
+			if not data then return end
+
+			gmx.OpenCodeTab(data.Path, data.Lua)
+		end
+	end
+
+	concommand.Remove("gmx_repl_cache")
+	concommand.Add("gmx_repl_cache", function()
+		create_lua_cache_panel()
 	end)
 end
