@@ -264,7 +264,7 @@ add_button("Explore Server Files", 50, 380, 300, 50, function()
 	RunConsoleCommand("gmx_explore_server_files")
 end)
 
-add_button("Repl Cache", 50, 440, 300, 50, function()
+add_button("Lua Repl Cache", 50, 440, 300, 50, function()
 	RunConsoleCommand("gmx_repl_cache")
 end)
 
@@ -587,20 +587,27 @@ do -- repl cache
 		btn_open:SetFont("gmx_info")
 		btn_open:SetTextColor(COLOR_WHITE)
 
-		for i, data in ipairs(gmx.ReplFilterCache) do
-			local line = list_view:AddLine(tostring(i), data.Path, data.Method)
-			for _, column in pairs(line.Columns) do
-				column:SetTextColor(COLOR_WHITE)
-			end
+		local function update_list()
+			list_view:Clear()
 
-			function line:Paint(w, h)
-				if self:IsHovered() or self:IsLineSelected() then
-					self:SetCursor("hand")
-					surface.SetDrawColor(255, 157, 0, 200)
-					surface.DrawRect(0, 0, w, h)
+			for i, data in ipairs(gmx.ReplFilterCache) do
+				local line = list_view:AddLine(tostring(i), data.Path, data.Method)
+				for _, column in pairs(line.Columns) do
+					column:SetTextColor(COLOR_WHITE)
+				end
+
+				function line:Paint(w, h)
+					if self:IsHovered() or self:IsLineSelected() then
+						self:SetCursor("hand")
+						surface.SetDrawColor(255, 157, 0, 200)
+						surface.DrawRect(0, 0, w, h)
+					end
 				end
 			end
 		end
+
+		update_list()
+		hook.Add("GMXReplFilterCacheChanged", list_view, update_list)
 
 		function btn_open:Paint(w, h)
 			surface.SetDrawColor(65, 40, 0, 200)

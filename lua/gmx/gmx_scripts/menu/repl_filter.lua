@@ -79,6 +79,7 @@ end
 gmx.ReplFilterCache = {}
 local function store_code(path, str, method)
 	table.insert(gmx.ReplFilterCache, { Path = path, Lua = str, Method = method })
+	hook.Run("GMXReplFilterCacheChanged")
 end
 
 hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
