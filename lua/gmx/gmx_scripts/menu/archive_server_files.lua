@@ -36,6 +36,7 @@ local function archive_lua_files()
 	Zip(zip_path, package_path, true)
 end
 
+concommand.Remove("gmx_archive_lua_files")
 concommand.Add("gmx_archive_lua_files", archive_lua_files)
 
 hook.Add("ClientFullyInitialized", "gmx_archive_lua_files", function(srv_ip, host_name)

@@ -832,8 +832,10 @@ local function init_editor()
 	EDITOR = editor
 end
 
+concommand.Remove("gmx_editor")
 concommand.Add("gmx_editor", init_editor)
 
+concommand.Remove("gmx_explore_server_files")
 concommand.Add("gmx_explore_server_files", function()
 	gmx.RunOnClient([[
 		local frame = vgui.Create("DFrame")
@@ -858,10 +860,15 @@ concommand.Add("gmx_explore_server_files", function()
 	]], { "util", "interop" })
 end)
 
+function gmx.OpenCodeTab(tab_name, tab_code)
+	init_editor()
+	EDITOR:NewTab(tab_code, tab_name)
+end
+
 hook.Add("OpenServerFile", "gmx_explore_srv_files", function(original_path)
 	init_editor()
 
 	local code = gmx.ReadFromLuaCache(original_path)
 	gmx.Print("Received server file " .. original_path)
-	EDITOR:NewTab(code, original_path)
+	gmx.OpenCodeTab(original_path, code)
 end)

@@ -76,13 +76,10 @@ local function update_whitelist(str, allow)
 	STEAM_ID_WHITELIST[steam_id:gsub("STEAM_", ""):Trim()] = allow and true or nil
 end
 
-concommand.Add("gmx_repl_allow", function(_, _, _, str)
-	update_whitelist(str, true)
-end)
-
-concommand.Add("gmx_repl_deny", function(_, _, _, str)
-	update_whitelist(str, false)
-end)
+gmx.ReplFilterCache = {}
+local function store_code(path, str, method)
+	table.insert(gmx.ReplFilterCache, { Path = path, Lua = str, Method = method })
+end
 
 hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- remove .p, .pm, .psc commands from gcompute
@@ -92,12 +89,14 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 			return str
 		end
 
+		store_code(path, str, "GCompute")
 		gmx.Print("Blocked gcompute command")
 		return DENY_CODE
 	end
 
 	-- blocks SendLua
 	if path == "LuaCmd" then
+		store_code(path, str, "SendLua")
 		gmx.Print(("Blocked SendLua %s"):format(str))
 		return false
 	end
@@ -107,6 +106,7 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 		-- detect luadev .l, .lm, .lsc commands and checks if ran by me or not
 		local luadev_cmd = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<cmd%:([a-zA-Z]+)%>")
 		if luadev_cmd then
+			store_code(path, str, ("LuaDev Command: %s"):format(luadev_cmd))
 			gmx.Print(("Blocked command \"%s\" by %s"):format(luadev_cmd, found_steam_id))
 			return DENY_CODE
 		end
@@ -114,19 +114,30 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 		-- detect luadev ran files
 		local file_name = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<([a-zA-Z0-9%.%_%s]+)%>")
 		if file_name then
+			store_code(path, str, ("LuaDev File: %s"):format(file_name))
 			gmx.Print(("Blocked file \"%s\" by %s"):format(file_name, found_steam_id))
 			return DENY_CODE
 		end
 	end
 
 	-- starfall, its more annoying to block it than not...
-	--[[if path:StartWith("SF") then
-		gmx.Print(("Blocked starfall chip \"%s\""):format(path))
-		return DENY_CODE
-	end]]--
+	if path:StartWith("SF") then
+		store_code(path, str, "Starfall")
+	end
 
 	if check_lua_impl(path, str) then
+		store_code(path, str, "Lua Impl")
 		gmx.Print(("Blocked potential lua implementation \"%s\""):format(path))
 		return false
 	end
+end)
+
+concommand.Remove("gmx_repl_allow")
+concommand.Add("gmx_repl_allow", function(_, _, _, str)
+	update_whitelist(str, true)
+end)
+
+concommand.Remove("gmx_repl_deny")
+concommand.Add("gmx_repl_deny", function(_, _, _, str)
+	update_whitelist(str, false)
 end)
