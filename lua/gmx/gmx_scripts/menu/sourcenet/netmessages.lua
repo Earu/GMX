@@ -1505,7 +1505,7 @@ NET_MESSAGES = {
 					elseif self.msgtype == 1 then
 						buffer:WriteString(self.path)
 						buffer:WriteUInt(self.length or 0, 32)
-						buffer:WriteBytes(self.data "")
+						buffer:WriteBytes(self.data or "")
 					elseif self.msgtype == 3 then
 						if self.data ~= nil then
 							buffer:WriteBits(self.data)
