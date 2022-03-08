@@ -82,6 +82,10 @@ local function store_code(path, str, method)
 	hook.Run("GMXReplFilterCacheChanged")
 end
 
+hook.Add("GMXReload", "gmx_repl_filter", function()
+	hook.Run("GMXReplFilterCacheChanged")
+end)
+
 hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- remove .p, .pm, .psc commands from gcompute
 	if path == "@repl_0" then

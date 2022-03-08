@@ -537,14 +537,23 @@ do -- console
 end
 
 do -- repl cache
-	local function create_lua_cache_panel()
+	local repl_panel
+	local function toggle_repl_cache_panel()
+		if IsValid(repl_panel) then
+			repl_panel:SetVisible(not repl_panel:IsVisible())
+			return
+		end
+
 		local frame = vgui.Create("DFrame")
 		frame:SetSize(600, 300)
 		frame:SetTitle("Lua Repl Cache")
 		frame:MakePopup()
 		frame:DockPadding(0, 25, 0, 0)
 		frame:Center()
+		frame:SetKeyboardInputEnabled(true)
+		frame:SetMouseInputEnabled(true)
 		frame.btnMinim:Hide()
+		frame.lblTitle:SetFont("gmx_info")
 
 		function frame.btnMaxim.Paint()
 			surface.SetTextColor(COLOR_BG_HOVERED)
@@ -568,11 +577,14 @@ do -- repl cache
 		end
 
 		function frame:Paint(w, h)
+			surface.SetDrawColor(143, 99, 29, 201)
+			surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
+
 			surface.SetDrawColor(65, 40, 0, 200)
 			surface.DrawRect(0, 0, w, h)
 
-			surface.SetDrawColor(143, 99, 29, 201)
-			surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
+			surface.SetDrawColor(COLOR_BG_HOVERED)
+			surface.DrawOutlinedRect(0, 0, w, 41)
 		end
 
 		local list_view = frame:Add("DListView")
@@ -584,13 +596,24 @@ do -- repl cache
 		table.insert(columns, list_view:AddColumn("ID"))
 		table.insert(columns, list_view:AddColumn("Name"))
 		table.insert(columns, list_view:AddColumn("Method"))
-		for _, column in ipairs(columns) do
+		table.insert(columns, list_view:AddColumn("Date"))
+		for i, column in ipairs(columns) do
 			column.Header:SetTextColor(COLOR_WHITE)
 			column.Header:SetFont("gmx_info")
 			column.Header:SetTall(30)
 			function column.Header:Paint(w, h)
 				surface.SetDrawColor(255, 157, 0, 200)
-				surface.DrawOutlinedRect(0, 0, w, h)
+				if i == 1 then
+					surface.DrawLine(w, 0, w, h)
+				elseif i == #columns then
+					surface.DrawLine(0, 0, 0, h)
+				else
+					surface.DrawLine(w, 0, w, h)
+					surface.DrawLine(0, 0, 0, h)
+				end
+
+				surface.DrawLine(0, 0, w, 0)
+				surface.DrawLine(0, h - 1, w, h - 1)
 			end
 		end
 
@@ -605,7 +628,7 @@ do -- repl cache
 			list_view:Clear()
 
 			for i, data in ipairs(gmx.ReplFilterCache) do
-				local line = list_view:AddLine(tostring(i), data.Path, data.Method)
+				local line = list_view:AddLine(tostring(i), data.Path, data.Method, os.date("%x %X"))
 				for _, column in pairs(line.Columns) do
 					column:SetTextColor(COLOR_WHITE)
 				end
@@ -655,10 +678,23 @@ do -- repl cache
 
 			gmx.OpenCodeTab(data.Path, data.Lua)
 		end
+
+		repl_panel = frame
 	end
 
 	concommand.Remove("gmx_repl_cache")
 	concommand.Add("gmx_repl_cache", function()
-		create_lua_cache_panel()
+		toggle_repl_cache_panel()
+	end)
+
+	-- activate game ui like the console
+	hook.Add("Think", "gmx_repl_cache_ui", function()
+		local bind = input.LookupBinding("gmx_repl_cache")
+		if not bind then return end
+
+		local key_code = input.GetKeyCode(bind)
+		if input.IsButtonDown(key_code) then
+			gui.ActivateGameUI()
+		end
 	end)
 end
