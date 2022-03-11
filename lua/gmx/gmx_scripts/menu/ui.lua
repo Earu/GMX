@@ -686,15 +686,4 @@ do -- repl cache
 	concommand.Add("gmx_repl_cache", function()
 		toggle_repl_cache_panel()
 	end)
-
-	-- activate game ui like the console
-	hook.Add("Think", "gmx_repl_cache_ui", function()
-		local bind = input.LookupBinding("gmx_repl_cache")
-		if not bind then return end
-
-		local key_code = input.GetKeyCode(bind)
-		if input.IsButtonDown(key_code) then
-			gui.ActivateGameUI()
-		end
-	end)
 end
