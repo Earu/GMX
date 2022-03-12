@@ -29,7 +29,6 @@ ms.InstallBinary(name)
 	- if wrong signature -> module is dropped
 	- if correct signature -> module is placed under lua/bin
 
-5) Schedule modules downloaded during the session for deletion ?
-	-> Make a different folder where only metastruct.dll can require ?
+5) Make a different folder where only metastruct.dll can require for the new modules
 
 *Note: The metastruct binary is labelled here as `gmcl_metastruct_win64.dll` but it depends on arch and os*
