@@ -406,7 +406,7 @@ local LUA_EDITOR = {
 		local options = {}
 
 		self.MenuFile = self.MenuBar:AddMenu("File")
-		table.insert(options, self.MenuFile:AddOption("New (Ctrl + N)", function() self:NewTab("", "new script") end))
+		table.insert(options, self.MenuFile:AddOption("New (Ctrl + N)", function() self:NewTab() end))
 		table.insert(options, self.MenuFile:AddOption("Close Current (Ctrl + W)", function() self:CloseCurrentTab() end))
 		table.insert(options, self.MenuFile:AddOption("Open File (Ctrl + O)", function() self:OpenFile() end))
 
@@ -571,7 +571,7 @@ local LUA_EDITOR = {
 	Shortcuts = {
 		{
 			Trigger = { KEY_LCONTROL, KEY_N },
-			Callback = function(self) self:NewTab("", "new script") end,
+			Callback = function(self) self:NewTab() end,
 		},
 		{
 			Trigger = { KEY_LCONTROL, KEY_W },
@@ -579,12 +579,16 @@ local LUA_EDITOR = {
 		},
 		{
 			Trigger = { KEY_LCONTROL, KEY_R },
-			Callback = function(self) self:RunCode() end,
+			Callback = function(self) RunConsoleCommand("gmx_repl_cache") end,
 		},
 		{
 			Trigger = { KEY_LCONTROL, KEY_O },
 			Callback = function(self) self:OpenFile() end,
-		}
+		},
+		{
+			Trigger = { KEY_LCONTROL, KEY_Q },
+			Callback = function(self) self:RunCode() end,
+		},
 	},
 	Think = function(self)
 		for _, shortcut in ipairs(self.Shortcuts) do
@@ -680,10 +684,11 @@ local LUA_EDITOR = {
 		end
 	end,
 	NewTab = function(self, code, name)
-		code = code or ""
+		code = code or "-- lua script here"
+		name = name or "new " .. #self.CodeTabs:GetItems() + 1
 
 		local editor = vgui.Create("DHTML")
-		local tab_name = ("%s%s"):format(name, (" "):rep(5))
+		local tab_name = ("%s%s"):format(name:len() > 15 and name:sub(1, 12) .. "..." or name, (" "):rep(5))
 		local sheet = self.CodeTabs:AddSheet(tab_name, editor)
 		local tab = sheet.Tab
 		tab.Code = code
@@ -731,12 +736,14 @@ local LUA_EDITOR = {
 		editor:OpenURL(url)
 
 		self.CodeTabs:SetActiveTab(tab)
-		local tab_w = tab:GetWide()
 		tab:SetTextColor(WHITE_COLOR)
 		tab:SetFont("gmx_lua_editor")
 
 		local close_btn = tab:Add("DButton")
-		close_btn:SetPos(tab_w, 0)
+		surface.SetFont("DermaDefaultBold")
+		local tab_name_w = surface.GetTextSize(tab_name)
+
+		close_btn:SetPos(tab_name_w + 20, 0)
 		close_btn:SetSize(20, 20)
 		close_btn:SetText("x")
 		close_btn:SetTextColor(WHITE_COLOR)
@@ -828,7 +835,7 @@ local function init_editor()
 
 	local editor = p:Add("LuaEditor")
 	editor:Dock(FILL)
-	editor:NewTab("", "new script")
+	editor:NewTab()
 	EDITOR = editor
 end
 
