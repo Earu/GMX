@@ -278,11 +278,12 @@ end)
 
 do -- console
 	require("enginespew")
+	require("fontsx")
 
 	surface.CreateFont("gmx_console", {
-		font = "Roboto",
+		font = fonts.Exists("Iosevka Type") and "Iosevka Type" or "Arial",
 		extended = true,
-		size = 18,
+		size = 20,
 		weight = 500,
 		antialias = true,
 		shadow = true,

@@ -7,6 +7,7 @@ local BAD_PATHS = {
 	"lua/bin/.*sourcenet.*%.dll$",
 	"lua/bin/.*stringtable.*%.dll$",
 	"lua/bin/.*zip.*%.dll$",
+	"lua/bin/.*fontsx.*%.dll$",
 	"lua/menu/_menu.lua$",
 }
 
