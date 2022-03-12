@@ -629,7 +629,7 @@ do -- repl cache
 			list_view:Clear()
 
 			for i, data in ipairs(gmx.ReplFilterCache) do
-				local line = list_view:AddLine(tostring(i), data.Path, data.Method, os.date("%x %X"))
+				local line = list_view:AddLine(tostring(i), data.Path, data.Method, data.Date)
 				for _, column in pairs(line.Columns) do
 					column:SetTextColor(COLOR_WHITE)
 				end
