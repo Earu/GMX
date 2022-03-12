@@ -472,6 +472,11 @@ do -- console
 			return
 		end
 
+		if cmd:Trim() == "clear" then
+			console_output:Clear()
+			console_output:SetText("")
+		end
+
 		RunGameUICommand("engine " .. cmd)
 		self:SetText("")
 

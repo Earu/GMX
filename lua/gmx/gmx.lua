@@ -194,6 +194,8 @@ for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD
 	gmx.Print(("Running \"%s\""):format(file_name))
 end
 
+hook.Run("GMXInitialized")
+
 hook.Add("ClientFullyInitialized", "gmx_client_fully_init", function()
 	gmx.Print("Client fully initialized")
 end)
