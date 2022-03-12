@@ -237,3 +237,18 @@ function print(...)
 		old_print(...)
 	end
 end
+
+hook.Add("GMXInitialized", "gmx_crash_report", function()
+	local dump_path = "crashes/" .. file.Find("crashes/*.txt", "BASE_PATH", "datedesc")[1]
+	if not dump_path then
+		gmx.Print("Crash Report", "no file")
+		return
+	end
+
+	if file.Size(dump_path, "BASE_PATH") == 0 then
+		gmx.Print("Crash Report", dump_path, "empty file")
+		return
+	end
+
+	gmx.Print("Crash Report", dump_path .. "\n" .. file.Read(dump_path, "BASE_PATH"))
+end)
