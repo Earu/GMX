@@ -683,7 +683,7 @@ local LUA_EDITOR = {
 		code = code or ""
 
 		local editor = vgui.Create("DHTML")
-		local tab_name = ("%s%s"):format(name, (" "):rep(20))
+		local tab_name = ("%s%s"):format(name, (" "):rep(5))
 		local sheet = self.CodeTabs:AddSheet(tab_name, editor)
 		local tab = sheet.Tab
 		tab.Code = code
@@ -736,7 +736,7 @@ local LUA_EDITOR = {
 		tab:SetFont("gmx_lua_editor")
 
 		local close_btn = tab:Add("DButton")
-		close_btn:SetPos(tab_w - 20, 0)
+		close_btn:SetPos(tab_w, 0)
 		close_btn:SetSize(20, 20)
 		close_btn:SetText("x")
 		close_btn:SetTextColor(WHITE_COLOR)
