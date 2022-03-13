@@ -547,6 +547,10 @@ do -- repl cache
 	local function toggle_repl_cache_panel()
 		if IsValid(repl_panel) then
 			repl_panel:SetVisible(not repl_panel:IsVisible())
+			if repl_panel:IsVisible() then
+				repl_panel:MakePopup()
+			end
+
 			return
 		end
 
