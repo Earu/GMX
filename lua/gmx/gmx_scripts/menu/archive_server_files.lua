@@ -33,7 +33,11 @@ local function archive_lua_files()
 		map = game.GetMap(),
 	}, true))
 
-	Zip(zip_path, package_path, true)
+	local succ, err = pcall(Zip, zip_path, package_path, true)
+	if not succ then
+		gmx.Print("Failed to create archive: " .. err)
+		return
+	end
 end
 
 concommand.Remove("gmx_archive_lua_files")
