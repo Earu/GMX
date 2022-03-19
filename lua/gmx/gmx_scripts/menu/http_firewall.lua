@@ -56,6 +56,9 @@ local function get_domain(sub_domain)
 end
 
 hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method)
+	if not url then return end
+	method = method or "GET"
+
 	local sub_domain = url:gsub("^https?://", ""):Split("/")[1]:Trim()
 	local domain = get_domain(sub_domain)
 	local rule = firewall_rules[sub_domain] or firewall_rules[domain] -- priority to sub domain
