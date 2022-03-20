@@ -112,6 +112,8 @@ end
 local render_board = New2d()
 local render_old = New2d()
 local function gol_calc_life()
+	if IsInGame() then return end
+
 	local counts = New2d()
 	local new = New2d()
 
