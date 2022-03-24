@@ -55,9 +55,8 @@ local function get_domain(sub_domain)
 	return chunks[#chunks - 1]:Trim() .. "." .. chunks[#chunks]:Trim()
 end
 
-hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method)
+hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, content_type, body)
 	if not url then return end
-	method = method or "GET"
 
 	local sub_domain = url:gsub("^https?://", ""):Split("/")[1]:Trim()
 	local domain = get_domain(sub_domain)
