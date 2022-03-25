@@ -8,6 +8,7 @@ local firewall_rules = {
 	["dl.cloudsmith.io"]        = { method = "*", type = "DENY" },
 	["molly.network"]           = { method = "*", type = "DENY" },
 	["www.models-resource.com"] = { method = "*", type = "DENY" },
+	["appdomain.cloud"]         = { method = "*", type = "DENY" },
 
 	-- dev stuff
 	["gitlab.com"]            = { method = "*", type = "ALLOW" },
@@ -28,6 +29,7 @@ local firewall_rules = {
 	["discordapp.com"]                 = { method = "GET", type = "ALLOW" },
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
 	["steamcommunity.com"]             = { method = "GET", type = "ALLOW" },
+	["keybase.pub"]                    = { method = "GET", type = "ALLOW" },
 
 	-- api & others
 	["translate.yandex.net"] = { method = "GET", type = "ALLOW" },
