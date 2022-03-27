@@ -84,6 +84,8 @@ local function create_editor()
 		bytes_frame:Clear()
 
 		local bytes = mem.Read(address:GetText(), range:GetValue())
+		if not bytes then return end
+
 		local cell_size, cell_margin = 25, 5
 		local amount_per_line = math.ceil(bytes_frame:GetWide() / cell_size) - 6
 
