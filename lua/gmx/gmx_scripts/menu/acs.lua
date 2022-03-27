@@ -1,4 +1,6 @@
 hook.Add("RunOnClient", "gmx_acs", function(source, script)
+	if gmx.IsGameWhitelisted() then return end
+
 	source = source:lower()
 
 	if source:find("cl_anticheat.lua") and script:find("Awesome AntiCheat Plugin - AACP") or source:find("cl_settingsderma.lua") then return false end -- Awesome Anti-Cheat Plugin (AACP)
