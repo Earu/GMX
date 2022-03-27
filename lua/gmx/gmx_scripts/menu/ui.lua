@@ -41,6 +41,15 @@ surface.CreateFont("gmx_button", {
 	shadow = true,
 })
 
+surface.CreateFont("gmx_button_secondary", {
+	font = "Roboto",
+	extended = true,
+	size = 20,
+	weight = 500,
+	antialias = true,
+	shadow = true,
+})
+
 surface.CreateFont("gmx_info", {
 	font = "Roboto",
 	extended = true,
@@ -188,512 +197,140 @@ function bg:Paint(w, h)
 
 	surface.SetFont("gmx_info")
 
-	surface.SetTextPos(55, 640)
+	local base_y = 460
+	surface.SetTextPos(55, base_y)
 	surface.DrawText("FPS: " .. math.Round(1 / FrameTime()))
 
-	surface.SetTextPos(55, 660)
+	base_y = base_y + 20
+	surface.SetTextPos(55, base_y)
 	surface.DrawText("OS: " .. jit.os)
 
-	surface.SetTextPos(55, 680)
+	base_y = base_y + 20
+	surface.SetTextPos(55, base_y)
 	surface.DrawText("Arch: " .. jit.arch)
 
-	surface.SetTextPos(55, 700)
+	base_y = base_y + 20
+	surface.SetTextPos(55, base_y)
 	surface.DrawText("LuaJIT: " .. jit.version)
 
-	surface.SetTextPos(55, 720)
+	base_y = base_y + 20
+	surface.SetTextPos(55, base_y)
 	surface.DrawText("Lua Version: " .. _VERSION)
 
-	surface.SetTextPos(55, 740)
+	base_y = base_y + 20
+	surface.SetTextPos(55, base_y)
 	surface.DrawText("GMod Version: " .. VERSIONSTR)
 
-	surface.SetTextPos(55, 760)
+	base_y = base_y + 20
+	surface.SetTextPos(55, base_y)
 	surface.DrawText("GMod Branch: " .. BRANCH)
 
 	if IsInGame() then
-		surface.SetTextPos(55, 800)
+		base_y = base_y + 40
+		surface.SetTextPos(55, base_y)
 		surface.DrawText("Game IP: " .. gmx.GetIPAddress())
 
-		surface.SetTextPos(55, 820)
+		base_y = base_y + 20
+		surface.SetTextPos(55, base_y)
 		surface.DrawText("Game Hostname: " .. current_hostname)
 	end
+
+	surface.SetDrawColor(255, 157, 0, 200)
+	surface.DrawLine(375, 195, 375, 430)
+	surface.DrawLine(375, 195, 585, 195)
+
+	surface.SetTextPos(380, 180)
+	surface.DrawText("Debug")
 end
 
-local function add_button(text, x, y, w, h, func)
+local function add_button(text, x, y, w, h, func, secondary)
 	local button = vgui.Create("DButton")
 	button:SetSize(w, h)
 	button:SetPos(x, y)
 	button:SetText(text)
 	button:SetTextColor(COLOR_WHITE)
-	button:SetFont("gmx_button")
+	button:SetFont(secondary and "gmx_button_secondary" or "gmx_button")
 
 	button.DoClick = func
 
-	function button:Paint()
-		if self:IsHovered() then
-			surface.SetDrawColor(COLOR_BG_HOVERED)
+	if secondary then
+		function button:Paint()
+			surface.SetDrawColor(143, 99, 29, 201)
+			surface.DrawOutlinedRect(0, 0, w, h)
+
+			surface.SetDrawColor(65, 40, 0, 200)
 			surface.DrawRect(0, 0, w, h)
 
-			surface.SetDrawColor(COLOR_HOVERED)
-		else
-			surface.SetDrawColor(30, 30, 30, IsInGame() and 240 or 255)
-			surface.DrawRect(0, 0, w, h)
-
-			surface.SetDrawColor(COLOR_WHITE)
+			if self:IsHovered() then
+				surface.SetDrawColor(255, 157, 0, 200)
+				surface.DrawOutlinedRect(0, 0, w, h)
+			end
 		end
+	else
+		function button:Paint()
+			if self:IsHovered() then
+				surface.SetDrawColor(COLOR_BG_HOVERED)
+				surface.DrawRect(0, 0, w, h)
 
-		surface.DrawOutlinedRect(0, 0, w, h)
+				surface.SetDrawColor(COLOR_HOVERED)
+			else
+				surface.SetDrawColor(30, 30, 30, IsInGame() and 240 or 255)
+				surface.DrawRect(0, 0, w, h)
+
+				surface.SetDrawColor(COLOR_WHITE)
+			end
+
+			surface.DrawOutlinedRect(0, 0, w, h)
+		end
 	end
 
 	bg:Add(button)
 end
 
-add_button("Start Game", 50, 200, 300, 50, function()
-	RunGameUICommand("OpenCreateMultiplayerGameDialog")
-end)
-
-add_button("Multiplayer", 50, 260, 300, 50, function()
-	RunGameUICommand("OpenServerBrowser")
-end)
-
-add_button("Lua Editor", 50, 320, 300, 50, function()
-	RunConsoleCommand("gmx_editor")
-end)
-
-add_button("Explore Server Files", 50, 380, 300, 50, function()
-	if not IsInGame() then return end
-	RunConsoleCommand("gmx_explore_server_files")
-end)
-
-add_button("Lua Repl Cache", 50, 440, 300, 50, function()
-	RunConsoleCommand("gmx_repl_cache")
-end)
-
-add_button("Settings", 50 , 500, 300, 50, function()
-	RunGameUICommand("OpenOptionsDialog")
-end)
-
-add_button("Exit", 50, 560, 300, 50, function()
-	RunGameUICommand("Quit")
-end)
-
-do -- console
-	require("enginespew")
-	require("fontsx")
-
-	surface.CreateFont("gmx_console", {
-		font = fonts.Exists("Iosevka Type") and "Iosevka Type" or "Arial",
-		extended = true,
-		size = 20,
-		weight = 500,
-		antialias = true,
-		shadow = true,
-	})
-
-	local console = vgui.Create("DFrame")
-	console:SetSize(ScrW() / 3, ScrH() - 10)
-	console:SetPos(ScrW() - console:GetWide(), 0)
-	console:DockPadding(0, 0, 0, 0)
-	console:SetKeyboardInputEnabled(true)
-	console:SetMouseInputEnabled(true)
-	console.lblTitle:Hide()
-	console.btnClose:Hide()
-	console.btnMaxim:Hide()
-	console.btnMinim:Hide()
-
-	function console:Paint(w, h)
-		surface.SetDrawColor(143, 99, 29, 201)
-		surface.DrawLine(0, 0, 0, h)
-
-		surface.SetDrawColor(65, 40, 0, 200)
-		surface.DrawRect(0, 0, w, h)
-	end
-
-	local console_input_header = console:Add("DLabel")
-	console_input_header:SetFont("gmx_console")
-	console_input_header:SetTextColor(COLOR_WHITE)
-	console_input_header:SetText("")
-	console_input_header:SetSize(75, 30)
-	console_input_header:SetPos(0, console:GetTall() - 30)
-
-	function console_input_header:Paint(w, h)
-		surface.SetDrawColor(255, 157, 0, 200)
-		surface.DrawLine(0, 0, 0, h)
-
-		surface.DisableClipping(true)
-		surface.DrawLine(0, 0, console:GetWide(), 0)
-		surface.DrawLine(0, h - 1, console:GetWide(), h - 1)
-		surface.DrawLine(w - 12, 0, w, h / 2)
-		surface.DrawLine(w - 12, h, w, h / 2)
-		surface.DisableClipping(false)
-
-		surface.SetTextColor(COLOR_WHITE)
-		surface.SetFont("gmx_console")
-		local tw, th = surface.GetTextSize("Console")
-		surface.SetTextPos(w / 2 - tw / 2 - 5, h / 2 - th / 2)
-		surface.DrawText("Console")
-	end
-
-	local console_input = console:Add("DTextEntry")
-	console_input:Dock(BOTTOM)
-	console_input:DockMargin(75, 0, 0, 0)
-	console_input:SetTall(30)
-	console_input:SetFont("gmx_console")
-	console_input:SetTextColor(COLOR_WHITE)
-	console_input:SetUpdateOnType(true)
-	console_input:SetKeyboardInputEnabled(true)
-	console_input:SetMouseInputEnabled(true)
-	console_input:SetHistoryEnabled(true)
-	console_input.HistoryPos = 0
-
-	function console_input:Think()
-		local bind = input.LookupBinding("toggleconsole")
-		if not bind then return end
-
-		local key_code = input.GetKeyCode(bind)
-		if input.IsButtonDown(key_code) then
-			gui.ActivateGameUI()
-			console:MakePopup()
-			self:RequestFocus()
-		end
-	end
-
-	local cur_completions = {}
-	local cur_selection = -1
-	function console_input:Paint(w, h)
-		self:DrawTextEntryText(COLOR_WHITE, COLOR_HOVERED, COLOR_BG_HOVERED)
-
-		surface.SetFont("gmx_console")
-		surface.DisableClipping(true)
-
-		for i, completion in pairs(cur_completions) do
-			surface.SetTextColor(i == cur_selection and COLOR_BG_HOVERED or COLOR_WHITE)
-			local tw, th = surface.GetTextSize(completion)
-
-			local x, y = -75 - tw, -i * (th + 5)
-			surface.SetTextPos(x, y)
-			surface.DrawText(completion)
-
-			if i == cur_selection then
-				surface.SetDrawColor(COLOR_BG_HOVERED)
-				surface.DrawOutlinedRect(x - 5, y, tw + 5, th + 2)
-			end
-
-		end
-
-		surface.DisableClipping(false)
-	end
-
-	function console_input:OnValueChange(text)
-		cur_completions = ConsoleAutoComplete(text) or {}
-		cur_selection = -1
-	end
-
-	function console_input:HandleHistory(key_code)
-		if key_code == KEY_ENTER or key_code == KEY_PAD_ENTER then
-			self:AddHistory(self:GetText())
-			self.HistoryPos = 0
-		end
-
-		if key_code == KEY_ESCAPE then
-			self.HistoryPos = 0
-		end
-
-		if not self.HistoryPos then return end
-
-		if key_code == KEY_UP then
-			self.HistoryPos = self.HistoryPos - 1
-			self:UpdateFromHistory()
-		elseif key_code == KEY_DOWN then
-			self.HistoryPos = self.HistoryPos + 1
-			self:UpdateFromHistory()
-		end
-	end
-
-	function console_input:OnKeyCodeTyped(key_code)
-		self:HandleHistory(key_code)
-
-		if key_code == KEY_ENTER or key_code == KEY_PAD_ENTER then
-			self:OnEnter()
-			return
-		end
-
-		if key_code ~= KEY_TAB then return end
-
-		cur_selection = cur_selection - 1
-		if cur_selection > #cur_completions or cur_selection <= 0 then
-			cur_selection = #cur_completions
-		end
-
-		timer.Simple(0, function()
-			self:SetCaretPos(#self:GetText())
-			self:RequestFocus()
-		end)
-	end
-
-	local console_output = console:Add("RichText")
-	console_output:Dock(FILL)
-	console_output:DockMargin(10, 10, 0, 0)
-	console_output:SetFontInternal("gmx_info")
-
-	function console_output:PerformLayout()
-		self:SetFontInternal("gmx_console")
-		self:SetUnderlineFont("gmx_console")
-	end
-
-	hook.Add("EngineSpew", "gmx_console", function(log_type, log_msg, log_grp, log_lvl, r, g, b)
-		if not IsValid(console_output) then return end
-		if log_type == 0 then return end -- ignore these?
-
-		if r == 0 and g == 0 and b == 0 then
-			r, g, b = 255, 255, 255
-		end
-
-		console_output:InsertColorChange(r, g, b, 255)
-		console_output:AppendText(log_msg)
+-- main buttons
+do
+	add_button("Start Game", 50, 200, 300, 50, function()
+		RunGameUICommand("OpenCreateMultiplayerGameDialog")
 	end)
 
-	function console_input:OnEnter()
-		local cmd = self:GetText()
-		if cur_selection > 0 then
-			self:SetText(cur_completions[cur_selection])
-			cur_selection = -1
-			cur_completions = {}
-
-			timer.Simple(0, function()
-				self:SetCaretPos(#self:GetText())
-				self:RequestFocus()
-			end)
-
-			return
-		end
-
-		if #cmd:Trim() == 0 then
-			self:SetText("")
-			return
-		end
-
-		if cmd:Trim() == "clear" then
-			console_output:Clear()
-			console_output:SetText("")
-		end
-
-		RunGameUICommand("engine " .. cmd)
-		self:SetText("")
-
-		console_output:InsertColorChange(255, 255, 255, 255)
-		console_output:AppendText((">> %s\n"):format(cmd))
-
-		cur_selection = -1
-		cur_completions = {}
-
-		console:MakePopup()
-		self:RequestFocus()
-	end
-
-	local loading_state = false
-	local has_init = IsInGame()
-	hook.Add("DrawOverlay", "gmx_console", function()
-		if not IsValid(console) then return end
-
-		local loading = IsInLoading() or (IsInGame() and not has_init)
-		if loading ~= loading_state then
-			loading_state = loading
-			console:SetPaintedManually(loading)
-			console_output:SetPaintedManually(loading)
-		end
-
-		if loading then
-			console:PaintManual()
-			console_output:PaintManual()
-		end
+	add_button("Multiplayer", 50, 260, 300, 50, function()
+		RunGameUICommand("OpenServerBrowser")
 	end)
 
-	hook.Add("ClientFullyInitialized", "gmx_console", function()
-		has_init = true
+	add_button("Settings", 50 , 320, 300, 50, function()
+		RunGameUICommand("OpenOptionsDialog")
 	end)
 
-	hook.Add("ClientStateDestroyed", "gmx_console", function()
-		has_init = false
-	end)
-
-	concommand.Remove("gmx_toggleconsole")
-	concommand.Add("gmx_toggleconsole", function()
-		if gui.IsGameUIVisible() and IsInGame() then
-			gui.HideGameUI()
-			return
-		end
-
-		gui.ActivateGameUI()
-		if not IsValid(console_input) then return end
-
-		console:MakePopup()
-		console_input:RequestFocus()
-	end)
-
-	RunGameUICommand("engine alias toggleconsole gmx_toggleconsole")
-	RunGameUICommand("engine alias showconsole gmx_toggleconsole")
-
-	console:MakePopup()
-
-	hook.Add("GMXReload", "gmx_console", function()
-		if not IsValid(bg) then return end
-		bg:Remove()
-		console:Remove()
+	add_button("Exit", 50, 380, 300, 50, function()
+		RunGameUICommand("Quit")
 	end)
 end
 
-do -- repl cache
-	local repl_panel
-	local function toggle_repl_cache_panel()
-		if IsValid(repl_panel) then
-			repl_panel:SetVisible(not repl_panel:IsVisible())
-			if repl_panel:IsVisible() then
-				repl_panel:MakePopup()
-			end
+-- debug buttons
+do
+	add_button("Lua Editor", 380, 200, 200, 35, function()
+		RunConsoleCommand("gmx_editor")
+	end, true)
 
-			return
-		end
+	add_button("Explore Server Files", 380, 240, 200, 35, function()
+		if not IsInGame() then return end
+		RunConsoleCommand("gmx_explore_server_files")
+	end, true)
 
-		local frame = vgui.Create("DFrame")
-		frame:SetSize(600, 300)
-		frame:SetTitle("Lua Repl Cache")
-		frame:MakePopup()
-		frame:DockPadding(0, 25, 0, 0)
-		frame:Center()
-		frame:SetKeyboardInputEnabled(true)
-		frame:SetMouseInputEnabled(true)
-		frame.btnMinim:Hide()
-		frame.lblTitle:SetFont("gmx_info")
+	add_button("Lua Repl Cache", 380, 280, 200, 35, function()
+		RunConsoleCommand("gmx_repl_cache")
+	end, true)
 
-		function frame.btnMaxim.Paint()
-			surface.SetTextColor(COLOR_BG_HOVERED)
-			surface.SetTextPos(10, 5)
-			surface.SetFont("DermaDefaultBold")
-			surface.DrawText("↻")
-		end
-
-		frame.btnMaxim:SetEnabled(true)
-		function frame.btnMaxim:DoClick()
-			gmx.ReplFilterCache = {}
-			hook.Run("GMXReplFilterCacheChanged")
-			gmx.Print("Cleared repl lua cache")
-		end
-
-		function frame.btnClose:Paint()
-			surface.SetTextColor(COLOR_BG_HOVERED)
-			surface.SetTextPos(10, 5)
-			surface.SetFont("DermaDefaultBold")
-			surface.DrawText("X")
-		end
-
-		function frame:Paint(w, h)
-			surface.SetDrawColor(143, 99, 29, 201)
-			surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
-
-			surface.SetDrawColor(65, 40, 0, 200)
-			surface.DrawRect(0, 0, w, h)
-
-			surface.SetDrawColor(COLOR_BG_HOVERED)
-			surface.DrawOutlinedRect(0, 0, w, 41)
-		end
-
-		local list_view = frame:Add("DListView")
-		list_view:Dock(FILL)
-		list_view:SetMultiSelect(true)
-		function list_view:Paint() end
-
-		local columns = {}
-		table.insert(columns, list_view:AddColumn("ID"))
-		table.insert(columns, list_view:AddColumn("Name"))
-		table.insert(columns, list_view:AddColumn("Method"))
-		table.insert(columns, list_view:AddColumn("Date"))
-		for i, column in ipairs(columns) do
-			column.Header:SetTextColor(COLOR_WHITE)
-			column.Header:SetFont("gmx_info")
-			column.Header:SetTall(30)
-			function column.Header:Paint(w, h)
-				surface.SetDrawColor(255, 157, 0, 200)
-				if i == 1 then
-					surface.DrawLine(w, 0, w, h)
-				elseif i == #columns then
-					surface.DrawLine(0, 0, 0, h)
-				else
-					surface.DrawLine(w, 0, w, h)
-					surface.DrawLine(0, 0, 0, h)
-				end
-
-				surface.DrawLine(0, 0, w, 0)
-				surface.DrawLine(0, h - 1, w, h - 1)
-			end
-		end
-
-		local btn_open = frame:Add("DButton")
-		btn_open:Dock(BOTTOM)
-		btn_open:SetText("Open")
-		btn_open:SetSize(frame:GetWide(), 30)
-		btn_open:SetFont("gmx_info")
-		btn_open:SetTextColor(COLOR_WHITE)
-
-		local function update_list()
-			list_view:Clear()
-
-			for i, data in ipairs(gmx.ReplFilterCache) do
-				local line = list_view:AddLine(tostring(i), data.Path, data.Method, data.Date)
-				for _, column in pairs(line.Columns) do
-					column:SetTextColor(COLOR_WHITE)
-				end
-
-				function line:Paint(w, h)
-					if self:IsHovered() or self:IsLineSelected() then
-						self:SetCursor("hand")
-						surface.SetDrawColor(255, 157, 0, 200)
-						surface.DrawRect(0, 0, w, h)
-					end
-				end
-			end
-		end
-
-		update_list()
-		hook.Add("GMXReplFilterCacheChanged", list_view, update_list)
-
-		function btn_open:Paint(w, h)
-			surface.SetDrawColor(65, 40, 0, 200)
-			surface.DrawRect(0, 0, w, h)
-
-			surface.SetDrawColor(255, 157, 0, 200)
-			surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
-		end
-
-		function btn_open:DoClick()
-			local selected = list_view:GetSelected()
-			if not selected or #selected == 0 then return end
-
-			for _, line in pairs(selected) do
-				local id = tonumber(line:GetColumnText(1)) or -1
-				if id == -1 then continue end
-
-				local data = gmx.ReplFilterCache[id]
-				if not data then continue end
-
-				gmx.OpenCodeTab(data.Path, data.Lua)
-			end
-		end
-
-		function list_view:DoDoubleClick(_, line)
-			local id = tonumber(line:GetColumnText(1)) or -1
-			if id == -1 then return end
-
-			local data = gmx.ReplFilterCache[id]
-			if not data then return end
-
-			gmx.OpenCodeTab(data.Path, data.Lua)
-		end
-
-		repl_panel = frame
-	end
-
-	concommand.Remove("gmx_repl_cache")
-	concommand.Add("gmx_repl_cache", function()
-		toggle_repl_cache_panel()
-	end)
+	add_button("Binary Editor", 380, 320, 200, 35, function()
+		RunConsoleCommand("gmx_binary_editor")
+	end, true)
 end
+
+hook.Add("GMXReload", "gmx_ui", function()
+	if not IsValid(bg) then return end
+	bg:Remove()
+end)
+
+include("gmx/gmx_scripts/menu/ui/editor.lua")
+include("gmx/gmx_scripts/menu/ui/console.lua")
+include("gmx/gmx_scripts/menu/ui/lua_repl_cache.lua")
