@@ -154,10 +154,8 @@ gol_calc_life()
 gol_calc_life()
 timer.Create("GameOfLife", 0.1, 0, gol_calc_life)
 
-local current_ip = ""
 local current_hostname = ""
-hook.Add("ClientFullyInitialized", "gmx_ui_game_info", function(ip, hostname)
-	current_ip = ip
+hook.Add("ClientFullyInitialized", "gmx_ui_game_info", function(hostname)
 	current_hostname = hostname
 end)
 
@@ -213,7 +211,7 @@ function bg:Paint(w, h)
 
 	if IsInGame() then
 		surface.SetTextPos(55, 800)
-		surface.DrawText("Game IP: " .. current_ip)
+		surface.DrawText("Game IP: " .. gmx.GetIPAddress())
 
 		surface.SetTextPos(55, 820)
 		surface.DrawText("Game Hostname: " .. current_hostname)
