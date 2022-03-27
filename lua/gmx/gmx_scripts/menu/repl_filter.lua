@@ -102,8 +102,10 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- blocks SendLua
 	if path == "LuaCmd" then
 		store_code(path, str, "SendLua")
-		gmx.Print(("Blocked SendLua %s"):format(str))
-		return false
+		if not gmx.IsGameWhitelisted() then
+			gmx.Print(("Blocked SendLua %s"):format(str))
+			return false
+		end
 	end
 
 	local found_steam_id = path:match("[0-9]%:[0-9]%:[0-9]+")
