@@ -9,6 +9,16 @@ local function create_editor()
 	frame:SetSize(800, 600)
 	frame:Center()
 	frame:MakePopup()
+	frame.btnMinim:Hide()
+	frame.btnMaxim:Hide()
+	frame.lblTitle:SetFont("gmx_info")
+
+	function frame.btnClose:Paint()
+		surface.SetTextColor(COLOR_BG_HOVERED)
+		surface.SetTextPos(10, 5)
+		surface.SetFont("DermaDefaultBold")
+		surface.DrawText("X")
+	end
 
 	function frame:Paint(w, h)
 		surface.SetDrawColor(143, 99, 29, 201)
@@ -83,18 +93,28 @@ local function create_editor()
 			for col = 1, amount_per_line do
 				local byte = bytes[byte_index]
 				local byte_panel = bytes_frame:Add("DButton")
-				local value = byte >= 32 and byte <= 126 and string.char(byte) or tostring(byte)
+				local value = string.char(byte) --byte >= 32 and byte <= 126 and string.char(byte) or tostring(byte)
+				local empty = byte >= 32 and byte <= 126
+
 				byte_panel:SetSize(cell_size, cell_size)
 				byte_panel:SetText(value)
-				byte_panel:SetPos((col - 1) * (cell_size + cell_margin), (row - 1) * (cell_size + cell_margin))
-				byte_panel:SetTextColor(COLOR_WHITE)
+				byte_panel:SetPos((col - 1) * (cell_size + cell_margin), 5 + (row - 1) * (cell_size + cell_margin))
+				byte_panel:SetTextColor(byte >= 32 and byte <= 126 and COLOR_WHITE or COLOR_BG_HOVERED)
 
 				function byte_panel:Paint(w, h)
-					surface.SetDrawColor(65, 40, 0, 200)
-					surface.DrawRect(0, 0, w, h)
+					if empty then
+						surface.SetDrawColor(65, 65, 65, 200)
+						surface.DrawRect(0, 0, w, h)
 
-					surface.SetDrawColor(143, 99, 29, 201)
-					surface.DrawOutlinedRect(0, 0, w, h)
+						surface.SetDrawColor(143, 143, 143, 201)
+						surface.DrawOutlinedRect(0, 0, w, h)
+					else
+						surface.SetDrawColor(65, 40, 0, 200)
+						surface.DrawRect(0, 0, w, h)
+
+						surface.SetDrawColor(143, 99, 29, 201)
+						surface.DrawOutlinedRect(0, 0, w, h)
+					end
 				end
 
 				byte_index = byte_index + 1
