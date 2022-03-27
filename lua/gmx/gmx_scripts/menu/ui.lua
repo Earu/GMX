@@ -331,6 +331,7 @@ hook.Add("GMXReload", "gmx_ui", function()
 	bg:Remove()
 end)
 
-include("gmx/gmx_scripts/menu/ui/editor.lua")
+include("gmx/gmx_scripts/menu/ui/lua_editor.lua")
 include("gmx/gmx_scripts/menu/ui/console.lua")
 include("gmx/gmx_scripts/menu/ui/lua_repl_cache.lua")
+include("gmx/gmx_scripts/menu/ui/binary_editor.lua")
