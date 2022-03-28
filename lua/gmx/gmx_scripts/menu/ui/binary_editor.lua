@@ -58,20 +58,16 @@ local function create_editor()
 	is_offset:SetWide(75)
 	is_offset:SetTextColor(COLOR_WHITE)
 
-	local read_btn = header:Add("DButton")
-	read_btn:Dock(LEFT)
-	read_btn:DockMargin(5, 0, 0, 0)
+	local read_btn = frame:Add("DButton")
+	read_btn:SetPos(610, 29)
 	read_btn:SetText("Read")
 	read_btn:SetWide(190)
-	read_btn:SetTall(25)
+	read_btn:SetTall(31)
 	read_btn:SetTextColor(COLOR_WHITE)
 
 	function read_btn:Paint(w, h)
-		surface.SetDrawColor(65, 40, 0, 200)
-		surface.DrawRect(0, 0, w, h)
-
 		surface.SetDrawColor(255, 157, 0, 200)
-		surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
+		surface.DrawLine(0, 0, 0, h)
 	end
 
 	local bytes_frame = frame:Add("DScrollPanel")
