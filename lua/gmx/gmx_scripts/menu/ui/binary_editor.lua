@@ -94,16 +94,43 @@ local function create_editor()
 			for col = 1, amount_per_line do
 				local byte = bytes[byte_index]
 				local byte_panel = bytes_frame:Add("DButton")
-				local value = string.char(byte) --byte >= 32 and byte <= 126 and string.char(byte) or tostring(byte)
-				local empty = byte >= 32 and byte <= 126
+				local value = string.char(byte)
+				local valid_ascii = byte >= 32 and byte <= 126
 
 				byte_panel:SetSize(cell_size, cell_size)
 				byte_panel:SetText(value)
 				byte_panel:SetPos((col - 1) * (cell_size + cell_margin), 5 + (row - 1) * (cell_size + cell_margin))
-				byte_panel:SetTextColor(byte >= 32 and byte <= 126 and COLOR_WHITE or COLOR_BG_HOVERED)
+				byte_panel:SetTextColor(valid_ascii and COLOR_WHITE or COLOR_BG_HOVERED)
+				byte_panel.Offset = byte_index - 1
+
+				local ascii_mode = true
+				function byte_panel:DoClick()
+					ascii_mode = not ascii_mode
+					if ascii_mode then
+						self:SetText(value)
+					else
+						self:SetText(tostring(byte))
+					end
+				end
+
+				function byte_panel:DoRightClick()
+					local addr = mem.ComputeAddress(address:GetText(), self.Offset)
+					Derma_StringRequest("Write", "Write value to " .. addr, byte, function(new_value)
+						local new_byte = tonumber(new_value) or string.byte(new_value[0])
+						local wrote, err = mem.Write(addr, { new_byte })
+						if not wrote then
+							gmx.Print("Binary Editor", err)
+							return
+						end
+
+						valid_ascii = byte >= 32 and byte <= 126
+						byte = new_byte
+						self:SetText(ascii_mode and string.char(new_byte) or tostring(new_byte))
+					end)
+				end
 
 				function byte_panel:Paint(w, h)
-					if empty then
+					if valid_ascii then
 						surface.SetDrawColor(65, 65, 65, 200)
 						surface.DrawRect(0, 0, w, h)
 
