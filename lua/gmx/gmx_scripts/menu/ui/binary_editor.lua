@@ -116,7 +116,9 @@ local function create_editor()
 				function byte_panel:DoRightClick()
 					local addr = mem.ComputeAddress(address:GetText(), self.Offset)
 					Derma_StringRequest("Write", "Write value to " .. addr, byte, function(new_value)
-						local new_byte = tonumber(new_value) or string.byte(new_value[0])
+						local new_byte = tonumber(new_value) or string.byte(new_value[1])
+						if not new_byte then return end
+
 						local wrote, err = mem.Write(addr, { new_byte })
 						if not wrote then
 							gmx.Print("Binary Editor", err)
