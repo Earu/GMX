@@ -294,7 +294,7 @@ do
 	end)
 
 	add_button("Multiplayer", 50, 260, 300, 50, function()
-		RunGameUICommand("OpenServerBrowser")
+		gmx.ShowMultiplayerPanel()
 	end)
 
 	add_button("Settings", 50 , 320, 300, 50, function()
