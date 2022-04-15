@@ -336,3 +336,11 @@ include("gmx/gmx_scripts/menu/ui/console.lua")
 include("gmx/gmx_scripts/menu/ui/lua_repl_cache.lua")
 include("gmx/gmx_scripts/menu/ui/binary_editor.lua")
 include("gmx/gmx_scripts/menu/ui/multiplayer.lua")
+
+local last_scrw, last_scrh = ScrW(), ScrH()
+hook.Add("Think", "gmx_ui_scaling", function()
+	if ScrW() ~= last_scrw or ScrH() ~= last_scrh then
+		last_scrw, last_scrh = ScrW(), ScrH()
+		RunGameUICommand("engine gmx reload")
+	end
+end)

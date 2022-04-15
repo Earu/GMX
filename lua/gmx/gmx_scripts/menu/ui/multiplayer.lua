@@ -37,6 +37,10 @@ local function parse_host_name_tags(host_name)
 		end)
 	end
 
+	if #tags <= 0 then
+		add_tag("N/A")
+	end
+
 	return actual_host_name, tags
 end
 
@@ -95,6 +99,14 @@ surface.CreateFont("gmx_server_tag", {
 	antialias = true,
 })
 
+surface.CreateFont("gmx_server_info", {
+	font = fonts.Exists("Iosevka Type") and "Iosevka Type" or "Arial",
+	extended = true,
+	size = 18,
+	weight = 500,
+	antialias = true,
+})
+
 local COLOR_BG_HOVERED = Color(255, 157, 0)
 local COLOR_WHITE = Color(255, 255, 255)
 local COLOR_BLACK = Color(0, 0, 0)
@@ -112,7 +124,7 @@ local function add_category(categories, type, name)
 		if not IsValid(category) then return end
 
 		local item = category:Add("")
-		item:SetTall(32)
+		item:SetTall(64)
 		function item:DoDoubleClick()
 			RunGameUICommand("engine connect " .. server.IPAddress)
 		end
@@ -130,16 +142,17 @@ local function add_category(categories, type, name)
 		local label = item:Add("DLabel")
 		label:SetText(server.FullHostName)
 		label:SetTextColor(COLOR_WHITE)
+		label:SetTall(64)
 		label:Dock(FILL)
 		label:DockMargin(8, 0, 0, 0)
-		label:SetFont("gmx_info")
+		label:SetFont("gmx_server_info")
 
 		local button = item:Add("DButton")
 		button:SetText("Connect")
 		button:Dock(RIGHT)
-		button:SetWide(100)
+		button:SetWide(category:GetWide() / 10)
 		button:SetTextColor(COLOR_WHITE)
-		button:SetFont("gmx_info")
+		button:SetFont("gmx_server_info")
 		function button:Paint(w, h)
 			surface.SetDrawColor(143, 99, 29, 201)
 			surface.DrawLine(0, 0, 0, h)
@@ -152,39 +165,51 @@ local function add_category(categories, type, name)
 		end
 
 		local gamemode_label = item:Add("DLabel")
-		gamemode_label:SetText(server.Gamemode)
+		gamemode_label:SetText(server.Description)
 		gamemode_label:SetTextColor(COLOR_WHITE)
 		gamemode_label:Dock(RIGHT)
 		gamemode_label:DockMargin(8, 0, 8, 0)
-		gamemode_label:SetWide(100)
-		gamemode_label:SetFont("gmx_info")
+		gamemode_label:SetWide(category:GetWide() / 10)
+		gamemode_label:SetFont("gmx_server_info")
+		gamemode_label:SetContentAlignment(5)
 
 		local ply_count_label = item:Add("DLabel")
 		ply_count_label:SetText((server.PlayerCount - server.BotPlayerCount) .. " / " .. server.MaxPlayerCount)
 		ply_count_label:SetTextColor(COLOR_WHITE)
 		ply_count_label:Dock(RIGHT)
+		ply_count_label:SetWide(category:GetWide() / 10)
 		ply_count_label:DockMargin(8, 0, 0, 0)
-		ply_count_label:SetFont("gmx_info")
+		ply_count_label:SetFont("gmx_server_info")
+		ply_count_label:SetContentAlignment(5)
 
 		local ip_label = item:Add("DLabel")
 		ip_label:SetText(server.IPAddress)
 		ip_label:SetTextColor(COLOR_WHITE)
-		ip_label:SetWide(200)
+		ip_label:SetWide(category:GetWide() / 10)
 		ip_label:Dock(RIGHT)
 		ip_label:DockMargin(15, 0, 0, 0)
-		ip_label:SetFont("gmx_info")
+		ip_label:SetContentAlignment(5)
+		ip_label:SetFont("gmx_server_info")
+
+		local tag_container = item:Add("DPanel")
+		tag_container:Dock(BOTTOM)
+		tag_container:SetTall(32)
+		tag_container:DockMargin(0, 0, 0, 0)
+		tag_container:DockPadding(8, 0, 5, 8)
+		function tag_container:Paint() end
 
 		for _, tag in ipairs(server.Tags) do
-			local tag_label = item:Add("DLabel")
+			local tag_label = tag_container:Add("DLabel")
 			tag_label:SetText(tag)
 			tag_label:SetWide(100)
 			tag_label:SetTextColor(COLOR_BLACK)
-			tag_label:Dock(RIGHT)
-			tag_label:DockMargin(0, 5, 10, 5)
+			tag_label:Dock(BOTTOM)
+			tag_label:Dock(LEFT)
+			tag_label:DockMargin(0, 0, 10, 0)
 			tag_label:SetContentAlignment(5)
 			tag_label:SetFont("gmx_server_tag")
 
-			local col = pastellize_tag(tag)
+			local col = tag == "N/A" and Color(143, 143, 143, 201) or pastellize_tag(tag)
 			function tag_label:Paint(w, h)
 				surface.SetDrawColor(col)
 				surface.DrawRect(0, 0, w, h)
