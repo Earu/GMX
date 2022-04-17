@@ -311,6 +311,320 @@ NET_MESSAGES = {
 		}
 	},
 
+	CLC = {
+		[clc_ClientInfo] = { -- 8
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_ClientInfo"
+				end
+
+				return string.format("clc_ClientInfo: spawncount = %i, sendtablecrc = %i, ishltv = %s, friendsid = %i, guid = %s", self.spawncount, self.sendtablecrc, self.ishltv, self.friendsid, self.guid)
+			end,
+			__index = {
+				GetType = function()
+					return clc_ClientInfo
+				end,
+				GetName = function()
+					return "clc_ClientInfo"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.spawncount = buffer:ReadLong()
+					self.sendtablecrc = buffer:ReadLong()
+					self.ishltv = buffer:ReadBit() == 1
+					self.friendsid = buffer:ReadLong()
+					self.guid = buffer:ReadString()
+					self.customfiles = {}
+					for i = 1, MAX_CUSTOM_FILES do
+						self.customfiles[i] = buffer:ReadBit() == 1 and buffer:ReadUInt(32) or false
+					end
+
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_ClientInfo, NET_MESSAGE_BITS)
+					buffer:WriteLong(self.spawncount)
+					buffer:WriteLong(self.sendtablecrc)
+					buffer:WriteBit(self.ishltv and 1 or 0)
+					buffer:WriteLong(self.friendsid)
+					buffer:WriteString(self.guid or "")
+
+					for i = 1, MAX_CUSTOM_FILES do
+						local filecrc = self.customfiles[i]
+						buffer:WriteBit(filecrc ~= false and 1 or 0)
+						if filecrc then
+							buffer:WriteUInt(filecrc, 32)
+						end
+					end
+
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.spawncount = nil
+					self.sendtablecrc = nil
+					self.ishltv = nil
+					self.friendsid = nil
+					self.guid = nil
+					self.customfiles = nil
+				end
+			}
+		},
+
+		[clc_Move] = { -- 9
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_Move"
+				end
+
+				return string.format("clc_Move: new = %i, backup = %i, bits = %i", self.new, self.backup, self.bits)
+			end,
+			__index = {
+				GetType = function()
+					return clc_Move
+				end,
+				GetName = function()
+					return "clc_Move"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.new = buffer:ReadUInt(NUM_NEW_COMMAND_BITS)
+					self.backup = buffer:ReadUInt(NUM_BACKUP_COMMAND_BITS)
+					self.bits = buffer:ReadWord()
+					self.data = buffer:ReadBits(self.bits)
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_Move, NET_MESSAGE_BITS)
+					buffer:WriteUInt(self.new, NUM_NEW_COMMAND_BITS)
+					buffer:WriteUInt(self.backup, NUM_BACKUP_COMMAND_BITS)
+					buffer:WriteWord(self.bits)
+					buffer:WriteBits(self.data)
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.new = nil
+					self.backup = nil
+					self.bits = nil
+					self.data = nil
+				end
+			}
+		},
+
+		[clc_VoiceData] = { -- 10
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_VoiceData"
+				end
+
+				return "clc_VoiceData: bits = " .. self.bits
+			end,
+			__index = {
+				GetType = function()
+					return clc_VoiceData
+				end,
+				GetName = function()
+					return "clc_VoiceData"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.bits = buffer:ReadWord()
+					self.data = buffer:ReadBits(self.bits)
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_VoiceData, NET_MESSAGE_BITS)
+					buffer:WriteWord(self.bits)
+					buffer:WriteBits(self.data)
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.bits = nil
+					self.data = nil
+				end
+			}
+		},
+
+		[clc_BaselineAck] = { -- 11
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_BaselineAck"
+				end
+
+				return string.format("clc_BaselineAck: tick = %i, num = %i", self.tick, self.num)
+			end,
+			__index = {
+				GetType = function()
+					return clc_BaselineAck
+				end,
+				GetName = function()
+					return "clc_BaselineAck"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.tick = buffer:ReadLong()
+					self.num = buffer:ReadUInt(1)
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_BaselineAck, NET_MESSAGE_BITS)
+					buffer:WriteLong(self.tick)
+					buffer:WriteUInt(self.num, 1)
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.tick = nil
+					self.num = nil
+				end
+			}
+		},
+
+		[clc_ListenEvents] = { -- 12
+			__tostring = function()
+				return "clc_ListenEvents"
+			end,
+			__index = {
+				GetType = function()
+					return clc_ListenEvents
+				end,
+				GetName = function()
+					return "clc_ListenEvents"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.events = {}
+					for i = 1, 16 do
+						self.events[i] = buffer:ReadUInt(32)
+					end
+
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_ListenEvents, NET_MESSAGE_BITS)
+
+					for i = 1, 16 do
+						buffer:WriteUInt(self.events[i], 32)
+					end
+
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.events = nil
+				end
+			}
+		},
+
+		[clc_GMod_ClientToServer] = { -- 18
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_GMod_ClientToServer"
+				end
+
+				if self.msgtype == 0 then
+					return string.format("clc_GMod_ClientToServer netmessage: bits = %i, msgtype = %i, id = %i/%s", self.bits, self.msgtype, self.id, util.NetworkIDToString(self.id) or "unknown message")
+				elseif self.msgtype == 2 then
+					return string.format("clc_GMod_ClientToServer client Lua error: %s", self.strerr)
+				elseif self.msgtype == 4 then
+					self.count = self.bits / 16
+					if self.count > 0 then
+						return string.format("clc_GMod_ClientToServer GModDataPack::SendFileToClient: bits = %i, count = %i", self.bits, self.count)
+					else
+						return "clc_GMod_ClientToServer GModDataPack::SendFileToClient"
+					end
+				end
+
+				return "clc_GMod_ClientToServer invalid"
+			end,
+			__index = {
+				GetType = function()
+					return clc_GMod_ClientToServer
+				end,
+				GetName = function()
+					return "clc_GMod_ClientToServer"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					local bits = buffer:ReadUInt(20)
+					self.bits = bits
+					self.msgtype = buffer:ReadByte()
+					bits = bits - 8
+
+					if self.msgtype == 0 then
+						self.id = buffer:ReadWord()
+						bits = bits - 16
+
+						if bits > 0 then
+							self.data = buffer:ReadBits(bits)
+						end
+					elseif self.msgtype == 2 then
+						self.strerr = buffer:ReadString()
+					elseif self.msgtype == 4 then
+						self.count = bits / 16
+
+						self.ids = {}
+						for i = 1, self.count do
+							self.ids[i] = buffer:ReadUInt(16)
+						end
+					end
+
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_GMod_ClientToServer, NET_MESSAGE_BITS)
+					buffer:WriteUInt(self.bits, 20)
+					buffer:WriteByte(self.msgtype)
+
+					if self.msgtype == 0 then
+						buffer:WriteWord(self.id)
+
+						if self.data ~= nil then
+							buffer:WriteBits(self.data)
+						end
+					elseif self.msgtype == 2 then
+						buffer:WriteString(self.strerr)
+					elseif self.msgtype == 4 then
+						for i = 1, self.count do
+							buffer:WriteUInt(self.ids[i], 16)
+						end
+					end
+
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.bits = nil
+					self.msgtype = nil
+					self.id = nil
+					self.data = nil
+					self.strerr = nil
+					self.ids = nil
+				end
+			}
+		},
+	},
+
 	SVC = {
 		[svc_Print] = { -- 7
 			__tostring = function(self)
@@ -1504,8 +1818,8 @@ NET_MESSAGES = {
 						end
 					elseif self.msgtype == 1 then
 						buffer:WriteString(self.path)
-						buffer:WriteUInt(self.length or 0, 32)
-						buffer:WriteBytes(self.data or "")
+						buffer:WriteUInt(self.length, 32)
+						buffer:WriteBytes(self.data)
 					elseif self.msgtype == 3 then
 						if self.data ~= nil then
 							buffer:WriteBits(self.data)
@@ -1536,6 +1850,7 @@ NET_MESSAGES = {
 
 local NET_MESSAGES_CONSTRUCTORS = {
 	NET = {},
+	CLC = {},
 	SVC = {}
 }
 
@@ -1547,11 +1862,18 @@ for net_messages_prefix, net_messages in pairs(NET_MESSAGES) do
 	end
 end
 
-function NetMessage(netchan, msgtype)
+function NetMessage(netchan, msgtype, server)
 	local constructor = NET_MESSAGES_CONSTRUCTORS.NET[msgtype]
 	if constructor == nil then
-		constructor = NET_MESSAGES_CONSTRUCTORS.SVC[msgtype]
-		if constructor == nil then return end
+		if server then
+			constructor = NET_MESSAGES_CONSTRUCTORS.SVC[msgtype]
+		else
+			constructor = NET_MESSAGES_CONSTRUCTORS.CLC[msgtype]
+		end
+
+		if constructor == nil then
+			return
+		end
 	end
 
 	return constructor(netchan)

@@ -54,7 +54,7 @@ hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localc
 		local msg_type = read:ReadUInt(NET_MESSAGE_BITS)
 		local handler = GetNetMessageInstance(netchan, msg_type)
 		if handler == nil then
-			MsgC(Color(255, 0, 0), "Unknown outgoing message " .. msg_type .. " with " .. read:GetNumBitsLeft() .. " bit(s) left\n")
+			--MsgC(Color(255, 0, 0), "Unknown outgoing message " .. msg_type .. " with " .. read:GetNumBitsLeft() .. " bit(s) left\n")
 			return false
 		end
 
