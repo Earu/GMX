@@ -41,9 +41,11 @@ local firewall_rules = {
 	["zombie.computer"]      = { method = "GET", type = "ALLOW" },
 
 	-- metastruct
-	["metastruct.net"]     = { method = "*",   type = "ALLOW" },
-	["sprays.xerasin.com"] = { method = "*",   type = "ALLOW" },
-	["0.0.0.0"]            = { method = "GET", type = "ALLOW" }, -- Metastruct weird override thing
+	["g1.metastruct.uk.to"] = { method = "*",   type = "ALLOW" },
+	["g2.metastruct.uk.to"] = { method = "*",   type = "ALLOW" },
+	["metastruct.net"]      = { method = "*",   type = "ALLOW" },
+	["sprays.xerasin.com"]  = { method = "*",   type = "ALLOW" },
+	["0.0.0.0"]             = { method = "GET", type = "ALLOW" }, -- Metastruct weird override thing
 }
 
 local function get_domain(sub_domain)
@@ -60,7 +62,7 @@ end
 hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, content_type, body)
 	if not url then return end
 
-	local sub_domain = url:gsub("^https?://", ""):Split("/")[1]:Trim()
+	local sub_domain = url:gsub("^https?://", ""):Split("/")[1]:Trim():gsub(":[0-9]+$", "")
 	local domain = get_domain(sub_domain)
 	local rule = firewall_rules[sub_domain] or firewall_rules[domain] -- priority to sub domain
 	if rule then
@@ -74,7 +76,7 @@ hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, co
 			return true
 		end
 	else
-		gmx.Print("Blocking HTTP request because no rule was defined:", method, domain, url)
+		gmx.Print("Blocking HTTP request because no rule was defined:", method, domain, sub_domain, url)
 		return true
 	end
 end)
