@@ -256,7 +256,7 @@ concommand.Add("gmx_toggleconsole", function()
 end)
 
 RunGameUICommand("engine alias toggleconsole gmx_toggleconsole")
-RunGameUICommand("engine alias showconsole gmx_toggleconsole")
+--RunGameUICommand("engine alias showconsole gmx_toggleconsole")
 
 console:MakePopup()
 

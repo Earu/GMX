@@ -125,12 +125,29 @@ end
 gmx.ScriptsPath = "gmx/gmx_scripts"
 gmx.PreInitScripts = {}
 gmx.PostInitScripts = {}
+gmx.ScriptLookup = { Pre = {}, Post = {} }
 
-function gmx.AddClientInitScript(code, after_init)
+function gmx.AddClientInitScript(code, after_init, identifier)
 	if not after_init then
-		table.insert(gmx.PreInitScripts, code)
+		if identifier then
+			gmx.ScriptLookup.Pre[identifier] = code
+		else
+			table.insert(gmx.PreInitScripts, code)
+		end
 	else
-		table.insert(gmx.PostInitScripts, code)
+		if identifier then
+			gmx.ScriptLookup.Post[identifier] = code
+		else
+			table.insert(gmx.PostInitScripts, code)
+		end
+	end
+end
+
+function gmx.RemoveClientInitScript(after_init, identifier)
+	if not after_init then
+		gmx.ScriptLookup.Pre[identifier] = nil
+	else
+		gmx.ScriptLookup.Post[identifier] = nil
 	end
 end
 
@@ -183,10 +200,19 @@ local init_scripts_ran = false
 hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	if not init_scripts_ran and path:EndsWith("lua/includes/init.lua") then
 		init_scripts_ran = true
+
+		local pre_init_scripts = {}
+		table.Add(pre_init_scripts, gmx.PreInitScripts)
+		table.Add(pre_init_scripts, table.ClearKeys(gmx.ScriptLookup.Pre))
+
+		local post_init_scripts = {}
+		table.Add(post_init_scripts, gmx.PostInitScripts)
+		table.Add(post_init_scripts, table.ClearKeys(gmx.ScriptLookup.Post))
+
 		return ("do\n%s\nend\n%s\ndo\n%s\nend"):format(
-			table.concat(gmx.PreInitScripts, "\n"),
+			table.concat(pre_init_scripts, "\n"),
 			str,
-			table.concat(gmx.PostInitScripts, "\n")
+			table.concat(post_init_scripts, "\n")
 		)
 	end
 end)

@@ -1,4 +1,4 @@
-include ("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
+include("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
 
 FilterOutgoingMessage(net_Tick, function(netchan, read, write)
 	write:WriteUInt(net_Tick, NET_MESSAGE_BITS)
