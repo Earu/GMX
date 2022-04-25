@@ -1,3 +1,5 @@
+if not system.IsWindows() then return end
+
 include("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
 
 FilterOutgoingMessage(net_Tick, function(netchan, read, write)
