@@ -1,9 +1,12 @@
-require("sourcenet")
+if system.IsWindows() then
+	require("sourcenet")
+end
+
 require("dns")
 
 local host_ip_cvar = GetConVar("hostip")
-function gmx.GetIPAddress(force)
-	if IsInGame() then
+function gmx.GetIPAddress()
+	if system.IsWindows() and IsInGame() then
 		local chan_addr = CNetChan():GetAddress()
 		if chan_addr then
 			return tostring(chan_addr)
