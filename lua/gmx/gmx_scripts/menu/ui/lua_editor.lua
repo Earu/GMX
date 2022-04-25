@@ -624,7 +624,7 @@ local LUA_EDITOR = {
 			RunString(code)
 			self:RegisterAction("menu")
 		else
-			RunOnClient(code)
+			gmx.RunOnClient(code)
 			self:RegisterAction("self")
 		end
 	end,
@@ -786,7 +786,9 @@ local LUA_EDITOR = {
 		}
 
 		local spacing = (" "):rep(3)
-		local text = ("%s[%s] Ran %s on %s"):format(spacing, self.LastAction.Time, tab.Name, self.LastAction.Type)
+		local text = self.LastAction.Type == "self"
+			and ("%s[%s] Injecting %s"):format(spacing, self.LastAction.Time, tab.Name)
+			or ("%s[%s] Ran %s on %s"):format(spacing, self.LastAction.Time, tab.Name, self.LastAction.Type)
 		if #text == 0 then text = ("%sReady"):format(spacing) end
 		self.LblRunStatus:SetText(text)
 		gmx.Print(text)

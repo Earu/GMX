@@ -83,13 +83,14 @@ hook.Add("GMXHostConnected", "gmx_hostname_custom_code", function()
 		if file.Exists(custom_hostname_menu_script_path, "MOD") then
 			custom_hostname_menu_script_path = custom_hostname_menu_script_path:gsub("^lua/", "")
 
-			include(custom_hostname_menu_script_path)
 			gmx.Print(("Running \"%s\""):format(custom_hostname_menu_script_path))
+			include(custom_hostname_menu_script_path)
 		end
 
 		local custom_hostname_client_script_path = ("%s/client.lua"):format(custom_hostname_code_path)
 		if file.Exists(custom_hostname_client_script_path, "MOD") then
 			local code = file.Read(custom_hostname_client_script_path, "MOD")
+			gmx.Print(("Injecting \"%s\""):format(custom_hostname_client_script_path))
 			gmx.RunOnClient(code, {
 				-- the order matter
 				"util",
