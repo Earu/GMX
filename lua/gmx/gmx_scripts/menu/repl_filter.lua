@@ -110,6 +110,12 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 
 	local found_steam_id = path:match("[0-9]%:[0-9]%:[0-9]+")
 	if found_steam_id and not STEAM_ID_WHITELIST[found_steam_id] then
+		if path:match("^%[STEAM_[0-9]%:[0-9]%:[0-9]+%]") then
+			store_code(path, str, "GCompute IDE")
+			gmx.Print(("Blocked GCompute script by %s"):format(found_steam_id))
+			return DENY_CODE
+		end
+
 		-- detect luadev .l, .lm, .lsc commands and checks if ran by me or not
 		local luadev_cmd = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<cmd%:([a-zA-Z]+)%>")
 		if luadev_cmd then
