@@ -30,6 +30,7 @@ local firewall_rules = {
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
 	["steamcommunity.com"]             = { method = "GET", type = "ALLOW" },
 	["keybase.pub"]                    = { method = "GET", type = "ALLOW" },
+	["wikimedia.org"]                  = { method = "GET", type = "ALLOW" },
 
 	-- api & others
 	["translate.yandex.net"] = { method = "GET", type = "ALLOW" },
