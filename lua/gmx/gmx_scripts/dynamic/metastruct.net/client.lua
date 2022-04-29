@@ -10,7 +10,7 @@ hook.Add("Tick", tag, function(self)
 
 		if CurTime() > next_sound then
 			LocalPlayer():ConCommand("saysound barbra streisand loop--6")
-			next_sound = CurTime() + 4
+			next_sound = CurTime() + 2
 		end
 	end
 

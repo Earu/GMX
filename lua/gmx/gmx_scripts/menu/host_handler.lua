@@ -67,40 +67,43 @@ hook.Add("Think", "gmx_host_hooks", function()
 	end
 end)
 
-hook.Add("GMXHostConnected", "gmx_hostname_custom_code", function()
+local function run_host_custom_code()
 	local ip = gmx.GetIPAddress():gsub("%:[0-9]+$", "")
 	local hostname = HOSTNAME_LOOKUP[ip]
-	if hostname then
-		gmx.Print("Hostname Detected", ip)
+	if not hostname then return end
 
-		local custom_hostname_code_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(hostname)
-		if not file.Exists(custom_hostname_code_path, "MOD") then -- priority to subdomains then global domain
-			local hostname_components = hostname:Split(".")
-			local base_hostname = ("%s.%s"):format(hostname_components[#hostname_components - 1], hostname_components[#hostname_components])
-			custom_hostname_code_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(base_hostname)
-		end
+	gmx.Print("Hostname Detected", ip)
 
-		gmx.Print("Loading Custom Code", hostname, custom_hostname_code_path)
-
-		local custom_hostname_menu_script_path = ("%s/menu.lua"):format(custom_hostname_code_path)
-		if file.Exists(custom_hostname_menu_script_path, "MOD") then
-			custom_hostname_menu_script_path = custom_hostname_menu_script_path:gsub("^lua/", "")
-
-			gmx.Print(("Running \"%s\""):format(custom_hostname_menu_script_path))
-			include(custom_hostname_menu_script_path)
-		end
-
-		local custom_hostname_client_script_path = ("%s/client.lua"):format(custom_hostname_code_path)
-		if file.Exists(custom_hostname_client_script_path, "MOD") then
-			local code = file.Read(custom_hostname_client_script_path, "MOD")
-			gmx.Print(("Injecting \"%s\""):format(custom_hostname_client_script_path))
-			gmx.RunOnClient(code, {
-				-- the order matter
-				"util",
-				"detouring",
-				"interop",
-				"hooking"
-			})
-		end
+	local custom_hostname_code_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(hostname)
+	if not file.Exists(custom_hostname_code_path, "MOD") then -- priority to subdomains then global domain
+		local hostname_components = hostname:Split(".")
+		local base_hostname = ("%s.%s"):format(hostname_components[#hostname_components - 1], hostname_components[#hostname_components])
+		custom_hostname_code_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(base_hostname)
 	end
-end)
+
+	gmx.Print("Loading Custom Code", hostname, custom_hostname_code_path)
+
+	local custom_hostname_menu_script_path = ("%s/menu.lua"):format(custom_hostname_code_path)
+	if file.Exists(custom_hostname_menu_script_path, "MOD") then
+		custom_hostname_menu_script_path = custom_hostname_menu_script_path:gsub("^lua/", "")
+
+		gmx.Print(("Running \"%s\""):format(custom_hostname_menu_script_path))
+		include(custom_hostname_menu_script_path)
+	end
+
+	local custom_hostname_client_script_path = ("%s/client.lua"):format(custom_hostname_code_path)
+	if file.Exists(custom_hostname_client_script_path, "MOD") then
+		local code = file.Read(custom_hostname_client_script_path, "MOD")
+		gmx.Print(("Injecting \"%s\""):format(custom_hostname_client_script_path))
+		gmx.RunOnClient(code, {
+			-- the order matter
+			"util",
+			"detouring",
+			"interop",
+			"hooking"
+		})
+	end
+end
+
+hook.Add("GMXHostConnected", "gmx_hostname_custom_code", run_host_custom_code)
+concommand.Add("gmx_run_host_code", run_host_custom_code)
