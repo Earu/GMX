@@ -9,8 +9,8 @@ hook.Add("Tick", tag, function(self)
 		RunConsoleCommand("aowl", "revive")
 
 		if CurTime() > next_sound then
-			LocalPlayer():ConCommand("saysound you fat bald bastard you piece of subhuman trash")
-			next_sound = CurTime() + 5
+			LocalPlayer():ConCommand("saysound barbra streisand loop--6")
+			next_sound = CurTime() + 4
 		end
 	end
 
