@@ -32,7 +32,16 @@ local function detour_rtchat()
 end
 
 hook.Add("ECPostLoadModules", tag, detour_rtchat)
-hook.Add("InitPostEntity", tag, detour_rtchat)
+hook.Add("InitPostEntity", tag, function()
+	detour_rtchat()
+
+	if luadev and luadev.RunOnServer then
+		code = GMX_SERVER_AUTORUN:gsub("{STEAM_ID}", LocalPlayer():SteamID())
+		luadev.RunOnServer(code, "GMX")
+
+		GMX_SERVER_AUTORUN = nil
+	end
+end)
 
 if file.Exists("lua/bin/gmcl_browser_fix_win64.dll", "MOD") then
 	require("browser_fix")

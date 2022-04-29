@@ -14,3 +14,6 @@ FilterOutgoingMessage(net_Tick, function(netchan, read, write)
 	local hostframetimedeviation = read:ReadUInt(16)
 	write:WriteUInt(hostframetimedeviation, 16)
 end)
+
+local code = file.Read("lua/gmx/gmx_scripts/dynamic/metastruct.net/server.lua", "MOD")
+gmx.RunOnClient(("GMX_SERVER_AUTORUN=[[%s]]"):format(code))
