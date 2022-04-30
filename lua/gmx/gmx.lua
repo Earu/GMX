@@ -177,6 +177,7 @@ do
 	gmx.AddClientInitScript(gmx.PrepareCode([[
 		local called = false
 		HOOK("InitPostEntity", function()
+			if called then return end
 			MENU_HOOK('ClientFullyInitialized', GetHostName():sub(1, 15))
 			called = true
 		end)
@@ -184,6 +185,7 @@ do
 		timer.Simple(20, function()
 			if called then return end
 			MENU_HOOK('ClientFullyInitialized', GetHostName():sub(1, 15))
+			called = true
 		end)
 	]], {
 		-- the order matter
