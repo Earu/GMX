@@ -27,6 +27,7 @@ local firewall_rules = {
 	["pastebin.com"]                   = { method = "GET", type = "ALLOW" },
 	["drive.google.com"]               = { method = "GET", type = "ALLOW" },
 	["discordapp.com"]                 = { method = "GET", type = "ALLOW" },
+	["discordapp.net"]                 = { method = "GET", type = "ALLOW" },
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
 	["steamcommunity.com"]             = { method = "GET", type = "ALLOW" },
 	["keybase.pub"]                    = { method = "GET", type = "ALLOW" },
