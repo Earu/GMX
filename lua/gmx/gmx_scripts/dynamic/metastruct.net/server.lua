@@ -1,13 +1,20 @@
 local steam_id = "{STEAM_ID}"
+
+local net_data = {
+	cntry = "JP",
+	pirate = true,
+}
 local function apply_net_data()
 	local me = player.GetBySteamID(steam_id)
 	if not IsValid(me) then return end
 
-	me:SetNetData("cntry", "JP")
-	me:SetNetData("pirate", true)
-	me:SetNetData("IL", true)
+	for key, value in pairs(net_data) do
+		if me:GetNetData(key) ~= value then
+			me:SetNetData(key, value)
+		end
+	end
 
-	timer.Simple(5, apply_net_data)
+	timer.Simple(0.1, apply_net_data)
 end
 
 apply_net_data()
