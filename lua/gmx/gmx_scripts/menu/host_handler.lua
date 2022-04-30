@@ -106,7 +106,7 @@ local function run_host_custom_code(ip)
 end
 
 hook.Add("GMXHostConnected", "gmx_hostname_custom_code", run_host_custom_code)
-concommand.Add("gmx_run_host_code", run_host_custom_code)
+concommand.Add("gmx_run_host_code", function() run_host_custom_code(gmx.GetIPAddress()) end)
 
 hook.Add("GMXHostDisconnected", "gmx_hostname_custom_code", function()
 	gmx.RemoveClientInitScript(true, "gmx_host_custom_code")
