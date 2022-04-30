@@ -10,6 +10,7 @@ local BAD_PATHS = {
 	"lua/bin/.*fontsx.*%.dll$",
 	"lua/bin/.*naughty.*%.dll$",
 	"lua/bin/.*dns.*%.dll$",
+	"lua/bin/.*asc.*%.dll$",
 	"lua/menu/_menu.lua$",
 }
 

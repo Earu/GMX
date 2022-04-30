@@ -10,3 +10,4 @@ include("menu_dupe.lua") -- called by the engine, cant remove
 include("errors.lua") -- "something is creating script errors pop up"
 
 include("gmx/gmx.lua")
+require("xconsole")
