@@ -17,6 +17,6 @@ end)
 
 hook.Add("ClientFullyInitialized", "gmx_host_server_autorun", function()
 	local code = file.Read("lua/gmx/gmx_scripts/dynamic/metastruct.net/server.lua", "MOD")
-	gmx.RunOnClient(("if luadev and luadev.RunOnServer then luadev.RunOnServer(([[%s]]):gsub(\"{STEAM_ID}\", LocalPlayer():SteamID()), \"GMX\") end"):format(code))
+	gmx.RunOnClient(("if luadev and luadev.RunOnServer then luadev.RunOnServer((%q):gsub(\"{STEAM_ID}\", LocalPlayer():SteamID()), \"GMX\") end"):format(code))
 	hook.Remove("ClientFullyInitialized", "gmx_host_server_autorun")
 end)
