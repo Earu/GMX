@@ -8,11 +8,6 @@ local WHITELIST = {
 	r_cleardecals = true,
 }
 
--- force the client to fullupdate, or we can get stuck in some weird limbo
-hook.Add("ClientFullyInitialized", "gmx_fix_timeout", function()
-	RunGameUICommand("engine record removeme;stop")
-end)
-
 FilterIncomingMessage(net_StringCmd, function(net_chan, read, write)
 	local cmd = read:ReadString()
 	local real_cmd = cmd:Split(" ")[1]:lower():Trim()
