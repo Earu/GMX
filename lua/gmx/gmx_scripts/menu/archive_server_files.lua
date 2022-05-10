@@ -44,7 +44,7 @@ concommand.Remove("gmx_archive_lua_files")
 concommand.Add("gmx_archive_lua_files", archive_lua_files)
 
 hook.Add("ClientFullyInitialized", "gmx_archive_lua_files", function(host_name)
-	local srv_ip = gmx.GetIPAddress()
+	local srv_ip = gmx.GetConnectedServerIPAddress()
 
 	short_host_name = host_name:gsub("[%s%-%/%\\%[%]%:]", "_"):gsub("_+", "_"):gsub("_$", "")
 	archives_path = ("Archives/%s_%s"):format(srv_ip:gsub("%.","_"):gsub("%:", "_"), short_host_name)

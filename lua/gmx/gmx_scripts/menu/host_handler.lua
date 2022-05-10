@@ -8,29 +8,37 @@ hook.Add("AllowStringCommand", "gmx_host_address", function(cmd_str)
 	local args = cmd_str:lower():Split(" ")
 	cached_address = table.concat(args, " ", 2):Trim():gsub("%:[0-9]+$", "")
 
-	hook.Run("GMXHostConnected", gmx.GetIPAddress())
+	hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
 end)
 
 local host_ip_cvar = GetConVar("hostip")
-function gmx.GetIPAddress()
+function gmx.GetLocalNetworkIPAddress()
+	local host_ip = host_ip_cvar:GetInt()
+	local ip = {}
+
+	ip[1] = bit.rshift(bit.band(host_ip, 0xFF000000), 24)
+	ip[2] = bit.rshift(bit.band(host_ip, 0x00FF0000), 16)
+	ip[3] = bit.rshift(bit.band(host_ip, 0x0000FF00), 8)
+	ip[4] = bit.band(host_ip, 0x000000FF)
+
+	return table.concat(ip, ".")
+end
+
+local INVALID_IP = "0.0.0.0"
+function gmx.GetConnectedServerIPAddress()
 	if cached_address then
 		local ip = cached_address
 		if not cached_address:match("^%d+%.%d+%.%d+%.%d+$") then
 			ip = dns.Lookup(cached_address)[1]
 		end
 
-		if ip then return ip end
-	else
-		local host_ip = host_ip_cvar:GetInt()
-		local ip = {}
-
-		ip[1] = bit.rshift(bit.band(host_ip, 0xFF000000), 24)
-		ip[2] = bit.rshift(bit.band(host_ip, 0x00FF0000), 16)
-		ip[3] = bit.rshift(bit.band(host_ip, 0x0000FF00), 8)
-		ip[4] = bit.band(host_ip, 0x000000FF)
-
-		return table.concat(ip, ".")
+		if ip then
+			cached_address = ip
+			return cached_address
+		end
 	end
+
+	return INVALID_IP
 end
 
 local WHITELIST = {
@@ -40,7 +48,7 @@ local WHITELIST = {
 
 function gmx.IsGameWhitelisted()
 	if not IsInGame() then return true end
-	return WHITELIST[gmx.GetIPAddress()] ~= nil
+	return WHITELIST[gmx.GetConnectedServerIPAddress()] ~= nil
 end
 
 local HOSTNAMES_TO_REVERSE = {
@@ -55,20 +63,16 @@ for _, hostname in ipairs(HOSTNAMES_TO_REVERSE) do
 	end
 end
 
-local function in_local_network()
-	local ip = gmx.GetIPAddress():Split(".")
-	return (ip[1] == "192" and ip[2] == "168")
-		or (ip[1] == "127" and ip[2] == "0")
-		or (ip[1] == "0" and ip[2] == "0")
-		or (ip[1] == "localhost")
+local function is_connected_to_server()
+	return gmx.GetConnectedServerIPAddress() ~= INVALID_IP
 end
 
-local local_network_state = in_local_network()
+local connected_state = is_connected_to_server()
 hook.Add("Think", "gmx_host_hooks", function()
-	local cur_state = in_local_network()
-	if cur_state ~= local_network_state then
-		local_network_state = cur_state
-		if local_network_state then
+	local cur_state = is_connected_to_server()
+	if cur_state ~= connected_state then
+		connected_state = cur_state
+		if not connected_state then
 			hook.Run("GMXHostDisconnected")
 		end
 	end
@@ -106,7 +110,7 @@ local function run_host_custom_code(ip)
 end
 
 hook.Add("GMXHostConnected", "gmx_hostname_custom_code", run_host_custom_code)
-concommand.Add("gmx_run_host_code", function() run_host_custom_code(gmx.GetIPAddress()) end)
+concommand.Add("gmx_run_host_code", function() run_host_custom_code(gmx.GetConnectedServerIPAddress()) end)
 
 hook.Add("GMXHostDisconnected", "gmx_hostname_custom_code", function()
 	gmx.RemoveClientInitScript(true, "gmx_host_custom_code")

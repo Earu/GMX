@@ -122,7 +122,7 @@ function bg:Paint(w, h)
 	if IsInGame() then
 		base_y = base_y + 40
 		surface.SetTextPos(55, base_y)
-		surface.DrawText("Game IP: " .. gmx.GetIPAddress())
+		surface.DrawText("Game IP: " .. gmx.GetConnectedServerIPAddress())
 
 		base_y = base_y + 20
 		surface.SetTextPos(55, base_y)
