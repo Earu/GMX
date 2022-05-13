@@ -1,12 +1,60 @@
 require("asc")
 require("dns")
 
+local function sanitize_address(address)
+	if not address then return end
+	return address:Trim():gsub("%:[0-9]+$", "")
+end
+
+local INVALID_IP = "0.0.0.0"
 local cached_address
+function gmx.GetConnectedServerIPAddress()
+	if cached_address then
+		local ip = cached_address
+		if not cached_address:match("^%d+%.%d+%.%d+%.%d+$") then
+			ip = dns.Lookup(cached_address)[1]
+		end
+
+		if ip then
+			cached_address = ip
+			return cached_address
+		end
+	end
+
+	return INVALID_IP
+end
+
+local old_game_details = _G.GameDetails
+function GameDetails(server_name, server_url, map_name, max_players, steamid, gm)
+	if gmx.GetConnectedServerIPAddress() == INVALID_IP then
+		gmx.Print("Joining server via Steam or retry command, relying on public Steam API...")
+		http.Fetch("http://steamcommunity.com/profiles/" .. steamid .. "?xml=1", function(xml)
+			cached_address = sanitize_address(xml:match("%<inGameServerIP%>(.+)%<%/inGameServerIP%>"))
+			if not cached_address then
+				gmx.Print("Failed to get server IP address, Steam profile is private!")
+			end
+		end, function(err)
+			gmx.Print("Failed to get server IP address: " .. err)
+		end)
+	end
+
+	old_game_details(server_name, server_url, map_name, max_players, steamid, gm)
+end
+
+if IsInGame() then
+	gmx.RequestClientData("game.GetIPAddress()", function(ip)
+		cached_address = sanitize_address(ip)
+	end)
+end
+
+--
+-- GetConfigValue( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj, ESteamNetworkingConfigDataType *pOutDataType, void *pResult, size_t *cbResult );
+
 hook.Add("AllowStringCommand", "gmx_host_address", function(cmd_str)
 	if not cmd_str:lower():match("^connect") then return end
 
 	local args = cmd_str:lower():Split(" ")
-	cached_address = table.concat(args, " ", 2):Trim():gsub("%:[0-9]+$", "")
+	cached_address = sanitize_address(table.concat(args, " ", 2))
 
 	hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
 end)
@@ -22,23 +70,6 @@ function gmx.GetLocalNetworkIPAddress()
 	ip[4] = bit.band(host_ip, 0x000000FF)
 
 	return table.concat(ip, ".")
-end
-
-local INVALID_IP = "0.0.0.0"
-function gmx.GetConnectedServerIPAddress()
-	if cached_address then
-		local ip = cached_address
-		if not cached_address:match("^%d+%.%d+%.%d+%.%d+$") then
-			ip = dns.Lookup(cached_address)[1]
-		end
-
-		if ip then
-			cached_address = ip
-			return cached_address
-		end
-	end
-
-	return INVALID_IP
 end
 
 local WHITELIST = {

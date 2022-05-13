@@ -122,6 +122,25 @@ function gmx.RunOnClient(code, deps)
 	RunOnClient(final_code)
 end
 
+local cur_data_req_id = 0
+local data_req_callbacks = {}
+function gmx.RequestClientData(code, callback)
+	if not IsInGame() then callback() return end
+
+	data_req_callbacks[cur_data_req_id] = callback
+
+	gmx.RunOnClient([[local ret = select(1, ]] .. code .. [[) MENU_HOOK("ClientDataRequest", ]] .. cur_data_req_id .. [[, ret)]], { "util", "interop" })
+	cur_data_req_id = cur_data_req_id + 1
+end
+
+hook.Add("ClientDataRequest", "gmx_client_data_requests", function(id, data)
+	local callback_id = tonumber(id) or -1
+	if callback_id == -1 then return end
+	if not data_req_callbacks[callback_id] then return end
+
+	data_req_callbacks[callback_id](data)
+end)
+
 gmx.ScriptsPath = "gmx/gmx_scripts"
 gmx.PreInitScripts = {}
 gmx.PostInitScripts = {}
