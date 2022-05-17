@@ -1,4 +1,5 @@
-require("luaerror")
+-- clc_GMOD_ClientToServer type 2
+--[[require("luaerror")
 
 local luaerror = _G.luaerror
 
@@ -14,7 +15,7 @@ end
 remove_global_stuff()
 
 luaerror.EnableCompiletimeDetour(true)
-luaerror.EnableRuntimeDetour(true)
+luaerror.EnableRuntimeDetour(true)]]
 
 local COLOR_RED = Color(255, 0, 0)
 HOOK("LuaError", function(_, full_error)
@@ -25,8 +26,8 @@ HOOK("LuaError", function(_, full_error)
 end)
 
 HOOK("ShutDown", function()
-	luaerror.EnableRuntimeDetour(false)
-	luaerror.EnableCompiletimeDetour(false)
+	--luaerror.EnableRuntimeDetour(false)
+	--luaerror.EnableCompiletimeDetour(false)
 end)
 
 DETOUR(nil, "ErrorNoHalt", ErrorNoHalt, function(...)
