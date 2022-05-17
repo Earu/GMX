@@ -32,6 +32,8 @@ function GameDetails(server_name, server_url, map_name, max_players, steamid, gm
 			cached_address = sanitize_address(xml:match("%<inGameServerIP%>(.+)%<%/inGameServerIP%>"))
 			if not cached_address then
 				gmx.Print("Failed to get server IP address, Steam profile is private!")
+			else
+				hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
 			end
 		end, function(err)
 			gmx.Print("Failed to get server IP address: " .. err)
@@ -51,12 +53,15 @@ end
 -- GetConfigValue( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj, ESteamNetworkingConfigDataType *pOutDataType, void *pResult, size_t *cbResult );
 
 hook.Add("AllowStringCommand", "gmx_host_address", function(cmd_str)
-	if not cmd_str:lower():match("^connect") then return end
+	if cmd_str:lower():match("^connect") then
+		local args = cmd_str:lower():Split(" ")
+		cached_address = sanitize_address(table.concat(args, " ", 2))
 
-	local args = cmd_str:lower():Split(" ")
-	cached_address = sanitize_address(table.concat(args, " ", 2))
-
-	hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
+		hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
+	elseif cmd_str:lower():match("^disconnect") then
+		cached_address = nil
+		hook.Run("GMXHostDisconnected")
+	end
 end)
 
 local host_ip_cvar = GetConVar("hostip")
@@ -93,21 +98,6 @@ for _, hostname in ipairs(HOSTNAMES_TO_REVERSE) do
 		HOSTNAME_LOOKUP[ip] = hostname
 	end
 end
-
-local function is_connected_to_server()
-	return gmx.GetConnectedServerIPAddress() ~= INVALID_IP
-end
-
-local connected_state = is_connected_to_server()
-hook.Add("Think", "gmx_host_hooks", function()
-	local cur_state = is_connected_to_server()
-	if cur_state ~= connected_state then
-		connected_state = cur_state
-		if not connected_state then
-			hook.Run("GMXHostDisconnected")
-		end
-	end
-end)
 
 local function run_host_custom_code(ip)
 	local hostname = HOSTNAME_LOOKUP[ip]
