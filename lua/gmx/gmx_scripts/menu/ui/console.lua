@@ -7,12 +7,8 @@ surface.CreateFont("gmx_console", {
 	size = 20,
 	weight = 500,
 	antialias = true,
-	shadow = true,
+	shadow = false,
 })
-
-local COLOR_WHITE = Color(255, 255, 255, 255)
-local COLOR_BG_HOVERED = Color(255, 157, 0)
-local COLOR_HOVERED = Color(255, 196, 0)
 
 local console = vgui.Create("DFrame")
 console:SetSize(ScrW() / 3, ScrH() - 10)
@@ -26,22 +22,20 @@ console.btnMaxim:Hide()
 console.btnMinim:Hide()
 
 function console:Paint(w, h)
-	surface.SetDrawColor(143, 99, 29, 201)
+	surface.SetDrawColor(gmx.Colors.BackgroundStrip.r, gmx.Colors.BackgroundStrip.g, gmx.Colors.BackgroundStrip.b, 201)
 	surface.DrawLine(0, 0, 0, h)
-
-	surface.SetDrawColor(65, 40, 0, 200)
 	surface.DrawRect(0, 0, w, h)
 end
 
 local console_input_header = console:Add("DLabel")
 console_input_header:SetFont("gmx_console")
-console_input_header:SetTextColor(COLOR_WHITE)
+console_input_header:SetTextColor(gmx.Colors.Text)
 console_input_header:SetText("")
 console_input_header:SetSize(75, 30)
 console_input_header:SetPos(0, console:GetTall() - 30)
 
 function console_input_header:Paint(w, h)
-	surface.SetDrawColor(255, 157, 0, 200)
+	surface.SetDrawColor(gmx.Colors.Background.r, gmx.Colors.Background.g, gmx.Colors.Background.b, 200)
 	surface.DrawLine(0, 0, 0, h)
 
 	surface.DisableClipping(true)
@@ -51,7 +45,7 @@ function console_input_header:Paint(w, h)
 	surface.DrawLine(w - 12, h, w, h / 2)
 	surface.DisableClipping(false)
 
-	surface.SetTextColor(COLOR_WHITE)
+	surface.SetTextColor(gmx.Colors.Text)
 	surface.SetFont("gmx_console")
 	local tw, th = surface.GetTextSize("Console")
 	surface.SetTextPos(w / 2 - tw / 2 - 5, h / 2 - th / 2)
@@ -63,7 +57,7 @@ console_input:Dock(BOTTOM)
 console_input:DockMargin(75, 0, 0, 0)
 console_input:SetTall(30)
 console_input:SetFont("gmx_console")
-console_input:SetTextColor(COLOR_WHITE)
+console_input:SetTextColor(gmx.Colors.Text)
 console_input:SetUpdateOnType(true)
 console_input:SetKeyboardInputEnabled(true)
 console_input:SetMouseInputEnabled(true)
@@ -85,13 +79,13 @@ end
 local cur_completions = {}
 local cur_selection = -1
 function console_input:Paint(w, h)
-	self:DrawTextEntryText(COLOR_WHITE, COLOR_HOVERED, COLOR_BG_HOVERED)
+	self:DrawTextEntryText(gmx.Colors.Text, gmx.Colors.Accent, gmx.Colors.AccentAlternative)
 
 	surface.SetFont("gmx_console")
 	surface.DisableClipping(true)
 
 	for i, completion in pairs(cur_completions) do
-		surface.SetTextColor(i == cur_selection and COLOR_BG_HOVERED or COLOR_WHITE)
+		surface.SetTextColor(i == cur_selection and gmx.Colors.Accent or gmx.Colors.Text)
 		local tw, th = surface.GetTextSize(completion)
 
 		local x, y = -75 - tw, -i * (th + 5)
@@ -99,7 +93,7 @@ function console_input:Paint(w, h)
 		surface.DrawText(completion)
 
 		if i == cur_selection then
-			surface.SetDrawColor(COLOR_BG_HOVERED)
+			surface.SetDrawColor(gmx.Colors.Accent)
 			surface.DrawOutlinedRect(x - 5, y, tw + 5, th + 2)
 		end
 
@@ -169,8 +163,14 @@ hook.Add("EngineSpew", "gmx_console", function(log_type, log_msg, log_grp, log_l
 	if not IsValid(console_output) then return end
 	if log_type == 0 then return end -- ignore these?
 
-	if r == 0 and g == 0 and b == 0 then
-		r, g, b = 255, 255, 255
+	if (gmx.Colors.Text.r < 128 and gmx.Colors.Text.g < 128 and gmx.Colors.Text.b < 128)
+		and (r == 255 and g == 255 and b == 255)
+	then
+		r, g, b = gmx.Colors.Text.r, gmx.Colors.Text.g, gmx.Colors.Text.b
+	else
+		if r == 0 and g == 0 and b == 0 then
+			r, g, b = gmx.Colors.Text.r, gmx.Colors.Text.g, gmx.Colors.Text.b
+		end
 	end
 
 	console_output:InsertColorChange(r, g, b, 255)
@@ -205,7 +205,7 @@ function console_input:OnEnter()
 	RunGameUICommand("engine " .. cmd)
 	self:SetText("")
 
-	console_output:InsertColorChange(255, 255, 255, 255)
+	console_output:InsertColorChange(gmx.Colors.Text.r, gmx.Colors.Text.g, gmx.Colors.Text.b, 255)
 	console_output:AppendText((">> %s\n"):format(cmd))
 
 	cur_selection = -1
