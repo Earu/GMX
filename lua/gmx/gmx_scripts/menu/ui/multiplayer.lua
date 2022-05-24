@@ -200,23 +200,21 @@ surface.CreateFont("gmx_server_info", {
 	font = fonts.Exists("Iosevka Type") and "Iosevka Type" or "Arial",
 	extended = true,
 	size = 18,
-	weight = 500,
+	weight = 550,
 	antialias = true,
 })
 
-local COLOR_HOVERED = Color(255, 196, 0)
-local COLOR_BG_HOVERED = Color(255, 157, 0)
-local COLOR_WHITE = Color(255, 255, 255)
-local COLOR_BLACK = Color(0, 0, 0)
 local function add_category(categories, type, name, expanded, search_query)
 	local category = categories:Add(name)
 	category:SetExpanded(expanded)
+	category.Header:SetFont("gmx_server_info")
+	category.Header:SetTextColor(gmx.Colors.Text)
 
 	function category:Paint(w, h)
-		surface.SetDrawColor(143, 99, 29, 201)
-		surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
+		surface.SetDrawColor(gmx.Colors.Background)
+		surface.DrawOutlinedRect(0, 0, w, h)
 
-		surface.SetDrawColor(COLOR_BG_HOVERED)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawOutlinedRect(0, 0, w, 20)
 	end
 
@@ -230,18 +228,18 @@ local function add_category(categories, type, name, expanded, search_query)
 		end
 
 		function item:Paint(w, h)
-			surface.SetDrawColor(143, 99, 29, 201)
-			surface.DrawLine(0, h - 1, w, h - 1)
+			surface.SetDrawColor(gmx.Colors.Background)
+			surface.DrawOutlinedRect(0, 0, w, h)
 
 			if self:IsHovered() then
-				surface.SetDrawColor(COLOR_BG_HOVERED)
+				surface.SetDrawColor(gmx.Colors.Accent)
 				surface.DrawRect(0, 0, w, h)
 			end
 		end
 
 		local label = item:Add("DLabel")
 		label:SetText(server.FullHostName)
-		label:SetTextColor(COLOR_WHITE)
+		label:SetTextColor(gmx.Colors.Text)
 		label:SetTall(64)
 		label:Dock(FILL)
 		label:DockMargin(8, 0, 0, 0)
@@ -251,14 +249,14 @@ local function add_category(categories, type, name, expanded, search_query)
 		button:SetText("Connect")
 		button:Dock(RIGHT)
 		button:SetWide(category:GetWide() / 10)
-		button:SetTextColor(COLOR_WHITE)
+		button:SetTextColor(gmx.Colors.Text)
 		button:SetFont("gmx_server_info")
 		function button:Paint(w, h)
 			if self:IsHovered() then
-				surface.SetDrawColor(COLOR_BG_HOVERED)
+				surface.SetDrawColor(gmx.Colors.Accent)
 				surface.DrawRect(0, 0, w, h)
 			else
-				surface.SetDrawColor(143, 99, 29, 201)
+				surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 				surface.DrawLine(0, 0, 0, h)
 				surface.DrawLine(w - 1, 0, w - 1, h)
 				surface.DrawLine(0, h - 1, w, h - 1)
@@ -271,7 +269,7 @@ local function add_category(categories, type, name, expanded, search_query)
 
 		local gamemode_label = item:Add("DLabel")
 		gamemode_label:SetText(server.Description)
-		gamemode_label:SetTextColor(COLOR_WHITE)
+		gamemode_label:SetTextColor(gmx.Colors.Text)
 		gamemode_label:Dock(RIGHT)
 		gamemode_label:DockMargin(8, 0, 8, 0)
 		gamemode_label:SetWide(category:GetWide() / 10)
@@ -280,7 +278,7 @@ local function add_category(categories, type, name, expanded, search_query)
 
 		local ply_count_label = item:Add("DLabel")
 		ply_count_label:SetText((server.PlayerCount - server.BotPlayerCount) .. " / " .. server.MaxPlayerCount)
-		ply_count_label:SetTextColor(COLOR_WHITE)
+		ply_count_label:SetTextColor(gmx.Colors.Text)
 		ply_count_label:Dock(RIGHT)
 		ply_count_label:SetWide(category:GetWide() / 10)
 		ply_count_label:DockMargin(8, 0, 0, 0)
@@ -289,7 +287,7 @@ local function add_category(categories, type, name, expanded, search_query)
 
 		local ip_label = item:Add("DLabel")
 		ip_label:SetText(server.IPAddress)
-		ip_label:SetTextColor(COLOR_WHITE)
+		ip_label:SetTextColor(gmx.Colors.Text)
 		ip_label:SetWide(category:GetWide() / 10)
 		ip_label:Dock(RIGHT)
 		ip_label:DockMargin(15, 0, 0, 0)
@@ -307,7 +305,7 @@ local function add_category(categories, type, name, expanded, search_query)
 			local tag_label = tag_container:Add("DLabel")
 			tag_label:SetText(tag)
 			tag_label:SetWide(100)
-			tag_label:SetTextColor(COLOR_BLACK)
+			tag_label:SetTextColor(gmx.Colors.Text)
 			tag_label:Dock(BOTTOM)
 			tag_label:Dock(LEFT)
 			tag_label:DockMargin(0, 0, 10, 0)
@@ -334,9 +332,10 @@ local function show_servers()
 	frame.btnMinim:Hide()
 	frame.btnMaxim:Hide()
 	frame.lblTitle:SetFont("gmx_info")
+	frame.lblTitle:SetTextColor(gmx.Colors.Text)
 
 	function frame.btnClose:Paint()
-		surface.SetTextColor(COLOR_BG_HOVERED)
+		surface.SetTextColor(gmx.Colors.Text)
 		surface.SetTextPos(10, 5)
 		surface.SetFont("DermaDefaultBold")
 		surface.DrawText("X")
@@ -345,13 +344,13 @@ local function show_servers()
 	function frame:Paint(w, h)
 		Derma_DrawBackgroundBlur(self, 0)
 
-		surface.SetDrawColor(143, 99, 29, 201)
-		surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
-
-		surface.SetDrawColor(65, 40, 0, 240)
+		surface.SetDrawColor(gmx.Colors.Background)
 		surface.DrawRect(0, 0, w, h)
 
-		surface.SetDrawColor(COLOR_BG_HOVERED)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
+		surface.DrawOutlinedRect(0, 0, w, h)
+
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawOutlinedRect(0, 0, w, 25)
 	end
 
@@ -375,19 +374,19 @@ local function show_servers()
 	search_bar:DockPadding(0, 0, 0, 0)
 
 	function search_bar:Paint(w, h)
-		surface.SetDrawColor(COLOR_BG_HOVERED)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 
 	local search_input_header = search_bar:Add("DLabel")
 	search_input_header:SetFont("gmx_server_search")
-	search_input_header:SetTextColor(COLOR_WHITE)
+	search_input_header:SetTextColor(gmx.Colors.Text)
 	search_input_header:SetText("")
 	search_input_header:SetSize(75, 32)
 	search_input_header:Dock(LEFT)
 
 	function search_input_header:Paint(w, h)
-		surface.SetDrawColor(255, 157, 0, 200)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawLine(0, 0, 0, h)
 
 		surface.DisableClipping(true)
@@ -395,7 +394,7 @@ local function show_servers()
 		surface.DrawLine(w - 12, h, w, h / 2)
 		surface.DisableClipping(false)
 
-		surface.SetTextColor(COLOR_WHITE)
+		surface.SetTextColor(gmx.Colors.Text)
 		surface.SetFont("gmx_server_search")
 		local tw, th = surface.GetTextSize("Search")
 		surface.SetTextPos(w / 2 - tw / 2 - 5, h / 2 - th / 2)
@@ -404,14 +403,14 @@ local function show_servers()
 
 	local search_input = search_bar:Add("DTextEntry")
 	search_input:Dock(FILL)
-	search_input:SetTextColor(COLOR_WHITE)
+	search_input:SetTextColor(gmx.Colors.Text)
 	search_input:SetFont("gmx_server_search")
 	search_input:SetUpdateOnType(true)
 	search_input:SetKeyboardInputEnabled(true)
 	search_input:SetMouseInputEnabled(true)
 
 	function search_input:Paint(w, h)
-		self:DrawTextEntryText(COLOR_WHITE, COLOR_HOVERED, COLOR_BG_HOVERED)
+		self:DrawTextEntryText(gmx.Colors.Text, gmx.Colors.Accent, gmx.Colors.AccentAlternative)
 	end
 
 	local cur_search_category
