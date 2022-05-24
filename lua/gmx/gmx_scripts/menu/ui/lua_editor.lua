@@ -405,7 +405,7 @@ local LUA_EDITOR = {
 
 		self.RunClientButton = self:Add("DButton")
 		self.RunClientButton:SetText("")
-		self.RunClientButton:SetTextColor(gmx.Colors.Text)
+		gmx.SetVGUIElementColor(self.RunClientButton, self.RunClientButton.SetTextColor, "Text")
 		self.RunClientButton:SetFont("gmx_lua_editor")
 		self.RunClientButton:SetSize(200, 25)
 		self.RunClientButton:SetPos(150, 5)
@@ -413,7 +413,7 @@ local LUA_EDITOR = {
 
 		self.RunMenuButton = self:Add("DButton")
 		self.RunMenuButton:SetText("")
-		self.RunMenuButton:SetTextColor(gmx.Colors.Text)
+		gmx.SetVGUIElementColor(self.RunMenuButton, self.RunClientButton.SetTextColor, "Text")
 		self.RunMenuButton:SetFont("gmx_lua_editor")
 		self.RunMenuButton:SetSize(200, 25)
 		self.RunMenuButton:SetPos(350, 5)
@@ -456,7 +456,7 @@ local LUA_EDITOR = {
 
 		self.MenuFile.Paint = menu_paint
 		for _, option in ipairs(options) do
-			option:SetTextColor(gmx.Colors.Text)
+			gmx.SetVGUIElementColor(option, option.SetTextColor, "Text")
 			option:SetFont("gmx_lua_editor")
 			option.Paint = option_paint
 		end
@@ -464,7 +464,7 @@ local LUA_EDITOR = {
 		-- menu bar buttons changes
 		for _, panel in pairs(self.MenuBar:GetChildren()) do
 			if panel.ClassName == "DButton" then
-				panel:SetTextColor(gmx.Colors.Text)
+				gmx.SetVGUIElementColor(panel, panel.SetTextColor, "Text")
 				panel:SetFont("gmx_lua_editor")
 				panel:SetSize(50, 25)
 				panel.Paint = menu_button_paint
@@ -517,7 +517,7 @@ local LUA_EDITOR = {
 		end
 
 		self.LblRunStatus = self:Add("DLabel")
-		self.LblRunStatus:SetTextColor(gmx.Colors.Text)
+		gmx.SetVGUIElementColor(self.LblRunStatus, self.LblRunStatus.SetTextColor, "Text")
 		self.LblRunStatus:Dock(BOTTOM)
 		self.LblRunStatus:SetSize(self:GetWide(), 25)
 		self.LblRunStatus:SetFont("gmx_lua_editor")
@@ -529,7 +529,7 @@ local LUA_EDITOR = {
 
 		self.ThemeSelector = self:Add("DComboBox")
 		self.ThemeSelector:AddChoice("vs-dark", nil, true)
-		self.ThemeSelector:SetTextColor(gmx.Colors.Text)
+		gmx.SetVGUIElementColor(self.ThemeSelector, self.ThemeSelector.SetTextColor, "Text")
 		self.ThemeSelector:SetFont("gmx_lua_editor")
 		self.ThemeSelector:SetWide(100)
 		self.ThemeSelector.DropButton.Paint = drop_button_paint
@@ -545,7 +545,7 @@ local LUA_EDITOR = {
 		end
 
 		self.LangSelector = self:Add("DComboBox")
-		self.LangSelector:SetTextColor(gmx.Colors.Text)
+		gmx.SetVGUIElementColor(self.LangSelector, self.LangSelector.SetTextColor, "Text")
 		self.LangSelector:SetFont("gmx_lua_editor")
 		self.LangSelector:SetWide(100)
 		self.LangSelector.DropButton.Paint = drop_button_paint
@@ -644,6 +644,8 @@ local LUA_EDITOR = {
 		frame:Center()
 		frame:MakePopup()
 		frame:SetTitle("Lua Editor File Browser")
+		frame.lblTitle:SetFont("gmx_lua_editor")
+		gmx.SetVGUIElementColor(frame.lblTitle, frame.lblTitle.SetTextColor, "Text")
 
 		frame.Paint = function(_, w, h)
 			surface.SetDrawColor(gmx.Colors.Background)
@@ -729,7 +731,7 @@ local LUA_EDITOR = {
 		editor:OpenURL(url)
 
 		self.CodeTabs:SetActiveTab(tab)
-		tab:SetTextColor(gmx.Colors.Text)
+		gmx.SetVGUIElementColor(tab, tab.SetTextColor, "Text")
 		tab:SetFont("gmx_lua_editor")
 
 		local close_btn = tab:Add("DButton")
@@ -739,7 +741,7 @@ local LUA_EDITOR = {
 		close_btn:SetPos(tab_name_w + 20, 0)
 		close_btn:SetSize(20, 20)
 		close_btn:SetText("x")
-		close_btn:SetTextColor(gmx.Colors.Text)
+		gmx.SetVGUIElementColor(close_btn, close_btn.SetTextColor, "Text")
 		close_btn:SetFont("gmx_lua_editor")
 		close_btn.Paint = function() end
 		close_btn.DoClick = function()
@@ -814,6 +816,7 @@ local function init_editor()
 	local p = vgui.Create("DFrame")
 	p:SetTitle("Lua Editor")
 	p.lblTitle:SetFont("gmx_lua_editor")
+	gmx.SetVGUIElementColor(p.lblTitle, p.lblTitle.SetTextColor, "Text")
 	p:SetSize(ScrW() / 2, ScrW() / 3)
 	p:SetSizable(true)
 	p:Center()
@@ -821,7 +824,7 @@ local function init_editor()
 	p:DockPadding(2, 25, 2, 2)
 
 	function p:Paint(w, h)
-		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
+		surface.SetDrawColor(gmx.Colors.Background)
 		surface.DrawRect(2, 0, w - 4, h -2)
 
 		surface.SetDrawColor(gmx.Colors.BackgroundStrip)

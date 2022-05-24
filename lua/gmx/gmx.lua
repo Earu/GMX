@@ -1,4 +1,4 @@
-gmx = {}
+gmx = gmx or { Colors = {} }
 
 local HEADER_COLOR = Color(255, 157, 0)
 local BODY_COLOR = Color(255, 196, 0)
@@ -9,14 +9,14 @@ function gmx.Print(...)
 		args[key] = tostring(arg)
 	end
 
-	MsgC(HEADER_COLOR, "[GMX] ", BODY_COLOR, args[1] .. "\t", EXTRA_COLOR, table.concat(args, "\t", 2)  .. "\n")
+	MsgC(gmx.Colors.Accent or HEADER_COLOR, "[GMX] ", gmx.Colors.AccentAlternative or BODY_COLOR, args[1] .. "\t", gmx.Colors.Text or EXTRA_COLOR, table.concat(args, "\t", 2)  .. "\n")
 end
 
 if jit.arch ~= "x64" then
 	gmx.Print("GMX is not supported on this architecture (" .. jit.arch .. ").")
 	return
 else
-	MsgC(HEADER_COLOR, [[
+	MsgC(gmx.Colors.Accent or HEADER_COLOR, [[
 
 ============================================================
 =                     G     M     X                        =
