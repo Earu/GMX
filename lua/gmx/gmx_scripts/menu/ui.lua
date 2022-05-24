@@ -58,7 +58,6 @@ local function update_day_colors(latitude, longitude)
 				element_data.SetterFunction(element, gmx.Colors[element_data.ThemeColorKey])
 			end
 
-			print(cur_hour, sunrise.Hours, sunset.Hours)
 			gmx.Print("Day time changing to " .. gmx.GetCurrentDayState())
 		end
 	end, gmx.Print)
