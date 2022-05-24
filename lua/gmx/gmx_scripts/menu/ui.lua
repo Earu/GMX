@@ -82,7 +82,7 @@ function gmx.SetVGUIElementColor(element, setter_fn, theme_color_key)
 	if not setter_fn then return end
 	if not gmx.Colors[theme_color_key] then return end
 
-	setter_fn(element, element[theme_color_key])
+	setter_fn(element, gmx.Colors[theme_color_key])
 	elements_to_update[element] = {
 		Element = element,
 		SetterFunction = setter_fn,
