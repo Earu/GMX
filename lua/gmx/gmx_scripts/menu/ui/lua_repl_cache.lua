@@ -1,6 +1,3 @@
-local COLOR_WHITE = Color(255, 255, 255, 255)
-local COLOR_BG_HOVERED = Color(255, 157, 0)
-
 local repl_panel
 local function toggle_repl_cache_panel()
 	if IsValid(repl_panel) then
@@ -22,9 +19,10 @@ local function toggle_repl_cache_panel()
 	frame:SetMouseInputEnabled(true)
 	frame.btnMinim:Hide()
 	frame.lblTitle:SetFont("gmx_info")
+	frame.lblTitle:SetTextColor(gmx.Colors.Text)
 
 	function frame.btnMaxim.Paint()
-		surface.SetTextColor(COLOR_BG_HOVERED)
+		surface.SetTextColor(gmx.Colors.Text)
 		surface.SetTextPos(10, 5)
 		surface.SetFont("DermaDefaultBold")
 		surface.DrawText("↻")
@@ -38,20 +36,20 @@ local function toggle_repl_cache_panel()
 	end
 
 	function frame.btnClose:Paint()
-		surface.SetTextColor(COLOR_BG_HOVERED)
+		surface.SetTextColor(gmx.Colors.Text)
 		surface.SetTextPos(10, 5)
 		surface.SetFont("DermaDefaultBold")
 		surface.DrawText("X")
 	end
 
 	function frame:Paint(w, h)
-		surface.SetDrawColor(143, 99, 29, 201)
-		surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
-
-		surface.SetDrawColor(65, 40, 0, 200)
+		surface.SetDrawColor(gmx.Colors.Background)
 		surface.DrawRect(0, 0, w, h)
 
-		surface.SetDrawColor(COLOR_BG_HOVERED)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
+		surface.DrawOutlinedRect(0, 0, w, h)
+
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawOutlinedRect(0, 0, w, 41)
 	end
 
@@ -66,11 +64,11 @@ local function toggle_repl_cache_panel()
 	table.insert(columns, list_view:AddColumn("Method"))
 	table.insert(columns, list_view:AddColumn("Date"))
 	for i, column in ipairs(columns) do
-		column.Header:SetTextColor(COLOR_WHITE)
+		column.Header:SetTextColor(gmx.Colors.Text)
 		column.Header:SetFont("gmx_info")
 		column.Header:SetTall(30)
 		function column.Header:Paint(w, h)
-			surface.SetDrawColor(255, 157, 0, 200)
+			surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 			if i == 1 then
 				surface.DrawLine(w, 0, w, h)
 			elseif i == #columns then
@@ -90,7 +88,7 @@ local function toggle_repl_cache_panel()
 	btn_open:SetText("Open")
 	btn_open:SetSize(frame:GetWide(), 30)
 	btn_open:SetFont("gmx_info")
-	btn_open:SetTextColor(COLOR_WHITE)
+	btn_open:SetTextColor(gmx.Colors.Text)
 
 	local function update_list()
 		list_view:Clear()
@@ -98,13 +96,13 @@ local function toggle_repl_cache_panel()
 		for i, data in ipairs(gmx.ReplFilterCache) do
 			local line = list_view:AddLine(tostring(i), data.Path, data.Method, data.Date)
 			for _, column in pairs(line.Columns) do
-				column:SetTextColor(COLOR_WHITE)
+				column:SetTextColor(gmx.Colors.Text)
 			end
 
 			function line:Paint(w, h)
 				if self:IsHovered() or self:IsLineSelected() then
 					self:SetCursor("hand")
-					surface.SetDrawColor(255, 157, 0, 200)
+					surface.SetDrawColor(gmx.Colors.Accent)
 					surface.DrawRect(0, 0, w, h)
 				end
 			end
@@ -115,11 +113,11 @@ local function toggle_repl_cache_panel()
 	hook.Add("GMXReplFilterCacheChanged", list_view, update_list)
 
 	function btn_open:Paint(w, h)
-		surface.SetDrawColor(65, 40, 0, 200)
+		surface.SetDrawColor(gmx.Colors.Background)
 		surface.DrawRect(0, 0, w, h)
 
-		surface.SetDrawColor(255, 157, 0, 200)
-		surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
+		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 
 	function btn_open:DoClick()

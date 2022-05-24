@@ -2,6 +2,15 @@ local COLOR_WHITE = Color(255, 255, 255, 255)
 local COLOR_BG_HOVERED = Color(255, 157, 0)
 local COLOR_HOVERED = Color(255, 196, 0)
 
+gmx.Colors = {
+	Text = Color(0, 0, 0, 255),
+	Wallpaper = Color(245, 245, 245, 255),
+	Background = Color(255, 255, 255, 255),
+	BackgroundStrip = Color(225, 225, 225, 255),
+	Accent = Color(255, 157, 0),
+	AccentAlternative = Color(255, 196, 0),
+}
+
 local bg = vgui.Create("DPanel")
 bg:SetSize(ScrW(), ScrH())
 
@@ -11,7 +20,7 @@ surface.CreateFont("gmx_header", {
 	size = 100,
 	weight = 600,
 	antialias = true,
-	shadow = true,
+	shadow = false,
 })
 
 surface.CreateFont("gmx_clock", {
@@ -20,7 +29,7 @@ surface.CreateFont("gmx_clock", {
 	size = 60,
 	weight = 600,
 	antialias = true,
-	shadow = true,
+	shadow = false,
 })
 
 surface.CreateFont("gmx_sub_header", {
@@ -29,7 +38,7 @@ surface.CreateFont("gmx_sub_header", {
 	size = 30,
 	weight = 600,
 	antialias = true,
-	shadow = true,
+	shadow = false,
 })
 
 surface.CreateFont("gmx_button", {
@@ -38,7 +47,7 @@ surface.CreateFont("gmx_button", {
 	size = 25,
 	weight = 600,
 	antialias = true,
-	shadow = true,
+	shadow = false,
 })
 
 surface.CreateFont("gmx_button_secondary", {
@@ -47,7 +56,7 @@ surface.CreateFont("gmx_button_secondary", {
 	size = 20,
 	weight = 500,
 	antialias = true,
-	shadow = true,
+	shadow = false,
 })
 
 surface.CreateFont("gmx_info", {
@@ -56,7 +65,7 @@ surface.CreateFont("gmx_info", {
 	size = 16,
 	weight = 500,
 	antialias = true,
-	shadow = true,
+	shadow = false,
 })
 
 local current_hostname = ""
@@ -66,7 +75,7 @@ end)
 
 function bg:Paint(w, h)
 	if not IsInGame() then
-		surface.SetDrawColor(0, 0, 0, 255)
+		surface.SetDrawColor(gmx.Colors.Wallpaper)
 		surface.DrawRect(0, 0, w, h)
 	else
 		surface.SetDrawColor(0, 0, 0, 20)
@@ -74,7 +83,7 @@ function bg:Paint(w, h)
 	end
 
 	surface.SetFont("gmx_header")
-	surface.SetTextColor(COLOR_WHITE)
+	surface.SetTextColor(gmx.Colors.Text)
 	surface.SetTextPos(50, 50)
 	surface.DrawText("G M X")
 
@@ -85,7 +94,7 @@ function bg:Paint(w, h)
 	surface.DrawText(time)
 
 	surface.SetFont("gmx_sub_header")
-	surface.SetTextColor(COLOR_BG_HOVERED)
+	surface.SetTextColor(gmx.Colors.Accent)
 	surface.SetTextPos(55, 135)
 	surface.DrawText("Garrys  Mod     eXtended")
 
@@ -129,7 +138,7 @@ function bg:Paint(w, h)
 		surface.DrawText("Game Hostname: " .. current_hostname)
 	end
 
-	surface.SetDrawColor(255, 157, 0, 200)
+	surface.SetDrawColor(gmx.Colors.Accent)
 	surface.DrawLine(375, 195, 375, 430)
 	surface.DrawLine(375, 195, 585, 195)
 
@@ -142,39 +151,39 @@ local function add_button(text, x, y, w, h, func, secondary)
 	button:SetSize(w, h)
 	button:SetPos(x, y)
 	button:SetText(text)
-	button:SetTextColor(COLOR_WHITE)
+	button:SetTextColor(gmx.Colors.Text)
 	button:SetFont(secondary and "gmx_button_secondary" or "gmx_button")
 
 	button.DoClick = func
 
 	if secondary then
 		function button:Paint()
-			surface.SetDrawColor(143, 99, 29, 201)
-			surface.DrawOutlinedRect(0, 0, w, h)
-
-			surface.SetDrawColor(65, 40, 0, 200)
+			surface.SetDrawColor(gmx.Colors.Background)
 			surface.DrawRect(0, 0, w, h)
 
+			surface.SetDrawColor(gmx.Colors.BackgroundStrip)
+			surface.DrawOutlinedRect(0, 0, w, h, 2)
+
 			if self:IsHovered() then
-				surface.SetDrawColor(255, 157, 0, 200)
+				surface.SetDrawColor(gmx.Colors.Accent)
 				surface.DrawOutlinedRect(0, 0, w, h)
 			end
 		end
 	else
 		function button:Paint()
 			if self:IsHovered() then
-				surface.SetDrawColor(COLOR_BG_HOVERED)
+				surface.SetDrawColor(gmx.Colors.Accent)
 				surface.DrawRect(0, 0, w, h)
 
-				surface.SetDrawColor(COLOR_HOVERED)
+				surface.SetDrawColor(gmx.Colors.AccentAlternative)
 			else
-				surface.SetDrawColor(30, 30, 30, IsInGame() and 240 or 255)
+				surface.SetDrawColor(gmx.Colors.Background.r, gmx.Colors.Background.g, gmx.Colors.Background.b, IsInGame() and 240 or 255)
 				surface.DrawRect(0, 0, w, h)
 
-				surface.SetDrawColor(COLOR_WHITE)
+				surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 			end
 
-			surface.DrawOutlinedRect(0, 0, w, h)
+			surface.DrawOutlinedRect(0, 0, w, h, 2)
 		end
 	end
 
