@@ -1,11 +1,4 @@
-
-local BLUE_COLOR = Color(255, 157, 0) --Color(0, 122, 204)
 local GREEN_COLOR = Color(141, 210, 138)
-local GRAY_COLOR = Color(75, 75, 75)
-local WHITE_COLOR = Color(255, 255, 255)
-
-local TAB_COLOR = Color(45, 45, 45)
-local TAB_OUTLINE_COLOR = Color(0, 0, 0, 0)
 
 surface.CreateFont("gmx_lua_editor", {
 	font = "Tahoma",
@@ -258,7 +251,7 @@ do
 	end
 
 	function LUA_FILE_BROWSER:Paint(w, h)
-		surface.SetDrawColor(TAB_COLOR)
+		surface.SetDrawColor(gmx.Colors.Background)
 		surface.DrawRect(0, 0, w, h)
 
 		if not self.bSetup then
@@ -267,7 +260,7 @@ do
 	end
 
 	function LUA_FILE_BROWSER:PaintOver( w, h)
-		surface.SetDrawColor(TAB_OUTLINE_COLOR)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 
@@ -399,7 +392,7 @@ local LUA_EDITOR = {
 		self.MenuBar:Dock(NODOCK)
 		self.MenuBar:DockPadding(5, 0, 0, 0)
 		self.MenuBar.Paint = function(_, w, h)
-			surface.SetDrawColor(TAB_COLOR)
+			surface.SetDrawColor(gmx.Colors.Background)
 			surface.DrawRect(0, 0, w, h)
 		end
 
@@ -412,7 +405,7 @@ local LUA_EDITOR = {
 
 		self.RunClientButton = self:Add("DButton")
 		self.RunClientButton:SetText("")
-		self.RunClientButton:SetTextColor(WHITE_COLOR)
+		self.RunClientButton:SetTextColor(gmx.Colors.Text)
 		self.RunClientButton:SetFont("gmx_lua_editor")
 		self.RunClientButton:SetSize(200, 25)
 		self.RunClientButton:SetPos(150, 5)
@@ -420,33 +413,33 @@ local LUA_EDITOR = {
 
 		self.RunMenuButton = self:Add("DButton")
 		self.RunMenuButton:SetText("")
-		self.RunMenuButton:SetTextColor(WHITE_COLOR)
+		self.RunMenuButton:SetTextColor(gmx.Colors.Text)
 		self.RunMenuButton:SetFont("gmx_lua_editor")
 		self.RunMenuButton:SetSize(200, 25)
 		self.RunMenuButton:SetPos(350, 5)
 		self.RunMenuButton.DoClick = function() self:RunCode(true) end
 
 		local function menu_paint(_, w, h)
-			surface.SetDrawColor(GRAY_COLOR)
+			surface.SetDrawColor(gmx.Colors.Background)
 			surface.DrawRect(0, 0, w, h)
 		end
 
 		local function option_paint(s, w, h)
 			if s:IsHovered() then
-				surface.SetDrawColor(WHITE_COLOR)
+				surface.SetDrawColor(gmx.Colors.Accent)
 				surface.DrawOutlinedRect(0, 0, w, h)
 			end
 		end
 
 		local function menu_button_paint(s, w, h)
 			if s:IsHovered() then
-				surface.SetDrawColor(GRAY_COLOR)
+				surface.SetDrawColor(gmx.Colors.Accent)
 				surface.DrawRect(0, 0, w, h)
 			end
 		end
 
 		local function combo_box_paint(_, w, h)
-			surface.SetDrawColor(WHITE_COLOR)
+			surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 			surface.DrawOutlinedRect(0, 0, w, h)
 		end
 
@@ -456,14 +449,14 @@ local LUA_EDITOR = {
 			{ x = 0, y = 3 },
 		}
 		local function drop_button_paint()
-			surface.SetDrawColor(WHITE_COLOR)
+			surface.SetDrawColor(gmx.Colors.Accent)
 			draw.NoTexture()
 			surface.DrawPoly(drop_triangle)
 		end
 
 		self.MenuFile.Paint = menu_paint
 		for _, option in ipairs(options) do
-			option:SetTextColor(WHITE_COLOR)
+			option:SetTextColor(gmx.Colors.Text)
 			option:SetFont("gmx_lua_editor")
 			option.Paint = option_paint
 		end
@@ -471,7 +464,7 @@ local LUA_EDITOR = {
 		-- menu bar buttons changes
 		for _, panel in pairs(self.MenuBar:GetChildren()) do
 			if panel.ClassName == "DButton" then
-				panel:SetTextColor(WHITE_COLOR)
+				panel:SetTextColor(gmx.Colors.Text)
 				panel:SetFont("gmx_lua_editor")
 				panel:SetSize(50, 25)
 				panel.Paint = menu_button_paint
@@ -486,7 +479,7 @@ local LUA_EDITOR = {
 		local function paint_run_btn(s, w, h, txt)
 			surface.DisableClipping(true)
 
-			surface.SetDrawColor(GRAY_COLOR)
+			surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 			if s:IsHovered() then
 				surface.DrawRect(0, 0, w, h - 5)
 			else
@@ -498,7 +491,7 @@ local LUA_EDITOR = {
 			surface.DrawPoly(run_triangle)
 
 			surface.SetFont("gmx_lua_editor")
-			surface.SetTextColor(WHITE_COLOR)
+			surface.SetTextColor(gmx.Colors.Text)
 			surface.SetTextPos(75, 3)
 			surface.DrawText(txt)
 
@@ -514,7 +507,7 @@ local LUA_EDITOR = {
 		self.CodeTabs:SetFadeTime(0)
 		self.CodeTabs.Paint = function(_, w, h)
 			surface.DisableClipping(true)
-			surface.SetDrawColor(TAB_COLOR)
+			surface.SetDrawColor(gmx.Colors.Background)
 			surface.DrawRect(0, -10, w, h + 20)
 			surface.DisableClipping(false)
 		end
@@ -524,19 +517,19 @@ local LUA_EDITOR = {
 		end
 
 		self.LblRunStatus = self:Add("DLabel")
-		self.LblRunStatus:SetTextColor(WHITE_COLOR)
+		self.LblRunStatus:SetTextColor(gmx.Colors.Text)
 		self.LblRunStatus:Dock(BOTTOM)
 		self.LblRunStatus:SetSize(self:GetWide(), 25)
 		self.LblRunStatus:SetFont("gmx_lua_editor")
 		self.LblRunStatus:SetText(("%sReady"):format((" "):rep(3)))
 		self.LblRunStatus.Paint = function(_, w, h)
-			surface.SetDrawColor(BLUE_COLOR)
+			surface.SetDrawColor(gmx.Colors.Accent)
 			surface.DrawRect(0, 0, w, h)
 		end
 
 		self.ThemeSelector = self:Add("DComboBox")
 		self.ThemeSelector:AddChoice("vs-dark", nil, true)
-		self.ThemeSelector:SetTextColor(WHITE_COLOR)
+		self.ThemeSelector:SetTextColor(gmx.Colors.Text)
 		self.ThemeSelector:SetFont("gmx_lua_editor")
 		self.ThemeSelector:SetWide(100)
 		self.ThemeSelector.DropButton.Paint = drop_button_paint
@@ -552,7 +545,7 @@ local LUA_EDITOR = {
 		end
 
 		self.LangSelector = self:Add("DComboBox")
-		self.LangSelector:SetTextColor(WHITE_COLOR)
+		self.LangSelector:SetTextColor(gmx.Colors.Text)
 		self.LangSelector:SetFont("gmx_lua_editor")
 		self.LangSelector:SetWide(100)
 		self.LangSelector.DropButton.Paint = drop_button_paint
@@ -653,12 +646,12 @@ local LUA_EDITOR = {
 		frame:SetTitle("Lua Editor File Browser")
 
 		frame.Paint = function(_, w, h)
-			surface.SetDrawColor(TAB_COLOR)
+			surface.SetDrawColor(gmx.Colors.Background)
 			surface.DrawRect(0, 0, w, h)
 		end
 
 		frame.PaintOver = function(_, w, h)
-			surface.SetDrawColor(TAB_OUTLINE_COLOR)
+			surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 			surface.DrawOutlinedRect(0, 0, w, h)
 		end
 
@@ -736,7 +729,7 @@ local LUA_EDITOR = {
 		editor:OpenURL(url)
 
 		self.CodeTabs:SetActiveTab(tab)
-		tab:SetTextColor(WHITE_COLOR)
+		tab:SetTextColor(gmx.Colors.Text)
 		tab:SetFont("gmx_lua_editor")
 
 		local close_btn = tab:Add("DButton")
@@ -746,7 +739,7 @@ local LUA_EDITOR = {
 		close_btn:SetPos(tab_name_w + 20, 0)
 		close_btn:SetSize(20, 20)
 		close_btn:SetText("x")
-		close_btn:SetTextColor(WHITE_COLOR)
+		close_btn:SetTextColor(gmx.Colors.Text)
 		close_btn:SetFont("gmx_lua_editor")
 		close_btn.Paint = function() end
 		close_btn.DoClick = function()
@@ -757,7 +750,7 @@ local LUA_EDITOR = {
 
 		tab.Paint = function(_, w, h)
 			if tab == self.CodeTabs:GetActiveTab() then
-				surface.SetDrawColor(BLUE_COLOR)
+				surface.SetDrawColor(gmx.Colors.Accent)
 				surface.DrawRect(0, 0, w, 20)
 			end
 		end
@@ -766,7 +759,7 @@ local LUA_EDITOR = {
 			if tab ~= self.CodeTabs:GetActiveTab() then return end
 
 			surface.DisableClipping(true)
-			surface.SetDrawColor(BLUE_COLOR)
+			surface.SetDrawColor(gmx.Colors.Accent)
 			surface.DrawRect(0, -2, w, 2)
 			surface.DisableClipping(false)
 
@@ -802,11 +795,11 @@ local LUA_EDITOR = {
 		return ""
 	end,
 	Paint = function(self, w, h)
-		surface.SetDrawColor(TAB_COLOR)
+		surface.SetDrawColor(gmx.Colors.Background)
 		surface.DrawRect(0, 0, w, h)
 	end,
 	PaintOver = function(self, w, h)
-		surface.SetDrawColor(TAB_OUTLINE_COLOR)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 }
@@ -828,10 +821,10 @@ local function init_editor()
 	p:DockPadding(2, 25, 2, 2)
 
 	function p:Paint(w, h)
-		surface.SetDrawColor(30, 30, 30, 255)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawRect(2, 0, w - 4, h -2)
 
-		surface.SetDrawColor(GRAY_COLOR)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawLine(2, 25, w - 4, 25)
 	end
 
