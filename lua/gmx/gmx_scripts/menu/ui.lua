@@ -1,4 +1,13 @@
-gmx.Colors = {
+local night_colors = {
+	Text = Color(255, 255, 255, 255),
+	Wallpaper = Color(0, 0, 0),
+	Background = Color(30, 30, 30),
+	BackgroundStrip = Color(59, 59, 59),
+	Accent = Color(255, 157, 0),
+	AccentAlternative = Color(255, 196, 0),
+}
+
+local day_colors = {
 	Text = Color(0, 0, 0, 255),
 	Wallpaper = Color(220, 220, 220, 255),
 	Background = Color(255, 255, 255, 255),
@@ -6,6 +15,79 @@ gmx.Colors = {
 	Accent = Color(255, 157, 0),
 	AccentAlternative = Color(255, 196, 0),
 }
+
+gmx.Colors = gmx.Colors.Text and gmx.Colors or day_colors
+
+local function parse_12_hours_datetime(str)
+	local chunks = str:Split(":")
+	local last_chunk_chunks = chunks[#chunks]:Split(" ")
+	chunks[#chunks] = last_chunk_chunks[1]:Trim()
+	local is_afternoon = last_chunk_chunks[2]:lower() == "pm"
+
+	return {
+		Hours = tonumber(chunks[1]) + (is_afternoon and 12 or 0),
+		Minutes = tonumber(chunks[2]),
+		Seconds = tonumber(chunks[3]),
+	}
+end
+
+local elements_to_update = {}
+local function update_day_colors(latitude, longitude)
+	local url = ("https://api.sunrise-sunset.org/json?lat=%f&lng=%f"):format(latitude, longitude)
+	http.Fetch(url, function(res)
+		local results = util.JSONToTable(res).results
+		local is_afternoon = os.date("%p"):lower() == "pm"
+		local cur_hour = tonumber(os.date("%I")) + (is_afternoon and 12 or 0)
+		local sunset = parse_12_hours_datetime(results.sunset)
+		local sunrise = parse_12_hours_datetime(results.sunrise)
+
+		local prev_colors = gmx.Colors
+		if cur_hour >= sunset.Hours or cur_hour <= sunrise.Hours then
+			gmx.Colors = night_colors
+		else
+			gmx.Colors = day_colors
+		end
+
+		if prev_colors ~= gmx.Colors then
+			for element, element_data in pairs(elements_to_update) do
+				if not IsValid(element) then
+					elements_to_update[element] = nil
+					continue
+				end
+
+				element_data.SetterFunction(element, gmx.Colors[element_data.ThemeColorKey])
+			end
+
+			print(cur_hour, sunrise.Hours, sunset.Hours)
+			gmx.Print("Day time changing to " .. gmx.GetCurrentDayState())
+		end
+	end, gmx.Print)
+end
+
+http.Fetch("http://ip-api.com/json/", function(body)
+	local data = util.JSONToTable(body)
+	update_day_colors(data.lat, data.lon)
+	timer.Create("gmx_sunset_timer", 60 * 5, 0, function()
+		update_day_colors(data.lat, data.lon)
+	end)
+end, gmx.Print)
+
+function gmx.GetCurrentDayState()
+	return gmx.Colors == day_colors and "day" or "night"
+end
+
+function gmx.SetVGUIElementColor(element, setter_fn, theme_color_key)
+	if not IsValid(element) then return end
+	if not setter_fn then return end
+	if not gmx.Colors[theme_color_key] then return end
+
+	setter_fn(element, element[theme_color_key])
+	elements_to_update[element] = {
+		Element = element,
+		SetterFunction = setter_fn,
+		ThemeColorKey = theme_color_key,
+	}
+end
 
 local bg = vgui.Create("DPanel")
 bg:SetSize(ScrW(), ScrH())
@@ -147,7 +229,7 @@ local function add_button(text, x, y, w, h, func, secondary)
 	button:SetSize(w, h)
 	button:SetPos(x, y)
 	button:SetText(text)
-	button:SetTextColor(gmx.Colors.Text)
+	gmx.SetVGUIElementColor(button, button.SetTextColor, "Text")
 	button:SetFont(secondary and "gmx_button_secondary" or "gmx_button")
 
 	button.DoClick = func

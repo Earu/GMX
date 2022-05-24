@@ -32,6 +32,8 @@ local firewall_rules = {
 	["steamcommunity.com"]             = { method = "GET", type = "ALLOW" },
 	["keybase.pub"]                    = { method = "GET", type = "ALLOW" },
 	["wikimedia.org"]                  = { method = "GET", type = "ALLOW" },
+	["ip-api.com"]                     = { method = "GET", type = "ALLOW" },
+	["api.sunrise-sunset.org"]         = { method = "GET", type = "ALLOW" },
 
 	-- api & others
 	["translate.yandex.net"] = { method = "GET", type = "ALLOW" },

@@ -1,8 +1,5 @@
 require("naughty")
 
-local COLOR_WHITE = Color(255, 255, 255, 255)
-local COLOR_BG_HOVERED = Color(255, 157, 0)
-
 local function create_editor()
 	local frame = vgui.Create("DFrame")
 	frame:SetTitle("Binary Editor")
@@ -12,22 +9,23 @@ local function create_editor()
 	frame.btnMinim:Hide()
 	frame.btnMaxim:Hide()
 	frame.lblTitle:SetFont("gmx_info")
+	gmx.SetVGUIElementColor(frame.lblTitle, frame.lblTitle.SetTextColor, "Text")
 
 	function frame.btnClose:Paint()
-		surface.SetTextColor(COLOR_BG_HOVERED)
+		surface.SetTextColor(gmx.Colors.Text)
 		surface.SetTextPos(10, 5)
 		surface.SetFont("DermaDefaultBold")
 		surface.DrawText("X")
 	end
 
 	function frame:Paint(w, h)
-		surface.SetDrawColor(143, 99, 29, 201)
-		surface.DrawOutlinedRect(1, 1, w - 2, h - 2)
-
-		surface.SetDrawColor(65, 40, 0, 200)
+		surface.SetDrawColor(gmx.Colors.Background)
 		surface.DrawRect(0, 0, w, h)
 
-		surface.SetDrawColor(COLOR_BG_HOVERED)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
+		surface.DrawOutlinedRect(0, 0, w, h)
+
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawOutlinedRect(0, 0, w, 60)
 		surface.DrawLine(0, 25, w, 30)
 	end
@@ -56,17 +54,17 @@ local function create_editor()
 	is_offset:DockMargin(5, 0, 0, 0)
 	is_offset:SetText("Is Offset")
 	is_offset:SetWide(75)
-	is_offset:SetTextColor(COLOR_WHITE)
+	gmx.SetVGUIElementColor(is_offset, is_offset.SetTextColor, "Text")
 
 	local read_btn = frame:Add("DButton")
 	read_btn:SetPos(610, 29)
 	read_btn:SetText("Read")
 	read_btn:SetWide(190)
 	read_btn:SetTall(31)
-	read_btn:SetTextColor(COLOR_WHITE)
+	gmx.SetVGUIElementColor(read_btn, read_btn.SetTextColor, "Text")
 
 	function read_btn:Paint(w, h)
-		surface.SetDrawColor(255, 157, 0, 200)
+		surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 		surface.DrawLine(0, 0, 0, h)
 	end
 
@@ -100,7 +98,7 @@ local function create_editor()
 				byte_panel:SetSize(cell_size, cell_size)
 				byte_panel:SetText(value)
 				byte_panel:SetPos((col - 1) * (cell_size + cell_margin), 5 + (row - 1) * (cell_size + cell_margin))
-				byte_panel:SetTextColor(valid_ascii and COLOR_WHITE or COLOR_BG_HOVERED)
+				gmx.SetVGUIElementColor(byte_panel, byte_panel.SetTextColor, "Text")
 				byte_panel.Offset = byte_index - 1
 
 				local ascii_mode = true
@@ -133,16 +131,16 @@ local function create_editor()
 
 				function byte_panel:Paint(w, h)
 					if valid_ascii then
-						surface.SetDrawColor(65, 65, 65, 200)
+						surface.SetDrawColor(gmx.Colors.Background)
 						surface.DrawRect(0, 0, w, h)
 
-						surface.SetDrawColor(143, 143, 143, 201)
+						surface.SetDrawColor(gmx.Colors.Accent)
 						surface.DrawOutlinedRect(0, 0, w, h)
 					else
-						surface.SetDrawColor(65, 40, 0, 200)
+						surface.SetDrawColor(gmx.Colors.Background)
 						surface.DrawRect(0, 0, w, h)
 
-						surface.SetDrawColor(143, 99, 29, 201)
+						surface.SetDrawColor(gmx.Colors.BackgroundStrip)
 						surface.DrawOutlinedRect(0, 0, w, h)
 					end
 				end

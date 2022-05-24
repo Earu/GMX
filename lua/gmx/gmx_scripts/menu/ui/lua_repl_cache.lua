@@ -19,7 +19,7 @@ local function toggle_repl_cache_panel()
 	frame:SetMouseInputEnabled(true)
 	frame.btnMinim:Hide()
 	frame.lblTitle:SetFont("gmx_info")
-	frame.lblTitle:SetTextColor(gmx.Colors.Text)
+	gmx.SetVGUIElementColor(frame.lblTitle, frame.lblTitle.SetTextColor, "Text")
 
 	function frame.btnMaxim.Paint()
 		surface.SetTextColor(gmx.Colors.Text)
@@ -64,7 +64,7 @@ local function toggle_repl_cache_panel()
 	table.insert(columns, list_view:AddColumn("Method"))
 	table.insert(columns, list_view:AddColumn("Date"))
 	for i, column in ipairs(columns) do
-		column.Header:SetTextColor(gmx.Colors.Text)
+		gmx.SetVGUIElementColor(column.Header, column.Header.SetTextColor, "Text")
 		column.Header:SetFont("gmx_info")
 		column.Header:SetTall(30)
 		function column.Header:Paint(w, h)
@@ -88,7 +88,7 @@ local function toggle_repl_cache_panel()
 	btn_open:SetText("Open")
 	btn_open:SetSize(frame:GetWide(), 30)
 	btn_open:SetFont("gmx_info")
-	btn_open:SetTextColor(gmx.Colors.Text)
+	gmx.SetVGUIElementColor(btn_open, btn_open.SetTextColor, "Text")
 
 	local function update_list()
 		list_view:Clear()
@@ -96,7 +96,7 @@ local function toggle_repl_cache_panel()
 		for i, data in ipairs(gmx.ReplFilterCache) do
 			local line = list_view:AddLine(tostring(i), data.Path, data.Method, data.Date)
 			for _, column in pairs(line.Columns) do
-				column:SetTextColor(gmx.Colors.Text)
+				gmx.SetVGUIElementColor(column, column.SetTextColor, "Text")
 			end
 
 			function line:Paint(w, h)
