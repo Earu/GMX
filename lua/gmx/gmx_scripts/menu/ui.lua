@@ -1,10 +1,6 @@
-local COLOR_WHITE = Color(255, 255, 255, 255)
-local COLOR_BG_HOVERED = Color(255, 157, 0)
-local COLOR_HOVERED = Color(255, 196, 0)
-
 gmx.Colors = {
 	Text = Color(0, 0, 0, 255),
-	Wallpaper = Color(245, 245, 245, 255),
+	Wallpaper = Color(220, 220, 220, 255),
 	Background = Color(255, 255, 255, 255),
 	BackgroundStrip = Color(225, 225, 225, 255),
 	Accent = Color(255, 157, 0),

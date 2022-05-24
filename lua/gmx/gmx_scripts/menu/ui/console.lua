@@ -22,9 +22,13 @@ console.btnMaxim:Hide()
 console.btnMinim:Hide()
 
 function console:Paint(w, h)
-	surface.SetDrawColor(gmx.Colors.BackgroundStrip.r, gmx.Colors.BackgroundStrip.g, gmx.Colors.BackgroundStrip.b, 201)
-	surface.DrawLine(0, 0, 0, h)
+	local alpha = (gmx.Colors.Background.r > 128 and gmx.Colors.Background.g > 128 and gmx.Colors.Background.b > 128) and 20 or 200
+
+	surface.SetDrawColor(gmx.Colors.Background.r, gmx.Colors.Background.g, gmx.Colors.Background.b, alpha)
 	surface.DrawRect(0, 0, w, h)
+
+	surface.SetDrawColor(gmx.Colors.BackgroundStrip.r, gmx.Colors.BackgroundStrip.g, gmx.Colors.BackgroundStrip.b, alpha)
+	surface.DrawLine(0, 0, 0, h)
 end
 
 local console_input_header = console:Add("DLabel")
@@ -35,7 +39,9 @@ console_input_header:SetSize(75, 30)
 console_input_header:SetPos(0, console:GetTall() - 30)
 
 function console_input_header:Paint(w, h)
-	surface.SetDrawColor(gmx.Colors.Background.r, gmx.Colors.Background.g, gmx.Colors.Background.b, 200)
+	local alpha = (gmx.Colors.Background.r > 128 and gmx.Colors.Background.g > 128 and gmx.Colors.Background.b > 128) and 20 or 200
+
+	surface.SetDrawColor(gmx.Colors.Background.r, gmx.Colors.Background.g, gmx.Colors.Background.b, alpha)
 	surface.DrawLine(0, 0, 0, h)
 
 	surface.DisableClipping(true)
