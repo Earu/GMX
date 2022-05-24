@@ -38,6 +38,8 @@ local function update_day_colors(latitude, longitude)
 		local results = util.JSONToTable(res).results
 		local is_afternoon = os.date("%p"):lower() == "pm"
 		local cur_hour = tonumber(os.date("%I")) + (is_afternoon and 12 or 0)
+		if cur_hour == 12 and not is_afternoon then cur_hour = 0 end -- fix for midnight
+
 		local sunset = parse_12_hours_datetime(results.sunset)
 		local sunrise = parse_12_hours_datetime(results.sunrise)
 
