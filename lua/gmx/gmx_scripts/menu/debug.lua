@@ -16,10 +16,6 @@ local function compute_spacing_print_pos(tbl, compute_keys, max_spacing)
 	return min
 end
 
-local HEADER_COLOR = Color(255, 157, 0)
-local BODY_COLOR = Color(255, 196, 0)
-local WHITE_COLOR = Color(255, 255, 255)
-local GRAY_COLOR = Color(155, 155, 155)
 local RED_COLOR = Color(199, 116, 78)
 local VALUE_SPACING_MAX, INFO_SPACING_MAX = 40, 24
 function PrintTable(tbl)
@@ -28,8 +24,8 @@ function PrintTable(tbl)
 		return
 	end
 
-	MsgC(GRAY_COLOR, "-- " .. tostring(tbl) .. "\n")
-	MsgC(HEADER_COLOR, "{\n")
+	MsgC(gmx.Colors.BackgroundStrip, "-- " .. tostring(tbl) .. "\n")
+	MsgC(gmx.Colors.Accent, "{\n")
 
 	local min_equal_pos = compute_spacing_print_pos(tbl, true, VALUE_SPACING_MAX)
 	local min_info_pos = compute_spacing_print_pos(tbl, false, INFO_SPACING_MAX)
@@ -44,9 +40,9 @@ function PrintTable(tbl)
 			end
 		end
 
-		local value_color = BODY_COLOR
+		local value_color = gmx.Colors.AccentAlternative
 		if isstring(value) then
-			value_color = HEADER_COLOR
+			value_color = gmx.Colors.Accent
 		elseif isnumber(value) or isbool(value) then
 			value_color = RED_COLOR
 		end
@@ -68,10 +64,10 @@ function PrintTable(tbl)
 			spacing_value = (" "):rep(min_equal_pos - key_len)
 		end
 
-		MsgC(HEADER_COLOR, "\t[", WHITE_COLOR, key_name, HEADER_COLOR, "]", WHITE_COLOR, spacing_value .. " = ", value_color, value_str, GRAY_COLOR, spacing_info .. " -- " .. comment .. "\n")
+		MsgC(gmx.Colors.Accent, "\t[", gmx.Colors.Text, key_name, gmx.Colors.Accent, "]", gmx.Colors.Text, spacing_value .. " = ", value_color, value_str, gmx.Colors.BackgroundStrip, spacing_info .. " -- " .. comment .. "\n")
 	end
 
-	MsgC(HEADER_COLOR, "}\n")
+	MsgC(gmx.Colors.Accent, "}\n")
 end
 
 FindMetaTable("Vector").__tostring = function(self)
@@ -97,7 +93,7 @@ end
 local function markup_keyword(match)
 	local start_pos, end_pos = match:find("[a-zA-Z]+")
 	local keyword = match:sub(start_pos, end_pos)
-	local color = (keyword == "true" or keyword == "false") and RED_COLOR or BODY_COLOR
+	local color = (keyword == "true" or keyword == "false") and RED_COLOR or gmx.Colors.AccentAlternative
 	return ("%s<color=%d,%d,%d>%s</color>%s"):format(
 		match:sub(1, start_pos - 1),
 		color.r, color.g, color.b,
@@ -138,23 +134,23 @@ function PrintFunction(fn)
 
 	local fn_source, file_path, start_line, end_line = get_function_source(fn)
 	local fn_address = tostring(fn):gsub("function%:%s", "")
-	MsgC(GRAY_COLOR, ("-- %s\n"):format(fn_address))
+	MsgC(gmx.Colors.BackgroundStrip, ("-- %s\n"):format(fn_address))
 	if file_path ~= "Native" and file_path ~= "Anonymous" then
-		MsgC(GRAY_COLOR, ("-- %s:%d-%d\n"):format(file_path, start_line, end_line))
+		MsgC(gmx.Colors.BackgroundStrip, ("-- %s:%d-%d\n"):format(file_path, start_line, end_line))
 	else
-		MsgC(GRAY_COLOR, ("-- %s\n"):format(file_path))
+		MsgC(gmx.Colors.BackgroundStrip, ("-- %s\n"):format(file_path))
 	end
 
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
 	-- syntax
 	fn_source = fn_source
-		:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(HEADER_COLOR))
+		:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(gmx.Colors.Accent))
 		:gsub("[^%[]%[[^%[]",function(match) -- table indexing [
-			return match[1] .. markup_with_color(HEADER_COLOR, true)(match[2]) .. match[3]
+			return match[1] .. markup_with_color(gmx.Colors.Accent, true)(match[2]) .. match[3]
 		end)
 		:gsub("[^%]]%][^%]]",function(match) -- table indexing ]
-			return match[1] .. markup_with_color(HEADER_COLOR, true)(match[2]) .. match[3]
+			return match[1] .. markup_with_color(gmx.Colors.Accent, true)(match[2]) .. match[3]
 		end)
 
 	-- keywords
@@ -170,24 +166,24 @@ function PrintFunction(fn)
 
 	-- strings literals
 	fn_source = fn_source
-		:gsub("'.-'", markup_with_color(HEADER_COLOR))
-		:gsub("\".-\"", markup_with_color(HEADER_COLOR))
-		:gsub("[^%-]%[%[.-%]%]", markup_with_color(HEADER_COLOR))
+		:gsub("'.-'", markup_with_color(gmx.Colors.Accent))
+		:gsub("\".-\"", markup_with_color(gmx.Colors.Accent))
+		:gsub("[^%-]%[%[.-%]%]", markup_with_color(gmx.Colors.Accent))
 
 	-- comments
 	fn_source = fn_source
-		:gsub("%-%-[^%[%]]-\n", markup_with_color(GRAY_COLOR, true))
-		:gsub("%/%/.-\n", markup_with_color(GRAY_COLOR, true))
-		:gsub("%-%-%[%[.-%]%]", markup_with_color(GRAY_COLOR, true))
-		:gsub("%/%*.-%*%/", markup_with_color(GRAY_COLOR, true))
+		:gsub("%-%-[^%[%]]-\n", markup_with_color(gmx.Colors.BackgroundStrip, true))
+		:gsub("%/%/.-\n", markup_with_color(gmx.Colors.BackgroundStrip, true))
+		:gsub("%-%-%[%[.-%]%]", markup_with_color(gmx.Colors.BackgroundStrip, true))
+		:gsub("%/%*.-%*%/", markup_with_color(gmx.Colors.BackgroundStrip, true))
 
 	local start_pos, end_pos
 	repeat
 		local new_start_pos, new_end_pos = fn_source:find("%<color%=%d+%,%d+%,%d+%>(.-)%<%/color%>", end_pos and end_pos + 1 or 1)
 		if new_start_pos then
-			MsgC(WHITE_COLOR, fn_source:sub(end_pos and end_pos + 1 or 1, new_start_pos - 1))
+			MsgC(gmx.Colors.Text, fn_source:sub(end_pos and end_pos + 1 or 1, new_start_pos - 1))
 		else
-			MsgC(WHITE_COLOR, fn_source:sub(end_pos and end_pos + 1 or 1))
+			MsgC(gmx.Colors.Text, fn_source:sub(end_pos and end_pos + 1 or 1))
 		end
 
 		if new_start_pos and new_end_pos then
