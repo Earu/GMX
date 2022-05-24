@@ -162,7 +162,7 @@ local function add_button(text, x, y, w, h, func, secondary)
 			surface.DrawRect(0, 0, w, h)
 
 			surface.SetDrawColor(gmx.Colors.BackgroundStrip)
-			surface.DrawOutlinedRect(0, 0, w, h, 2)
+			surface.DrawOutlinedRect(0, 0, w, h)
 
 			if self:IsHovered() then
 				surface.SetDrawColor(gmx.Colors.Accent)
