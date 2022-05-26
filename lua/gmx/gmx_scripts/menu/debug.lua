@@ -24,7 +24,7 @@ function PrintTable(tbl)
 		return
 	end
 
-	MsgC(gmx.Colors.BackgroundStrip, "-- " .. tostring(tbl) .. "\n")
+	MsgC(gmx.Colors.TextAlternative, "-- " .. tostring(tbl) .. "\n")
 	MsgC(gmx.Colors.Accent, "{\n")
 
 	local min_equal_pos = compute_spacing_print_pos(tbl, true, VALUE_SPACING_MAX)
@@ -64,7 +64,7 @@ function PrintTable(tbl)
 			spacing_value = (" "):rep(min_equal_pos - key_len)
 		end
 
-		MsgC(gmx.Colors.Accent, "\t[", gmx.Colors.Text, key_name, gmx.Colors.Accent, "]", gmx.Colors.Text, spacing_value .. " = ", value_color, value_str, gmx.Colors.BackgroundStrip, spacing_info .. " -- " .. comment .. "\n")
+		MsgC(gmx.Colors.Accent, "\t[", gmx.Colors.Text, key_name, gmx.Colors.Accent, "]", gmx.Colors.Text, spacing_value .. " = ", value_color, value_str, gmx.Colors.TextAlternative, spacing_info .. " -- " .. comment .. "\n")
 	end
 
 	MsgC(gmx.Colors.Accent, "}\n")
@@ -134,11 +134,11 @@ function PrintFunction(fn)
 
 	local fn_source, file_path, start_line, end_line = get_function_source(fn)
 	local fn_address = tostring(fn):gsub("function%:%s", "")
-	MsgC(gmx.Colors.BackgroundStrip, ("-- %s\n"):format(fn_address))
+	MsgC(gmx.Colors.TextAlternative, ("-- %s\n"):format(fn_address))
 	if file_path ~= "Native" and file_path ~= "Anonymous" then
-		MsgC(gmx.Colors.BackgroundStrip, ("-- %s:%d-%d\n"):format(file_path, start_line, end_line))
+		MsgC(gmx.Colors.TextAlternative, ("-- %s:%d-%d\n"):format(file_path, start_line, end_line))
 	else
-		MsgC(gmx.Colors.BackgroundStrip, ("-- %s\n"):format(file_path))
+		MsgC(gmx.Colors.TextAlternative, ("-- %s\n"):format(file_path))
 	end
 
 	if file_path == "Native" or file_path == "Anonymous" then return end
@@ -246,5 +246,6 @@ hook.Add("GMXInitialized", "gmx_crash_report", function()
 		return
 	end
 
-	gmx.Print("Crash Report", dump_path .. "\n" .. file.Read(dump_path, "BASE_PATH"))
+	gmx.Print("Crash Report", gmx.Colors.Text, dump_path .. "\n" .. file.Read(dump_path, "BASE_PATH"))
+	MsgN()
 end)

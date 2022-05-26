@@ -1,19 +1,21 @@
 local night_colors = {
 	Text = Color(255, 255, 255, 255),
+	TextAlternative = Color(200, 200, 200, 255),
 	Wallpaper = Color(0, 0, 0),
 	Background = Color(30, 30, 30),
 	BackgroundStrip = Color(59, 59, 59),
-	Accent = Color(255, 157, 0),
-	AccentAlternative = Color(255, 196, 0),
+	Accent = Color(255, 0, 0),
+	AccentAlternative = Color(200, 0, 0),
 }
 
 local day_colors = {
 	Text = Color(0, 0, 0, 255),
+	TextAlternative = Color(125, 125, 125, 255),
 	Wallpaper = Color(220, 220, 220, 255),
 	Background = Color(255, 255, 255, 255),
 	BackgroundStrip = Color(225, 225, 225, 255),
-	Accent = Color(255, 157, 0),
-	AccentAlternative = Color(255, 196, 0),
+	Accent = Color(255, 0, 0),
+	AccentAlternative = Color(200, 0, 0),
 }
 
 gmx.Colors = gmx.Colors.Text and gmx.Colors or day_colors
@@ -36,9 +38,11 @@ local function update_day_colors(latitude, longitude)
 	local url = ("https://api.sunrise-sunset.org/json?lat=%f&lng=%f"):format(latitude, longitude)
 	http.Fetch(url, function(res)
 		local results = util.JSONToTable(res).results
+		local cur_hour = tonumber(os.date("%I"))
+		if cur_hour == 12 then cur_hour = 0 end -- fix for midnight/midday
+
 		local is_afternoon = os.date("%p"):lower() == "pm"
-		local cur_hour = tonumber(os.date("%I")) + (is_afternoon and 12 or 0)
-		if cur_hour == 12 and not is_afternoon then cur_hour = 0 end -- fix for midnight
+		cur_hour = cur_hour + (is_afternoon and 12 or 0)
 
 		local sunset = parse_12_hours_datetime(results.sunset)
 		local sunrise = parse_12_hours_datetime(results.sunrise)
@@ -60,18 +64,14 @@ local function update_day_colors(latitude, longitude)
 				element_data.SetterFunction(element, gmx.Colors[element_data.ThemeColorKey])
 			end
 
+			local sunrise_log = ("%02d:%02d:%02d"):format(sunrise.Hours, sunrise.Minutes, sunrise.Seconds)
+			local sunset_log = ("%02d:%02d:%02d"):format(sunset.Hours, sunset.Minutes, sunset.Seconds)
+			local local_time_log = ("%02d:%02d:%02d"):format(cur_hour, os.date("%M"), os.date("%S"))
+			gmx.Print(("Current time is: %s, sunset: %s, sunrise: %s"):format(local_time_log, sunset_log, sunrise_log))
 			gmx.Print("Day time changing to " .. gmx.GetCurrentDayState())
 		end
 	end, gmx.Print)
 end
-
-http.Fetch("http://ip-api.com/json/", function(body)
-	local data = util.JSONToTable(body)
-	update_day_colors(data.lat, data.lon)
-	timer.Create("gmx_sunset_timer", 60 * 5, 0, function()
-		update_day_colors(data.lat, data.lon)
-	end)
-end, gmx.Print)
 
 function gmx.GetCurrentDayState()
 	return gmx.Colors == day_colors and "day" or "night"
@@ -92,6 +92,19 @@ end
 
 local bg = vgui.Create("DPanel")
 bg:SetSize(ScrW(), ScrH())
+bg:SetPaintedManually(true) -- disables the rendering
+
+http.Fetch("http://ip-api.com/json/", function(body)
+	local data = util.JSONToTable(body)
+	update_day_colors(data.lat, data.lon)
+	bg:SetPaintedManually(false)
+	timer.Create("gmx_sunset_timer", 60 * 5, 0, function()
+		update_day_colors(data.lat, data.lon)
+	end)
+end, function(err)
+	bg:SetPaintedManually(false)
+	gmx.Print("Error getting location data: " .. err)
+end)
 
 surface.CreateFont("gmx_header", {
 	font = "Arial",
