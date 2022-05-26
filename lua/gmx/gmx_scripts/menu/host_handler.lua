@@ -9,10 +9,13 @@ end
 local INVALID_IP = "0.0.0.0"
 local cached_address
 function gmx.GetConnectedServerIPAddress()
+	if cached_address == "loopback" then return cached_address end
+
 	if cached_address then
 		local ip = cached_address
 		if not cached_address:match("^%d+%.%d+%.%d+%.%d+$") then
-			ip = dns.Lookup(cached_address)[1]
+			local succ, err = pcall(dns.Lookup, cached_address)
+			if succ then ip = err[1] else ip = nil end
 		end
 
 		if ip then
