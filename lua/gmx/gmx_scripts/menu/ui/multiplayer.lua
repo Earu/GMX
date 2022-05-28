@@ -230,10 +230,12 @@ local function add_category(categories, type, name, expanded, search_query)
 		function item:Paint(w, h)
 			surface.SetDrawColor(gmx.Colors.Background)
 			surface.DrawOutlinedRect(0, 0, w, h)
+		end
 
+		function item:PaintOver(w, h)
 			if self:IsHovered() then
 				surface.SetDrawColor(gmx.Colors.Accent)
-				surface.DrawRect(0, 0, w, h)
+				surface.DrawOutlinedRect(0, 0, w, h)
 			end
 		end
 
@@ -245,27 +247,14 @@ local function add_category(categories, type, name, expanded, search_query)
 		label:DockMargin(8, 0, 0, 0)
 		label:SetFont("gmx_server_info")
 
-		local button = item:Add("DButton")
-		button:SetText("Connect")
-		button:Dock(RIGHT)
-		button:SetWide(category:GetWide() / 10)
-		gmx.SetVGUIElementColor(button, button.SetTextColor, "Text")
-		button:SetFont("gmx_server_info")
-		function button:Paint(w, h)
-			if self:IsHovered() then
-				surface.SetDrawColor(gmx.Colors.Accent)
-				surface.DrawRect(0, 0, w, h)
-			else
-				surface.SetDrawColor(gmx.Colors.BackgroundStrip)
-				surface.DrawLine(0, 0, 0, h)
-				surface.DrawLine(w - 1, 0, w - 1, h)
-				surface.DrawLine(0, h - 1, w, h - 1)
-			end
-		end
-
-		function button:DoClick()
-			RunGameUICommand("engine connect " .. server.IPAddress)
-		end
+		local ping_label = item:Add("DLabel")
+		ping_label:SetText(server.Ping .. "ms")
+		gmx.SetVGUIElementColor(ping_label, ping_label.SetTextColor, "Text")
+		ping_label:Dock(RIGHT)
+		ping_label:DockMargin(0, 0, 8, 0)
+		ping_label:SetWide(category:GetWide() / 10)
+		ping_label:SetFont("gmx_server_info")
+		ping_label:SetContentAlignment(5)
 
 		local gamemode_label = item:Add("DLabel")
 		gamemode_label:SetText(server.Description)
@@ -355,10 +344,13 @@ local function show_servers()
 		surface.DrawOutlinedRect(0, 0, w, 25)
 	end
 
+	local old_frame_think = frame.Think
 	function frame:Think()
 		if input.IsKeyDown(KEY_ESCAPE) then
 			self:Remove()
 		end
+
+		old_frame_think(self)
 	end
 
 	local categories = frame:Add("DCategoryList")
