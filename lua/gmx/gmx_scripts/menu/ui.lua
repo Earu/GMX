@@ -4,8 +4,8 @@ local night_colors = {
 	Wallpaper = Color(0, 0, 0),
 	Background = Color(30, 30, 30),
 	BackgroundStrip = Color(59, 59, 59),
-	Accent = Color(255, 0, 0),
-	AccentAlternative = Color(200, 0, 0),
+	Accent = Color(255, 157, 0),
+	AccentAlternative = Color(255, 196, 0),
 }
 
 local day_colors = {
@@ -18,7 +18,7 @@ local day_colors = {
 	AccentAlternative = Color(200, 0, 0),
 }
 
-gmx.Colors = gmx.Colors.Text and gmx.Colors or day_colors
+gmx.Colors = gmx.Colors.Text and gmx.Colors or night_colors
 
 local function parse_12_hours_datetime(str)
 	local chunks = str:Split(":")
@@ -92,19 +92,19 @@ end
 
 local bg = vgui.Create("DPanel")
 bg:SetSize(ScrW(), ScrH())
-bg:SetPaintedManually(true) -- disables the rendering
 
-http.Fetch("http://ip-api.com/json/", function(body)
-	local data = util.JSONToTable(body)
-	update_day_colors(data.lat, data.lon)
-	bg:SetPaintedManually(false)
-	timer.Create("gmx_sunset_timer", 60 * 5, 0, function()
+-- force dark theme for now
+if false then
+	http.Fetch("http://ip-api.com/json/", function(body)
+		local data = util.JSONToTable(body)
 		update_day_colors(data.lat, data.lon)
+		timer.Create("gmx_sunset_timer", 60 * 5, 0, function()
+			update_day_colors(data.lat, data.lon)
+		end)
+	end, function(err)
+		gmx.Print("Error getting location data: " .. err)
 	end)
-end, function(err)
-	bg:SetPaintedManually(false)
-	gmx.Print("Error getting location data: " .. err)
-end)
+end
 
 surface.CreateFont("gmx_header", {
 	font = "Arial",
