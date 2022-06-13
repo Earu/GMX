@@ -44,7 +44,7 @@ hook.Add("ClientFullyInitialized", "gmx_host_server_autorun", function()
 					return
 				end
 
-				local err = RunString(("print(select(1, %q))"):format(cmd), "gmx", false)
+				local err = RunString(("GMX_DBG_PRINT(select(1, %q))"):format(cmd), "gmx", false)
 				if err then
 					error(err)
 				end

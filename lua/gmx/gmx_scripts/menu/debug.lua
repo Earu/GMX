@@ -233,6 +233,7 @@ function print(...)
 		old_print(...)
 	end
 end
+GMX_DBG_PRINT = print
 
 hook.Add("GMXInitialized", "gmx_crash_report", function()
 	local dump_path = "crashes/" .. file.Find("crashes/*.txt", "BASE_PATH", "datedesc")[1]
