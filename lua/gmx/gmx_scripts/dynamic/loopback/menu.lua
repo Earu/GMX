@@ -1,24 +1,4 @@
-if not system.IsWindows() then return end
-
-include("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
-
-FilterOutgoingMessage(net_Tick, function(netchan, read, write)
-	write:WriteUInt(net_Tick, NET_MESSAGE_BITS)
-
-	local tick = read:ReadLong()
-	write:WriteLong(tick)
-
-	read:ReadUInt(16)
-	write:WriteUInt(1, 16)
-
-	local hostframetimedeviation = read:ReadUInt(16)
-	write:WriteUInt(hostframetimedeviation, 16)
-end)
-
 hook.Add("ClientFullyInitialized", "gmx_host_server_autorun", function()
-	local server_autorun_code = file.Read("lua/gmx/gmx_scripts/dynamic/metastruct.net/server.lua", "MOD")
-	gmx.RunOnClient(("if luadev and luadev.RunOnServer then luadev.RunOnServer((%q):gsub(\"{STEAM_ID}\", LocalPlayer():SteamID()), \"GMX\") end"):format(server_autorun_code))
-
 	-- for convenience
 	gmx.RunOnClient(
 		[[gmx = {
@@ -34,6 +14,7 @@ hook.Add("ClientFullyInitialized", "gmx_host_server_autorun", function()
 		}]] .. "\n"
 		.. file.Read("lua/gmx/gmx_scripts/menu/debug.lua", "MOD")
 		.. [[
+			hook.Remove("GMXInitialized", "gmx_crash_report")
 			concommand.Add("gmx_cl", function(_, _, _, cmd)
 				cmd = cmd:Trim()
 				if #cmd == 0 then return end
@@ -44,10 +25,9 @@ hook.Add("ClientFullyInitialized", "gmx_host_server_autorun", function()
 					return
 				end
 
-				local err = RunString(("print(select(1, %q))"):format(cmd), "gmx", false)
-				if err then
-					error(err)
-				end
+				local err = RunString(("print(select(1, %s))"):format(cmd), "gmx", false)
+				if err then err = RunString(cmd, "gmx", false) end
+				if err then error(err) end
 			end)
 		]]
 	)

@@ -49,9 +49,8 @@ concommand.Add("gmx", function(_, _, _, cmd)
 
 	gmx.Print("Menu running:", cmd)
 	local err = RunString([[print(select(1, ]] .. cmd .. [[))]], "gmx", false)
-	if err then
-		RunString(cmd, "gmx")
-	end
+	if err then err = RunString(cmd, "gmx", false) end
+	if err then print(err) end
 end)
 
 concommand.Remove("gmx_file")
