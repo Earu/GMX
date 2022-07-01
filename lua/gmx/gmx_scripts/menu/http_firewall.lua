@@ -21,7 +21,7 @@ local firewall_rules = {
 	["imgur.com"]                      = { method = "*",   type = "ALLOW" },
 	["puu.sh"]                         = { method = "GET", type = "ALLOW" },
 	["akamaihd.net"]                   = { method = "GET", type = "ALLOW" },
-	["dl.dropboxusercontent.com"]      = { method = "GET", type = "ALLOW" },
+	["dropboxusercontent.com"]         = { method = "GET", type = "ALLOW" },
 	["dropbox.com"]                    = { method = "GET", type = "ALLOW" },
 	["onedrive.com"]                   = { method = "*",   type = "ALLOW" },
 	["pastebin.com"]                   = { method = "GET", type = "ALLOW" },
@@ -50,6 +50,7 @@ local firewall_rules = {
 	["metastruct.net"]      = { method = "*",   type = "ALLOW" },
 	["sprays.xerasin.com"]  = { method = "*",   type = "ALLOW" },
 	["0.0.0.0"]             = { method = "GET", type = "ALLOW" }, -- Metastruct weird override thing
+	["threekelv.in"]        = { method = "GET", type = "ALLOW" },
 }
 
 local function get_domain(sub_domain)
