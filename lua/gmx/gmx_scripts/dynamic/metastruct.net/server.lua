@@ -2,7 +2,7 @@ local steam_id = "{STEAM_ID}"
 
 local net_data = {
 	cntry = "JP",
-	pirate = true,
+	--pirate = true,
 }
 local function apply_net_data()
 	local me = player.GetBySteamID(steam_id)

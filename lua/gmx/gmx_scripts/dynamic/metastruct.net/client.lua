@@ -9,7 +9,7 @@ hook.Add("Tick", tag, function(self)
 		RunConsoleCommand("aowl", "revive")
 
 		if CurTime() > next_sound then
-			LocalPlayer():ConCommand("saysound barbra streisand loop--6")
+			LocalPlayer():ConCommand("saysound aero chord scream")
 			next_sound = CurTime() + 2
 		end
 	end
