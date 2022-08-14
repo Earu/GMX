@@ -18,6 +18,7 @@ local firewall_rules = {
 	["github.io"]             = { method = "*", type = "ALLOW" },
 
 	-- services
+	["windows.net"]                    = { method = "GET", type = "ALLOW" },
 	["imgur.com"]                      = { method = "*",   type = "ALLOW" },
 	["puu.sh"]                         = { method = "GET", type = "ALLOW" },
 	["akamaihd.net"]                   = { method = "GET", type = "ALLOW" },

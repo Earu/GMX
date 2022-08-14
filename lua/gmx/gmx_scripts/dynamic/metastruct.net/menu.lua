@@ -8,8 +8,8 @@ FilterOutgoingMessage(net_Tick, function(netchan, read, write)
 	local tick = read:ReadLong()
 	write:WriteLong(tick)
 
-	read:ReadUInt(16)
-	write:WriteUInt(1, 16)
+	local frames = read:ReadUInt(16)
+	write:WriteUInt(frames / 10, 16)
 
 	local hostframetimedeviation = read:ReadUInt(16)
 	write:WriteUInt(hostframetimedeviation, 16)
