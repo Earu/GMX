@@ -43,6 +43,9 @@ function GameDetails(server_name, server_url, map_name, max_players, steamid, gm
 		end)
 	end
 
+	local is_blocked = hook.Run("OnHTTPRequest", server_url, "GET", {}, "text/html", "")
+	if is_blocked then return end
+
 	old_game_details(server_name, server_url, map_name, max_players, steamid, gm)
 end
 

@@ -12,7 +12,7 @@ local BAD_PATHS = {
 	"lua/bin/.*dns.*%.dll$",
 	"lua/bin/.*asc.*%.dll$",
 	"lua/menu/_menu.lua$",
-	"lua/wip/*",
+	--"lua/wip/*",
 }
 
 local function should_hide(path)
