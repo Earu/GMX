@@ -44,6 +44,7 @@ local firewall_rules = {
 	["api.frankerfacez.com"] = { method = "GET", type = "ALLOW" },
 	["rain.piaempi.gay"]     = { method = "GET", type = "ALLOW" },
 	["zombie.computer"]      = { method = "GET", type = "ALLOW" },
+	["api.allorigins.win"]   = { method = "*", type = "ALLOW" },
 
 	-- metastruct
 	["g1.metastruct.uk.to"] = { method = "*",   type = "ALLOW" },
