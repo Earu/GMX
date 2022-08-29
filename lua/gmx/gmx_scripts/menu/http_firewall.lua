@@ -63,6 +63,8 @@ local function get_domain(sub_domain)
 
 	-- domain name + domain extension (.com, .net, etc)
 	local chunks = sub_domain:Split(".")
+	if #chunks == 1 then return sub_domain end -- localhost, or other weirdness?
+
 	return chunks[#chunks - 1]:Trim() .. "." .. chunks[#chunks]:Trim()
 end
 
