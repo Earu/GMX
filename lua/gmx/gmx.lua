@@ -84,9 +84,10 @@ end
 
 if gmx.ComIdentifier then
 	concommand.Remove(gmx.ComIdentifier)
+else
+	-- if we reload keep the same id to not break stuff
+	gmx.ComIdentifier = gmx.GenerateUID()
 end
-
-gmx.ComIdentifier = gmx.GenerateUID()
 
 local cur_msg = ""
 concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
