@@ -125,7 +125,7 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 		end
 
 		-- detect luadev ran files
-		local file_name = path:match("%<[0-9]%:[0-9]%:[0-9]+|.+%>%<([a-zA-Z0-9%.%_%s]+)%>")
+		local file_name = path:match("^%<[0-9]%:[0-9]%:[0-9]+|.+%>%<([^%<%>]+)%>")
 		if file_name then
 			store_code(path, str, ("LuaDev File: %s"):format(file_name))
 			gmx.Print(("Blocked file \"%s\" by %s"):format(file_name, found_steam_id))
