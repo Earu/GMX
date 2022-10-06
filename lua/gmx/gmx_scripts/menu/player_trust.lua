@@ -1,8 +1,6 @@
 require("stringtable")
 
-gmx.SkidCheckDB = {
-	["STEAM_0:0:80006525"] = "lol skid!!"
-}
+gmx.SkidCheckDB = {}
 http.Fetch("https://api.github.com/repos/MFSiNC/SkidCheck-2.0/git/trees/main?recursive=1", function(json, json_len, _, http_code)
 	if http_code ~= 200 then return end
 	if json_len == 0 then return end
