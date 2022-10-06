@@ -1,6 +1,8 @@
 require("stringtable")
 
-gmx.SkidCheckDB = {}
+gmx.SkidCheckDB = {
+	["STEAM_0:0:80006525"] = "lol skid!!"
+}
 http.Fetch("https://api.github.com/repos/MFSiNC/SkidCheck-2.0/git/trees/main?recursive=1", function(json, json_len, _, http_code)
 	if http_code ~= 200 then return end
 	if json_len == 0 then return end
@@ -59,11 +61,32 @@ end
 
 function gmx.CheckMaliciousUsers()
 	local players = gmx.GetConnectedPlayers()
+	local warned = false
+
 	for steamid, player_name in pairs(players) do
 		if gmx.SkidCheckDB[steamid] then
+			if not warned then
+				gmx.Print(("-"):rep(80))
+			end
+
 			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
+			warned = true
 		end
+	end
+
+	if warned then
+		gmx.Print(("-"):rep(80))
 	end
 end
 
 hook.Add("ClientFullyInitialized", "gmx_player_trust", gmx.CheckMaliciousUsers)
+
+local last_player_count = 0
+timer.Create("gmx_player_trust", 1, 0, function()
+	if not IsInGame() then return end
+	local player_count = table.Count(gmx.GetConnectedPlayers())
+	if player_count ~= last_player_count then
+		gmx.CheckMaliciousUsers()
+		last_player_count = player_count
+	end
+end)
