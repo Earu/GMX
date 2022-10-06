@@ -165,10 +165,12 @@ hook.Add("ClientFullyInitialized", "gmx_ui_game_info", function(hostname)
 	current_hostname = hostname
 end)
 
+local wallpaper_mat = Material("wallpaper.jpg", "nocull smooth")
 function bg:Paint(w, h)
 	if not IsInGame() then
-		surface.SetDrawColor(gmx.Colors.Wallpaper)
-		surface.DrawRect(0, 0, w, h)
+		surface.SetMaterial(wallpaper_mat)
+		surface.SetDrawColor(255, 255, 255, 255)
+		surface.DrawTexturedRect(0, 0, w, h)
 	else
 		surface.SetDrawColor(0, 0, 0, 20)
 		surface.DrawRect(0, 0, w, h)
