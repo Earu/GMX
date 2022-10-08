@@ -57,23 +57,15 @@ function gmx.GetConnectedPlayers()
 	return ret
 end
 
+local already_checked_player = {}
 function gmx.CheckMaliciousUsers()
 	local players = gmx.GetConnectedPlayers()
-	local warned = false
-
 	for steamid, player_name in pairs(players) do
-		if gmx.SkidCheckDB[steamid] then
-			if not warned then
-				gmx.Print(("-"):rep(80))
-			end
-
+		if gmx.SkidCheckDB[steamid] and not already_checked_player[steamid] then
+			already_checked_player[steamid] = true
 			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
 			warned = true
 		end
-	end
-
-	if warned then
-		gmx.Print(("-"):rep(80))
 	end
 end
 
