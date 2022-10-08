@@ -152,5 +152,7 @@ end
 vgui.Register("GMXNoticePanel", PANEL, "DPanel")
 
 hook.Add("GMXUINotification", "gmx_ui_notifications", function(msg)
+	if gui.IsGameUIVisible() then return end
+
 	gmx.Notification(msg:Trim(), 10)
 end)
