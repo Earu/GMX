@@ -10,12 +10,7 @@ function gmx.Print(...)
 	end
 
 	MsgC(gmx.Colors.Accent or HEADER_COLOR, "[GMX] ", gmx.Colors.AccentAlternative or BODY_COLOR, args[1] .. "\t", gmx.Colors.Text or EXTRA_COLOR, table.concat(args, "\t", 2)  .. "\n")
-
-	RealFrameTime = FrameTime
-	if IsInGame() then
-		surface.PlaySound("ui/alert_clink.wav")
-		notification.AddLegacy(("[GMX] %s %s"):format(args[1], table.concat(args, " ", 2)), NOTIFY_GENERIC, 10)
-	end
+	hook.Run("GMXUINotification", table.concat(args, " "))
 end
 
 if jit.arch ~= "x64" then
