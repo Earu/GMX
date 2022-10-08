@@ -3,13 +3,6 @@ if not system.IsWindows() then return end
 require("http_filter")
 
 local firewall_rules = {
-	-- weird
-	["garrysmod.io"]            = { method = "*", type = "DENY" },
-	["dl.cloudsmith.io"]        = { method = "*", type = "DENY" },
-	["molly.network"]           = { method = "*", type = "DENY" },
-	["www.models-resource.com"] = { method = "*", type = "DENY" },
-	["appdomain.cloud"]         = { method = "*", type = "DENY" },
-
 	-- dev stuff
 	["gitlab.com"]            = { method = "*", type = "ALLOW" },
 	["githubusercontent.com"] = { method = "*", type = "ALLOW" },
@@ -42,8 +35,6 @@ local firewall_rules = {
 	["twemoji.maxcdn.com"]   = { method = "GET", type = "ALLOW" },
 	["api.betterttv.net"]    = { method = "GET", type = "ALLOW" },
 	["api.frankerfacez.com"] = { method = "GET", type = "ALLOW" },
-	["rain.piaempi.gay"]     = { method = "GET", type = "ALLOW" },
-	["zombie.computer"]      = { method = "GET", type = "ALLOW" },
 	["api.allorigins.win"]   = { method = "*",   type = "ALLOW" },
 
 	-- metastruct
@@ -68,6 +59,7 @@ local function get_domain(sub_domain)
 	return chunks[#chunks - 1]:Trim() .. "." .. chunks[#chunks]:Trim()
 end
 
+local unknown_domains = {}
 hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, content_type, body)
 	if not url then return end
 
@@ -76,16 +68,34 @@ hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, co
 	local rule = firewall_rules[sub_domain] or firewall_rules[domain] -- priority to sub domain
 	if rule then
 		if rule.type == "DENY" and (rule.method == "*" or rule.method == method) then
-			gmx.Print("HTTP request blocked:", method, url)
+			gmx.Print("Firewall", "HTTP request blocked:", method, url)
 			return true
 		end
 
 		if rule.type == "ALLOW" and rule.method ~= method and rule.method ~= "*" then
-			gmx.Print("HTTP request blocked:", method, url)
+			gmx.Print("Firewall", "HTTP request blocked:", method, url)
 			return true
 		end
 	else
-		gmx.Print("Blocking HTTP request because no rule was defined:", method, domain, sub_domain, url)
+		if not unknown_domains[domain] then
+			gmx.Print("Firewall", "Blocking HTTP request because no rule was defined for: ", domain)
+			unknown_domains[domain] = {}
+		end
+
+		table.insert(unknown_domains[domain], {
+			URL = url,
+			Method = method,
+		})
+
 		return true
+	end
+end)
+
+concommand.Add("gmx_unknown_domains_requests", function()
+	for domain, request_datas in pairs(unknown_domains) do
+		MsgC(gmx.Colors.Accent, "- " .. domain .. " -\n")
+		for _, request_data in ipairs(request_datas) do
+			MsgC(gmx.Colors.Text, "\t- ", gmx.Colors.TextAlternative, request_data.Method, gmx.Colors.Text, "\t" .. request_data.URL .. "\n")
+		end
 	end
 end)
