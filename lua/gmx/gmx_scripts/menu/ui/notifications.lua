@@ -1,7 +1,7 @@
-surface.CreateFont("GModNotify", {
+surface.CreateFont("GMXNotify", {
 	font = "Arial",
 	extended = true,
-	size = 21,
+	size = 18,
 	weight = 500,
 })
 
@@ -68,8 +68,8 @@ local function update_notice(panel, total_h)
 	end
 
 	-- Friction.. kind of FPS independant.
-	panel.VelX = panel.VelX * (0.95 - FrameTime() * 20)
-	panel.VelY = panel.VelY * (0.95 - FrameTime() * 20)
+	panel.VelX = panel.VelX * (0.95 - FrameTime() * draw.GetFontHeight("GMXNotify"))
+	panel.VelY = panel.VelY * (0.95 - FrameTime() * draw.GetFontHeight("GMXNotify"))
 	panel.fx = x
 	panel.fy = y
 
@@ -109,7 +109,7 @@ function PANEL:Init()
 	self:DockPadding(15 + 8, 3, 3, 3)
 	self.Label = vgui.Create("DLabel", self)
 	self.Label:Dock(FILL)
-	self.Label:SetFont("GModNotify")
+	self.Label:SetFont("GMXNotify")
 	self.Label:SetTextColor(gmx.Colors.Text)
 	self:SetBackgroundColor(gmx.Colors.Background)
 end
