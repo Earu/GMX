@@ -58,10 +58,10 @@ function gmx.GetConnectedPlayers()
 end
 
 local already_checked_player = {}
-function gmx.CheckMaliciousUsers()
+local function check_malicious_users(manual)
 	local players = gmx.GetConnectedPlayers()
 	for steamid, player_name in pairs(players) do
-		if gmx.SkidCheckDB[steamid] and not already_checked_player[steamid] then
+		if gmx.SkidCheckDB[steamid] and (not already_checked_player[steamid] or manual) then
 			already_checked_player[steamid] = true
 			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
 			warned = true
@@ -69,14 +69,15 @@ function gmx.CheckMaliciousUsers()
 	end
 end
 
-hook.Add("ClientFullyInitialized", "gmx_player_trust", gmx.CheckMaliciousUsers)
+concommand.Add("gmx_check_malicious", function() check_malicious_users(true) end)
+hook.Add("ClientFullyInitialized", "gmx_player_trust", check_malicious_users)
 
 local last_player_count = 0
 timer.Create("gmx_player_trust", 1, 0, function()
 	if not IsInGame() then return end
 	local player_count = table.Count(gmx.GetConnectedPlayers())
 	if player_count ~= last_player_count then
-		gmx.CheckMaliciousUsers()
+		check_malicious_users()
 		last_player_count = player_count
 	end
 end)
