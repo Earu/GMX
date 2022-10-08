@@ -64,7 +64,6 @@ local function check_malicious_users(manual)
 		if gmx.SkidCheckDB[steamid] and (not already_checked_player[steamid] or manual) then
 			already_checked_player[steamid] = true
 			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
-			warned = true
 		end
 	end
 end

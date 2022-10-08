@@ -26,7 +26,10 @@ function gmx.Notification(text, length)
 	panel:SetPos(panel.fx, panel.fy)
 
 	table.insert(notices, panel)
-	surface.PlaySound("ui/alert_clink.wav")
+
+	if not gui.IsGameUIVisible() then
+		surface.PlaySound("ui/alert_clink.wav")
+	end
 end
 
 -- This is ugly because it's ripped straight from the old notice system
@@ -152,7 +155,5 @@ end
 vgui.Register("GMXNoticePanel", PANEL, "DPanel")
 
 hook.Add("GMXUINotification", "gmx_ui_notifications", function(msg)
-	if gui.IsGameUIVisible() then return end
-
 	gmx.Notification(msg:Trim(), 10)
 end)
