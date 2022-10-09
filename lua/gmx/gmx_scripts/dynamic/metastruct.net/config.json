@@ -1,0 +1,13 @@
+{
+	"SubDomains": [
+		"g1.metastruct.net",
+		"g2.metastruct.net",
+		"g3.metastruct.net"
+	],
+	"MenuFiles": [
+		"menu.lua"
+	],
+	"ClientFiles": [
+		"client.lua"
+	]
+}

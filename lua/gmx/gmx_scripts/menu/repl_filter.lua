@@ -102,7 +102,7 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- blocks SendLua
 	if path == "LuaCmd" then
 		store_code(path, str, "SendLua")
-		if not gmx.IsGameWhitelisted() then
+		if not gmx.IsHostWhitelisted() then
 			gmx.Print(("Blocked SendLua %s"):format(str))
 			return false
 		end
