@@ -44,6 +44,7 @@ local firewall_rules = {
 	["sprays.xerasin.com"]  = { method = "*",   type = "ALLOW" },
 	["0.0.0.0"]             = { method = "GET", type = "ALLOW" }, -- Metastruct weird override thing
 	["threekelv.in"]        = { method = "GET", type = "ALLOW" },
+	["3kv.in"]              = { method = "GET", type = "ALLOW" },
 }
 
 local function get_domain(sub_domain)
