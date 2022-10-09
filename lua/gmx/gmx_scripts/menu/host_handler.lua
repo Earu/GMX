@@ -1,6 +1,32 @@
 require("asc")
 require("dns")
 
+local WHITELIST = {
+	["0"] = true, -- menu
+	["149.202.89.113"] = true, -- s1.hbn.gg:27025
+}
+
+local HOSTNAMES_TO_REVERSE = {}
+
+local host_scripts_dir = "lua/gmx/gmx_scripts/dynamic/"
+local _, script_dirs = file.Find(host_scripts_dir .. "/*", "MOD")
+for _, script_dir in ipairs(script_dirs) do
+	local host_config_path = ("%s%s/config.json"):format(host_scripts_dir, script_dir)
+	if file.Exists(host_config_path, "MOD") then
+		local json = file.Read(host_config_path, "MOD")
+		local host_config = util.JSONToTable(json)
+		if istable(host_config.SubDomains) then
+			for _, sub_domain in ipairs(host_config.SubDomains) do
+				table.insert(HOSTNAMES_TO_REVERSE, sub_domain)
+			end
+		end
+	else
+		if script_dir ~= "loopback" then
+			table.insert(HOSTNAMES_TO_REVERSE, script_dir)
+		end
+	end
+end
+
 local function sanitize_address(address)
 	if not address then return end
 	return address:Trim():gsub("%:[0-9]+$", "")
@@ -83,19 +109,10 @@ function gmx.GetLocalNetworkIPAddress()
 	return table.concat(ip, ".")
 end
 
-local WHITELIST = {
-	["0"] = true, -- menu
-	["149.202.89.113"] = true, -- s1.hbn.gg:27025
-}
-
-function gmx.IsGameWhitelisted()
+function gmx.IsHostWhitelisted()
 	if not IsInGame() then return true end
 	return WHITELIST[gmx.GetConnectedServerIPAddress()] ~= nil
 end
-
-local HOSTNAMES_TO_REVERSE = {
-	"g2.metastruct.net", "g1.metastruct.net"
-}
 
 local HOSTNAME_LOOKUP = {}
 for _, hostname in ipairs(HOSTNAMES_TO_REVERSE) do
@@ -111,28 +128,41 @@ local function run_host_custom_code(ip)
 
 	gmx.Print("Hostname Detected", ip)
 
-	local custom_hostname_code_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(hostname)
-	if not file.Exists(custom_hostname_code_path, "MOD") then -- priority to subdomains then global domain
+	local host_script_base_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(hostname)
+	if not file.Exists(host_script_base_path, "MOD") then -- priority to subdomains then global domain
 		local hostname_components = hostname:Split(".")
 		local base_hostname = ("%s.%s"):format(hostname_components[#hostname_components - 1], hostname_components[#hostname_components])
-		custom_hostname_code_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(base_hostname)
+		host_script_base_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(base_hostname)
 	end
 
-	gmx.Print("Loading Custom Code", hostname, custom_hostname_code_path)
+	gmx.Print("Loading Custom Code", hostname, host_script_base_path)
 
-	local custom_hostname_menu_script_path = ("%s/menu.lua"):format(custom_hostname_code_path)
-	if file.Exists(custom_hostname_menu_script_path, "MOD") then
-		custom_hostname_menu_script_path = custom_hostname_menu_script_path:gsub("^lua/", "")
+	local host_config_path = ("%s/config.json"):format(host_script_base_path)
+	if file.Exists(host_config_path, "MOD") then
+		local json = file.Read(host_config_path, "MOD")
+		local config = util.JSONToTable(json)
 
-		gmx.Print(("Running \"%s\""):format(custom_hostname_menu_script_path))
-		include(custom_hostname_menu_script_path)
-	end
+		if istable(config.MenuFiles) then
+			for _, menu_file in ipairs(config.MenuFiles) do
+				local menu_file_path = ("%s/%s"):format(host_script_base_path, menu_file)
+				if file.Exists(menu_file_path, "MOD") then
+					menu_file_path = menu_file_path:gsub("^lua/", "")
+					gmx.Print(("Running \"%s\""):format(menu_file_path))
+					include(menu_file_path)
+				end
+			end
+		end
 
-	local custom_hostname_client_script_path = ("%s/client.lua"):format(custom_hostname_code_path)
-	if file.Exists(custom_hostname_client_script_path, "MOD") then
-		local code = file.Read(custom_hostname_client_script_path, "MOD")
-		gmx.Print(("Injecting \"%s\""):format(custom_hostname_client_script_path))
-		gmx.AddClientInitScript(code, true, "gmx_host_custom_code")
+		if istable(config.ClientFiles) then
+			for _, client_file in ipairs(config.ClientFiles) do
+				local client_file_path = ("%s/%s"):format(host_script_base_path, client_file)
+				if file.Exists(client_file_path, "MOD") then
+					local code = file.Read(client_file_path, "MOD")
+					gmx.Print(("Injecting \"%s\""):format(client_file_path))
+					gmx.AddClientInitScript(code, true, "gmx_host_custom_code")
+				end
+			end
+		end
 	end
 end
 

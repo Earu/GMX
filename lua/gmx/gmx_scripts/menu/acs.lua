@@ -1,5 +1,5 @@
 hook.Add("RunOnClient", "gmx_acs", function(source, script)
-	if gmx.IsGameWhitelisted() then return end
+	if gmx.IsHostWhitelisted() then return end
 
 	source = source:lower()
 
