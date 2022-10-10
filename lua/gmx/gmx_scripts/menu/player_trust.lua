@@ -57,26 +57,41 @@ function gmx.GetConnectedPlayers()
 	return ret
 end
 
-local already_checked_player = {}
-local function check_malicious_users(manual)
-	local players = gmx.GetConnectedPlayers()
-	for steamid, player_name in pairs(players) do
-		if gmx.SkidCheckDB[steamid] and (not already_checked_player[steamid] or manual) then
-			already_checked_player[steamid] = true
-			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
-		end
-	end
-end
-
-concommand.Add("gmx_check_malicious", function() check_malicious_users(true) end)
-hook.Add("ClientFullyInitialized", "gmx_player_trust", check_malicious_users)
-
+local connected_players = {}
 local last_player_count = 0
 timer.Create("gmx_player_trust", 1, 0, function()
-	if not IsInGame() then return end
-	local player_count = table.Count(gmx.GetConnectedPlayers())
+	local new_connected_players = gmx.GetConnectedPlayers()
+	local player_count = table.Count(new_connected_players)
 	if player_count ~= last_player_count then
-		check_malicious_users()
+		for steamid, player_name in pairs(new_connected_players) do
+			if not connected_players[steamid] then
+				connected_players[steamid] = player_name
+				hook.Run("GMXPlayerConnected", steamid, player_name)
+			end
+		end
+
+		for steamid, player_name in pairs(connected_players) do
+			if not new_connected_players[steamid] then
+				connected_players[steamid] = nil
+				hook.Run("GMXPlayerDisconnected", steamid, player_name)
+			end
+		end
+
 		last_player_count = player_count
+	end
+end)
+
+hook.Add("GMXPlayerConnected", "gmx_check_malicious", function(steamid, player_name)
+	if gmx.SkidCheckDB[steamid] then
+		gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
+	end
+end)
+
+concommand.Add("gmx_check_malicious", function()
+	local players = gmx.GetConnectedPlayers()
+	for steamid, player_name in pairs(players) do
+		if gmx.SkidCheckDB[steamid] then
+			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
+		end
 	end
 end)
