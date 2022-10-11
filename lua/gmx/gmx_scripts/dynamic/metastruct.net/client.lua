@@ -21,17 +21,60 @@ function system.FlashWindow()
 end
 
 local ascii = "[GMX REDACTED]"
-local function detour_rtchat()
-	if not rtchat then return end
-	rtchat.old_QueueMessage = rtchat.old_QueueMessage or rtchat.QueueMessage
+local log_level_mapping = {
+	[NOTIFY_GENERIC] = "info",
+	[NOTIFY_ERROR] = "error",
+	[NOTIFY_UNDO] = "warn",
+	[NOTIFY_HINT] = "info",
+	[NOTIFY_CLEANUP] = "warn",
+}
+local function detour_libs()
+	if rtchat then
+		rtchat.old_QueueMessage = rtchat.old_QueueMessage or rtchat.QueueMessage
 
-	function rtchat.QueueMessage(txt)
-		rtchat.old_QueueMessage(ascii)
+		function rtchat.QueueMessage(txt)
+			rtchat.old_QueueMessage(ascii)
+		end
 	end
+
+	local function notification_add_legacy(msg, notify_type)
+		local log_level = log_level_mapping[notify_type] or "info"
+		local log_fn = _G.metalog and _G.metalog[log_level] or function(id, channel, ...) print(id, channel, ...) end
+		log_fn("Notification", tostring(notify_type), msg)
+	end
+
+	local function notification_add_progress(notify_id, msg)
+		local log_fn = _G.metalog and _G.metalog.info or function (id, channel, ...) print(id, channel, ...) end
+		log_fn("Notification", tostring(notify_id), msg)
+	end
+
+	local function notification_kill() end
+
+	timer.Create("gmx_notification_detour", 1, 0, function()
+		local already_detoured = true
+		if notification.AddLegacy ~= notification_add_legacy then
+			notification.AddLegacy = notification_add_legacy
+			already_detoured = false
+		end
+
+		if notification.AddProgress ~= notification_add_progress then
+			notification.AddProgress = notification_add_progress
+			already_detoured = false
+		end
+
+		if notification.Kill ~= notification_kill then
+			notification.Kill = notification_kill
+			already_detoured = false
+		end
+
+		if already_detoured then
+			timer.Remove("gmx_notification_detour")
+		end
+	end)
 end
 
-hook.Add("ECPostLoadModules", tag, detour_rtchat)
-hook.Add("InitPostEntity", tag, detour_rtchat)
+hook.Add("ECPostLoadModules", tag, detour_libs)
+hook.Add("InitPostEntity", tag, detour_libs)
 
 if file.Exists("lua/bin/gmcl_browser_fix_win64.dll", "MOD") then
 	require("browser_fix")
