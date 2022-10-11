@@ -190,7 +190,7 @@ function bg:Paint(w, h)
 	surface.SetFont("gmx_sub_header")
 	surface.SetTextColor(gmx.Colors.Accent)
 	surface.SetTextPos(55, 135)
-	surface.DrawText("Garrys  Mod     eXtended")
+	surface.DrawText("Garry's Mod    eXtended")
 
 	surface.SetFont("gmx_info")
 
@@ -250,35 +250,20 @@ local function add_button(text, x, y, w, h, func, secondary)
 
 	button.DoClick = func
 
-	if secondary then
-		function button:Paint()
-			surface.SetDrawColor(gmx.Colors.Background)
+	function button:Paint()
+		if self:IsHovered() then
+			surface.SetDrawColor(gmx.Colors.Accent.r, gmx.Colors.Accent.g, gmx.Colors.Accent.b, 200)
+			surface.DrawRect(0, 0, w, h)
+
+			surface.SetDrawColor(gmx.Colors.AccentAlternative)
+		else
+			surface.SetDrawColor(gmx.Colors.Background.r, gmx.Colors.Background.g, gmx.Colors.Background.b, 230)
 			surface.DrawRect(0, 0, w, h)
 
 			surface.SetDrawColor(gmx.Colors.BackgroundStrip)
-			surface.DrawOutlinedRect(0, 0, w, h)
-
-			if self:IsHovered() then
-				surface.SetDrawColor(gmx.Colors.Accent)
-				surface.DrawOutlinedRect(0, 0, w, h)
-			end
 		end
-	else
-		function button:Paint()
-			if self:IsHovered() then
-				surface.SetDrawColor(gmx.Colors.Accent)
-				surface.DrawRect(0, 0, w, h)
 
-				surface.SetDrawColor(gmx.Colors.AccentAlternative)
-			else
-				surface.SetDrawColor(gmx.Colors.Background.r, gmx.Colors.Background.g, gmx.Colors.Background.b, IsInGame() and 240 or 255)
-				surface.DrawRect(0, 0, w, h)
-
-				surface.SetDrawColor(gmx.Colors.BackgroundStrip)
-			end
-
-			surface.DrawOutlinedRect(0, 0, w, h, 2)
-		end
+		surface.DrawOutlinedRect(0, 0, w, h)
 	end
 
 	bg:Add(button)
