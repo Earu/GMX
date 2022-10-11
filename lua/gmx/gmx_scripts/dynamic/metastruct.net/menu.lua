@@ -8,11 +8,11 @@ FilterOutgoingMessage(net_Tick, function(netchan, read, write)
 	local tick = read:ReadLong()
 	write:WriteLong(tick)
 
-	local frames = read:ReadUInt(16)
-	write:WriteUInt(frames / 10, 16)
+	local frames = read:ReadUInt(16) / 6
+	write:WriteUInt(frames, 16)
 
-	local hostframetimedeviation = read:ReadUInt(16)
-	write:WriteUInt(hostframetimedeviation, 16)
+	local host_frame_time_deviation = read:ReadUInt(16)
+	write:WriteUInt(host_frame_time_deviation, 16)
 end)
 
 hook.Add("ClientFullyInitialized", "gmx_host_server_autorun", function()

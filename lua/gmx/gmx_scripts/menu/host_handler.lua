@@ -53,7 +53,7 @@ function gmx.GetConnectedServerIPAddress()
 	return INVALID_IP
 end
 
-local old_game_details = _G.GameDetails
+_G.OldGameDetails = _G.OldGameDetails or _G.GameDetails
 function GameDetails(server_name, server_url, map_name, max_players, steamid, gm)
 	if gmx.GetConnectedServerIPAddress() == INVALID_IP then
 		gmx.Print("Joining server via Steam or retry command, relying on public Steam API...")
@@ -72,7 +72,7 @@ function GameDetails(server_name, server_url, map_name, max_players, steamid, gm
 	local is_blocked = hook.Run("OnHTTPRequest", server_url, "GET", {}, "text/html", "")
 	if is_blocked then return end
 
-	old_game_details(server_name, server_url, map_name, max_players, steamid, gm)
+	_G.OldGameDetails(server_name, server_url, map_name, max_players, steamid, gm)
 end
 
 if IsInGame() then
