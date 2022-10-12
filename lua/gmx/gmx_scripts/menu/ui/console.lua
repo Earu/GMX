@@ -173,6 +173,8 @@ hook.Add("EngineSpew", "gmx_console", function(log_type, log_msg, log_grp, log_l
 		and (r == 255 and g == 255 and b == 255)
 	then
 		r, g, b = gmx.Colors.Text.r, gmx.Colors.Text.g, gmx.Colors.Text.b
+	elseif log_lvl > 1 or log_msg:sub(1, 9) == "\n[ERROR] " then
+		r, g, b = 255, 0, 0
 	else
 		if r == 0 and g == 0 and b == 0 then
 			r, g, b = gmx.Colors.Text.r, gmx.Colors.Text.g, gmx.Colors.Text.b
