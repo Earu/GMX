@@ -100,3 +100,11 @@ concommand.Add("gmx_unknown_domains_requests", function()
 		end
 	end
 end)
+
+_G.OldGMOD_OpenURLNoOverlay = _G.OldGMOD_OpenURLNoOverlay or _G.GMOD_OpenURLNoOverlay
+function _G.GMOD_OpenURLNoOverlay(url)
+	local is_blocked = hook.Run("OnHTTPRequest", url, "GET", {}, "text/html", "")
+	if is_blocked then return end
+
+	_G.OldGMOD_OpenURLNoOverlay(url)
+end

@@ -247,6 +247,6 @@ hook.Add("GMXInitialized", "gmx_crash_report", function()
 		return
 	end
 
-	gmx.Print("Crash Report", gmx.Colors.Text, dump_path .. "\n" .. file.Read(dump_path, "BASE_PATH"))
+	gmx.Print("Crash Report", dump_path .. "\n" .. file.Read(dump_path, "BASE_PATH"))
 	MsgN()
 end)

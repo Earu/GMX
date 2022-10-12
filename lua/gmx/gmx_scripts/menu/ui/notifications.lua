@@ -6,7 +6,7 @@ surface.CreateFont("GMXNotify", {
 })
 
 local notices = {}
-function gmx.Notification(text, length)
+function gmx.Notification(text, length, color)
 	local parent = nil
 	if _G.GetOverlayPanel then
 		parent = _G.GetOverlayPanel()
@@ -24,6 +24,10 @@ function gmx.Notification(text, length)
 	panel:SetAlpha(255)
 	panel:SetText(text)
 	panel:SetPos(panel.fx, panel.fy)
+
+	if color then
+		panel:SetColor(color)
+	end
 
 	table.insert(notices, panel)
 
@@ -129,12 +133,17 @@ function PANEL:SizeToContents()
 	self:InvalidateLayout()
 end
 
+function PANEL:SetColor(color)
+	self.ColorOverride = color
+end
+
 function PANEL:Paint(w, h)
 	local bg_color = gmx.Colors.Background
 	surface.SetDrawColor(bg_color.r, bg_color.b, bg_color.b, 200)
 	surface.DrawRect(0, 0, w, h)
 
-	surface.SetDrawColor(gmx.Colors.Accent)
+	local accent_col = self.ColorOverride or gmx.Colors.Accent
+	surface.SetDrawColor(accent_col)
 	surface.DrawOutlinedRect(0, 0, w, h)
 	surface.DrawRect(0, 0, 15, h)
 end

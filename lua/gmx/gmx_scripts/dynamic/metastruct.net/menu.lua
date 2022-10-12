@@ -21,3 +21,8 @@ hook.Add("ClientFullyInitialized", "gmx_host_server_autorun", function()
 
 	hook.Remove("ClientFullyInitialized", "gmx_host_server_autorun")
 end)
+
+-- dont report our errors via HTTP
+hook.Add("OnHTTPRequest", "gmx_no_error_reports", function(url)
+	if url and url:lower():match("%/metaconcord%/gmod%/errors") then return true end
+end)
