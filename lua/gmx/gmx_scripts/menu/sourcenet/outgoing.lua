@@ -23,6 +23,7 @@ end
 local NET_MESSAGES_OUTGOING_COPY = {
 	NET = {},
 	CLC = {},
+	SVC = {}
 }
 
 local function GetOutgoingCopyTableForMessageType(msgtype)
@@ -30,8 +31,12 @@ local function GetOutgoingCopyTableForMessageType(msgtype)
 		return NET_MESSAGES_OUTGOING_COPY.NET
 	end
 
-	if MENU_DLL and NET_MESSAGES.CLC[msgtype] ~= nil then
+	if CLIENT and NET_MESSAGES.CLC[msgtype] ~= nil then
 		return NET_MESSAGES_OUTGOING_COPY.CLC
+	end
+
+	if SERVER and NET_MESSAGES.SVC[msgtype] ~= nil then
+		return NET_MESSAGES_OUTGOING_COPY.SVC
 	end
 
 	return nil
@@ -81,10 +86,10 @@ local function HandleStream(name, netchan, write)
 end
 
 hook.Add("PreSendDatagram", "OutFilter", function(netchan, localchan, data, reliablestream, unreliablestream, voicestream)
-	if not IsInGame() then return end
-
-	local is_local = netchan == localchan
-	if not is_local and MENU_DLL then return end
+	local islocal = netchan == localchan
+	if ((islocal and SERVER) or (not islocal and CLIENT)) then
+		return
+	end
 
 	local data_handled = HandleStream("data", netchan, data)
 	local reliable_handled = HandleStream("reliable", netchan, reliablestream)
