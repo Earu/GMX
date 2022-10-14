@@ -8,38 +8,33 @@ local WHITELIST = {
 	r_cleardecals = true,
 }
 
-hook.Add("ClientStateCreated", "gmx_cmd_filter", function()
-	FilterIncomingMessage(net_StringCmd, function(net_chan, read, write)
-		local cmd = read:ReadString()
-		local real_cmd = cmd:Split(" ")[1]:lower():Trim()
+local function command_filtering(net_chan, read, write)
+	local cmd = read:ReadString()
+	local real_cmd = cmd:Split(" ")[1]:lower():Trim()
 
-		local should_allow = hook.Run("GMXShouldRunCommand", real_cmd, cmd) == true or WHITELIST[real_cmd]
-		if should_allow then
-			write:WriteUInt(net_StringCmd, NET_MESSAGE_BITS)
-			write:WriteString(cmd)
+	local should_allow = hook.Run("GMXShouldRunCommand", real_cmd, cmd) == true or WHITELIST[real_cmd]
+	if should_allow then
+		write:WriteUInt(net_StringCmd, NET_MESSAGE_BITS)
+		write:WriteString(cmd)
 
-			return
-		end
+		return
+	end
 
-		gmx.Print(("Blocked incoming server (%s) command \"%s\""):format(net_chan:GetAddress(), cmd))
-	end)
+	gmx.Print(("Blocked incoming server (%s) command \"%s\""):format(net_chan:GetAddress(), cmd))
+end
 
-	--[[FilterIncomingMessage(net_SetConVar, function(_, read, write)
-		local count = read:ReadByte()
-		for i = 1, count do
-			local cvar_name = read:ReadString()
-			local cvar_value = read:ReadString()
+FilterIncomingMessage(net_StringCmd, command_filtering)
 
-			local should_set = hook.Run("GMXConVarShouldSet", cvar_name, cvar_value)
-			if should_set == false then continue end
+--[[FilterIncomingMessage(net_SetConVar, function(_, read, write)
+	local count = read:ReadByte()
+	for i = 1, count do
+		local cvar_name = read:ReadString()
+		local cvar_value = read:ReadString()
 
-			write:WriteString(cvar_name)
-			write:WriteString(cvar_value)
-		end
-	end)]]--
-end)
+		local should_set = hook.Run("GMXConVarShouldSet", cvar_name, cvar_value)
+		if should_set == false then continue end
 
-hook.Add("ClientStateDestroyed", "gmx_cmd_filter", function()
-	UnFilterIncomingMessage(net_StringCmd)
-	--UnFilterIncomingMessage(net_SetConVar)
-end)
+		write:WriteString(cvar_name)
+		write:WriteString(cvar_value)
+	end
+end)]]--

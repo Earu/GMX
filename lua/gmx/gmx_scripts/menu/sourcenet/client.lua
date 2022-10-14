@@ -1,7 +1,10 @@
 require("sourcenet")
 
-local NET_HOOKS = NET_HOOKS or {attach = {}, detach = {}}
-local NET_ATTACHED = false
+MENU = LocalPlayer == nil
+
+NET_HOOKS = NET_HOOKS or {attach = {}, detach = {}}
+
+NET_ATTACHED = false
 
 function HookNetChannel(...)
 	local args = {...}
@@ -11,8 +14,8 @@ function HookNetChannel(...)
 
 		local exists = false
 
-		for _, vv in pairs(NET_HOOKS.attach) do
-			if vv.name == name then
+		for k, v in pairs(NET_HOOKS.attach) do
+			if v.name == name then
 				exists = true
 				break
 			end
@@ -25,21 +28,21 @@ function HookNetChannel(...)
 	end
 
 	local function StandardNetHook(netchan, nethook)
-		local argss = {}
+		local args = {}
 
 		if nethook.func then
-			table.insert(argss, nethook.func(netchan))
+			table.insert(args, nethook.func(netchan))
 		elseif not nethook.nochan then
-			table.insert(argss, netchan)
+			table.insert(args, netchan)
 		end
 
 		if nethook.args then
 			for k, v in pairs(nethook.args) do
-				table.insert(argss, v)
+				table.insert(args, v)
 			end
 		end
 
-		nethook.hook(unpack(argss))
+		nethook.hook(unpack(args))
 	end
 
 	local function AttachNetChannel(netchan)
@@ -83,16 +86,21 @@ function HookNetChannel(...)
 
 	hook.Add("PreNetChannelShutdown", "DetachHooks", function(netchan, reason)
 		--print("[gm_sourcenet] PreNetChannelShutdown called, netchan=" .. tostring(netchan) .. ", reason=" .. reason)
-		if DetachNetChannel(netchan) and MENU_DLL then
-			NET_HOOKS = NET_HOOKS or {attach = {}, detach = {}}
 
-			hook.Add("Think", "DestroyNetChannel", function() -- Ensure the current channel is destroyed before waiting for a new one
-				if not CNetChan() then
-					HookNetChannel(unpack(args))
+		DetachNetChannel(netchan)
 
-					hook.Remove("Think", "DestroyNetChannel")
-				end
-			end)
-		end
+		--[[if DetachNetChannel(netchan) then
+			if MENU then
+				NET_HOOKS = NET_HOOKS or {attach = {}, detach = {}}
+
+				hook.Add("Think", "DestroyNetChannel", function() -- Ensure the current channel is destroyed before waiting for a new one
+					if not CNetChan() then
+						HookNetChannel(unpack(args))
+
+						hook.Remove("Think", "DestroyNetChannel")
+					end
+				end)
+			end
+		end--]]
 	end)
 end
