@@ -2,47 +2,42 @@ if not system.IsWindows() then return end
 
 include("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
 
--- anything before that is too early?
-hook.Add("ClientFullyInitialized", "gmx_client_errors", function()
-	FilterOutgoingMessage(clc_GMod_ClientToServer, function(_, read, write)
-		local bits = read:ReadUInt(20)
-		local msg_type = read:ReadByte()
+local function error_filtering(_, read, write)
+	local bits = read:ReadUInt(20)
+	local msg_type = read:ReadByte()
 
-		-- lua error, don't send to server
-		if msg_type == 2 then
-			--local err = read:ReadString()
-			--write:WriteString(err)
-			return
+	-- lua error, don't send to server
+	if msg_type == 2 then
+		--local err = read:ReadString()
+		--write:WriteString(err)
+		return
+	end
+
+	write:WriteUInt(clc_GMod_ClientToServer, NET_MESSAGE_BITS)
+	write:WriteUInt(bits, 20)
+	write:WriteByte(msg_type)
+
+	local remaining_bits = bits - 8
+	if msg_type == 0 then
+		local id = read:ReadWord()
+		remaining_bits = remaining_bits - 16
+
+		write:WriteWord(id)
+
+		if remaining_bits > 0 then
+			local data = read:ReadBits(remaining_bits)
+			write:WriteBits(data)
 		end
-
-		write:WriteUInt(clc_GMod_ClientToServer, NET_MESSAGE_BITS)
-		write:WriteUInt(bits, 20)
-		write:WriteByte(msg_type)
-
-		local remaining_bits = bits - 8
-		if msg_type == 0 then
-			local id = read:ReadWord()
-			remaining_bits = remaining_bits - 16
-
-			write:WriteWord(id)
-
-			if remaining_bits > 0 then
-				local data = read:ReadBits(remaining_bits)
-				write:WriteBits(data)
-			end
-		elseif msg_type == 4 then
-			local count = remaining_bits / 16
-			for i = 1, count do
-				local id = read:ReadUInt(16)
-				write:WriteUInt(id, 16)
-			end
+	elseif msg_type == 4 then
+		local count = remaining_bits / 16
+		for i = 1, count do
+			local id = read:ReadUInt(16)
+			write:WriteUInt(id, 16)
 		end
-	end)
-end)
+	end
+end
 
-hook.Add("ClientStateDestroyed", "gmx_ciient_errors", function()
-	UnFilterOutgoingMessage(clc_GMod_ClientToServer)
-end)
+FilterOutgoingMessage(clc_GMod_ClientToServer, error_filtering)
 
 -- nono
 hook.Add("GMXConVarShouldSet", "gmx_client_errors", function(cvar_name, cvar_value)
