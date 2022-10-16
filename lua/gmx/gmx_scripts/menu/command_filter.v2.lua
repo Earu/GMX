@@ -23,18 +23,29 @@ local function command_filtering(net_chan, read, write)
 	gmx.Print(("Blocked incoming server (%s) command \"%s\""):format(net_chan:GetAddress(), cmd))
 end
 
-FilterIncomingMessage(net_StringCmd, command_filtering)
-
---[[FilterIncomingMessage(net_SetConVar, function(_, read, write)
+local function cvars_filtering(_, read, write)
 	local count = read:ReadByte()
-	for i = 1, count do
+	local cvars_to_network = {}
+	local count_to_network = 0
+	for _ = 1, count do
 		local cvar_name = read:ReadString()
 		local cvar_value = read:ReadString()
 
 		local should_set = hook.Run("GMXConVarShouldSet", cvar_name, cvar_value)
 		if should_set == false then continue end
 
+		cvars_to_network[cvar_name] = cvar_value
+		count_to_network = count_to_network + 1
+	end
+
+	if count_to_network < 1 then return end
+
+	write:WriteByte(count_to_network)
+	for cvar_name, cvar_value in pairs(cvars_to_network) do
 		write:WriteString(cvar_name)
 		write:WriteString(cvar_value)
 	end
-end)]]--
+end
+
+FilterIncomingMessage(net_StringCmd, command_filtering)
+FilterIncomingMessage(net_SetConVar, cvars_filtering)

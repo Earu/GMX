@@ -2,8 +2,8 @@ local night_colors = {
 	Text = Color(255, 255, 255, 255),
 	TextAlternative = Color(200, 200, 200, 255),
 	Wallpaper = Color(0, 0, 0),
-	Background = Color(30, 30, 30),
-	BackgroundStrip = Color(59, 59, 59),
+	Background = Color(10, 10, 10),
+	BackgroundStrip = Color(40, 40, 40),
 	Accent = Color(255, 157, 0),
 	AccentAlternative = Color(255, 196, 0),
 }
