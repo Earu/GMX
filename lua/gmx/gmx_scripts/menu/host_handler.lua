@@ -56,6 +56,13 @@ end
 _G.OldGameDetails = _G.OldGameDetails or _G.GameDetails
 function GameDetails(server_name, server_url, map_name, max_players, steamid, gm)
 	if gmx.GetConnectedServerIPAddress() == INVALID_IP then
+		if CNetChan and CNetChan() then
+			cached_address = tostring(CNetChan():GetAddress()):gsub("%:[0-9]+$", "")
+			hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
+
+			return
+		end
+
 		gmx.Print("Joining server via Steam or retry command, relying on public Steam API...")
 		http.Fetch("http://steamcommunity.com/profiles/" .. steamid .. "?xml=1", function(xml)
 			cached_address = sanitize_address(xml:match("%<inGameServerIP%>(.+)%<%/inGameServerIP%>"))
@@ -76,9 +83,13 @@ function GameDetails(server_name, server_url, map_name, max_players, steamid, gm
 end
 
 if IsInGame() then
-	gmx.RequestClientData("game.GetIPAddress()", function(ip)
-		cached_address = sanitize_address(ip)
-	end)
+	if CNetChan and CNetChan() then
+		cached_address = tostring(CNetChan():GetAddress()):gsub("%:[0-9]+$", "")
+	else
+		gmx.RequestClientData("game.GetIPAddress()", function(ip)
+			cached_address = sanitize_address(ip)
+		end)
+	end
 end
 
 --
