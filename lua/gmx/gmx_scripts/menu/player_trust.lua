@@ -95,3 +95,20 @@ concommand.Add("gmx_check_malicious", function()
 		end
 	end
 end)
+
+timer.Create("gmx_fake_name", 1, 0, function()
+	if not CNetChan then return end
+
+	local chan = CNetChan()
+	if not chan then return end
+
+	if gmx.IsHostWhitelisted() then return end
+
+	local buffer = chan:GetReliableBuffer()
+	if not buffer then return end
+
+	buffer:WriteUInt(net_SetConVar, NET_MESSAGE_BITS) -- message type
+	buffer:WriteByte(1) -- convar count
+	buffer:WriteString("name") -- convar name
+	buffer:WriteString(gmx.GenerateUID(6)) -- convar value
+end)
