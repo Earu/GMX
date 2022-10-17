@@ -9,5 +9,6 @@
 	],
 	"ClientFiles": [
 		"client.lua"
-	]
+	],
+	"Trusted": true
 }

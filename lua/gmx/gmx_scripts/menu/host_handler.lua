@@ -18,6 +18,11 @@ for _, script_dir in ipairs(script_dirs) do
 		if istable(host_config.SubDomains) then
 			for _, sub_domain in ipairs(host_config.SubDomains) do
 				table.insert(HOSTNAMES_TO_REVERSE, sub_domain)
+
+				if host_config.Trusted then
+					local ip = dns.Lookup(sub_domain)[1]
+					if ip then WHITELIST[ip] = true end
+				end
 			end
 		end
 	else
@@ -152,6 +157,10 @@ local function run_host_custom_code(ip)
 	if file.Exists(host_config_path, "MOD") then
 		local json = file.Read(host_config_path, "MOD")
 		local config = util.JSONToTable(json)
+
+		if config.Trusted then
+			gmx.Print("Host is TRUSTED/WHITELISTED")
+		end
 
 		if istable(config.MenuFiles) then
 			for _, menu_file in ipairs(config.MenuFiles) do
