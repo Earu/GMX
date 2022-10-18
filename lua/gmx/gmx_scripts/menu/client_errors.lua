@@ -10,7 +10,7 @@ local function error_filtering(_, read, write)
 	if msg_type == 2 then
 		--local err = read:ReadString()
 		--write:WriteString(err)
-		return
+		return true
 	end
 
 	write:WriteUInt(clc_GMod_ClientToServer, NET_MESSAGE_BITS)
@@ -38,11 +38,6 @@ local function error_filtering(_, read, write)
 end
 
 FilterOutgoingMessage(clc_GMod_ClientToServer, error_filtering)
-
--- nono
-hook.Add("GMXConVarShouldSet", "gmx_client_errors", function(cvar_name, cvar_value)
-	if cvar_name == "lua_error_url" then return false end
-end)
 
 local COLOR_RED = Color(255, 0, 0, 255)
 local ERROR_NOTIFICATION_TIME = 10

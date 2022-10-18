@@ -50,7 +50,7 @@ local function DefaultCopy(netchan, read, write, handler)
 end
 
 hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localchan)
-	if not IsInGame() then return end
+	if not IsInGame() then return false end
 
 	local islocal = netchan == localchan
 	if ((islocal and SERVER) or (not islocal and CLIENT)) then
