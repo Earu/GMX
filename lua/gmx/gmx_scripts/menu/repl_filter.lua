@@ -11,6 +11,7 @@ local LUAJIT_OP_CODES = {
 
 local WHITELIST = {
 	["pac3/libraries/luadata.lua"] = true, -- old data format, not lua imp
+	["lua/includes/modules/luadata.lua"] = true, -- same
 	["glib/lua/decompiler/opcode.lua"] = true, -- decompiler, not lua impl
 }
 
