@@ -12,10 +12,12 @@ local function command_filtering(net_chan, read, write)
 	local cmd = read:ReadString()
 	local real_cmd = cmd:Split(" ")[1]:lower():Trim()
 
-	local should_allow = WHITELIST[real_cmd]--hook.Run("GMXShouldRunCommand", real_cmd, cmd) == true or WHITELIST[real_cmd]
+	local should_allow = hook.Run("GMXShouldRunCommand", real_cmd, cmd) == true or WHITELIST[real_cmd]
 	if should_allow then
 		write:WriteUInt(net_StringCmd, NET_MESSAGE_BITS)
 		write:WriteString(cmd)
+
+		return
 	end
 
 	gmx.Print(("Blocked incoming server (%s) command \"%s\""):format(net_chan:GetAddress(), cmd))
