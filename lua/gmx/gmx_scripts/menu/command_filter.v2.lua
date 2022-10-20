@@ -16,11 +16,10 @@ local function command_filtering(net_chan, read, write)
 	if should_allow then
 		write:WriteUInt(net_StringCmd, NET_MESSAGE_BITS)
 		write:WriteString(cmd)
-
-		return true
 	end
 
 	gmx.Print(("Blocked incoming server (%s) command \"%s\""):format(net_chan:GetAddress(), cmd))
+	return true
 end
 
 FilterIncomingMessage(net_StringCmd, command_filtering)
