@@ -8,7 +8,7 @@ local WHITELIST = {
 	r_cleardecals = true,
 }
 
-local function command_filtering(net_chan, read, write)
+local function command_filtering(_, read, write)
 	local cmd = read:ReadString()
 	local real_cmd = cmd:Split(" ")[1]:lower():Trim()
 
@@ -20,7 +20,7 @@ local function command_filtering(net_chan, read, write)
 		return
 	end
 
-	gmx.Print(("Blocked incoming server (%s) command \"%s\""):format(net_chan:GetAddress(), cmd))
+	gmx.Print(("Blocked incoming server command \"%s\""):format(cmd))
 	return true
 end
 
