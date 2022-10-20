@@ -138,6 +138,7 @@ for _, hostname in ipairs(HOSTNAMES_TO_REVERSE) do
 	end
 end
 
+local init_script_identifiers = {}
 local function run_host_custom_code(ip)
 	local hostname = HOSTNAME_LOOKUP[ip]
 	if not hostname then return end
@@ -163,7 +164,7 @@ local function run_host_custom_code(ip)
 		end
 
 		if istable(config.MenuFiles) then
-			for _, menu_file in ipairs(config.MenuFiles) do
+			for _, menu_file in pairs(config.MenuFiles) do
 				local menu_file_path = ("%s/%s"):format(host_script_base_path, menu_file)
 				if file.Exists(menu_file_path, "MOD") then
 					menu_file_path = menu_file_path:gsub("^lua/", "")
@@ -174,12 +175,15 @@ local function run_host_custom_code(ip)
 		end
 
 		if istable(config.ClientFiles) then
-			for _, client_file in ipairs(config.ClientFiles) do
+			for _, client_file in pairs(config.ClientFiles) do
 				local client_file_path = ("%s/%s"):format(host_script_base_path, client_file)
 				if file.Exists(client_file_path, "MOD") then
 					local code = file.Read(client_file_path, "MOD")
 					gmx.Print(("Injecting \"%s\""):format(client_file_path))
-					gmx.AddClientInitScript(code, true, "gmx_host_custom_code")
+
+					local identifier = ("gmx_host_custom_code[%s]"):format(client_file_path)
+					gmx.AddClientInitScript(code, true, identifier)
+					table.insert(init_script_identifiers, identifier)
 				end
 			end
 		end
@@ -190,5 +194,9 @@ hook.Add("GMXHostConnected", "gmx_hostname_custom_code", run_host_custom_code)
 concommand.Add("gmx_run_host_code", function() run_host_custom_code(gmx.GetConnectedServerIPAddress()) end)
 
 hook.Add("GMXHostDisconnected", "gmx_hostname_custom_code", function()
-	gmx.RemoveClientInitScript(true, "gmx_host_custom_code")
+	for _, identifier in ipairs(init_script_identifiers) do
+		gmx.RemoveClientInitScript(true, identifier)
+	end
+
+	init_script_identifiers = {}
 end)

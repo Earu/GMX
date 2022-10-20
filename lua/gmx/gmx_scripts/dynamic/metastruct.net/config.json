@@ -8,7 +8,8 @@
 		"menu.lua"
 	],
 	"ClientFiles": [
-		"client.lua"
+		"client/autorun.lua",
+		"client/hud.lua"
 	],
 	"Trusted": true
 }
