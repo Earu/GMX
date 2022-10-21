@@ -4,7 +4,8 @@ local elements_to_hide = {
 	CHudHealth = true,
 	CHudSuitPower = true,
 	CHudPoisonDamageIndicator = true,
-	CHudAmmo = true
+	CHudAmmo = true,
+	CHudSecondaryAmmo = true,
 }
 
 local is_poisoned = false
@@ -44,6 +45,10 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	local steps = 4
 
 	local wep = LocalPlayer():GetActiveWeapon()
+	local has_prim_ammo = IsValid(wep) and wep:GetPrimaryAmmoType() ~= -1 and wep:Clip1() ~= -1
+	local has_sec_ammo = false
+	local sec_ammo_count = 0
+
 	local health_perc = math.min(1, LocalPlayer():Health() / LocalPlayer():GetMaxHealth())
 	local armor_perc = math.min(1, LocalPlayer():Armor() / LocalPlayer():GetMaxArmor())
 
@@ -103,7 +108,7 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	end
 
 	-- primary ammo
-	if IsValid(wep) and wep:GetPrimaryAmmoType() ~= -1 and wep:Clip1() ~= -1 then
+	if has_prim_ammo then
 		local max_clip = wep:GetMaxClip1() > -1 and wep:GetMaxClip1() or 255
 		local ammo_steps = math.min(30, max_clip)
 		local step_size = size / ammo_steps
@@ -133,6 +138,35 @@ hook.Add("HUDPaint", "gmx_hud", function()
 		surface.DrawOutlinedRect(x + i * size / steps, y - (bar_width + bar_margin * 2), size / steps, bar_width + bar_margin * 2, 1)
 	end
 
+	if IsValid(wep) then
+		sec_ammo_count = wep:GetMaxClip2() > -1 and wep:Clip2() or -1
+		if sec_ammo_count < 0 then
+			sec_ammo_count = LocalPlayer():GetAmmoCount(has_prim_ammo and wep:GetSecondaryAmmoType() or wep:GetPrimaryAmmoType())
+		end
+
+		if sec_ammo_count > 0 then
+			has_sec_ammo = true
+
+			local max_clip = wep:GetMaxClip2() > -1 and wep:GetMaxClip2() or 15
+			local ammo_steps = math.min(30, max_clip)
+			local step_size = size / ammo_steps
+			local step_x, step_y = x, y - bar_width * 2
+
+			for i = 1, ammo_steps do
+				if sec_ammo_count >= i then
+					surface.SetDrawColor(AMMO_COLOR)
+					surface.DrawRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20)
+
+					surface.SetDrawColor(BG_COLOR)
+					surface.DrawOutlinedRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20)
+				else
+					surface.SetDrawColor(BG_COLOR)
+					surface.DrawRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20)
+				end
+			end
+		end
+	end
+
 	surface.DisableClipping(false)
 	cam.PopModelMatrix()
 
@@ -159,4 +193,54 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	local nick_text_w, _ = surface.GetTextSize(nick)
 	surface.SetTextPos(ScrW() / 2 - nick_text_w / 2, ScrH() - 90)
 	surface.DrawText(nick)
+
+	if has_prim_ammo then
+		surface.SetFont("DermaLarge")
+
+		local ammo_text = tostring(math.min(9999, wep:Clip1())) .. " / " .. tostring(math.min(9999, LocalPlayer():GetAmmoCount(wep:GetPrimaryAmmoType())))
+		local ammo_text_w, _ = surface.GetTextSize(ammo_text)
+
+		local ammo_mtx = Matrix()
+		ammo_mtx:Translate(tr)
+		ammo_mtx:SetAngles(-HUD_ANG)
+		ammo_mtx:Translate(-tr)
+
+		cam.PushModelMatrix(ammo_mtx)
+		surface.DisableClipping(true)
+
+		surface.SetDrawColor(BG_COLOR)
+		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - 60, ammo_text_w + 40, 30)
+
+		surface.SetTextColor(AMMO_COLOR)
+		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - 60)
+		surface.DrawText(ammo_text)
+
+		surface.DisableClipping(false)
+		cam.PopModelMatrix()
+	end
+
+	if has_sec_ammo then
+		surface.SetFont("DermaLarge")
+
+		local ammo_text = tostring(sec_ammo_count)
+		local ammo_text_w, _ = surface.GetTextSize(ammo_text)
+
+		local ammo_mtx = Matrix()
+		ammo_mtx:Translate(tr)
+		ammo_mtx:SetAngles(HUD_ANG)
+		ammo_mtx:Translate(-tr)
+
+		cam.PushModelMatrix(ammo_mtx)
+		surface.DisableClipping(true)
+
+		surface.SetDrawColor(BG_COLOR)
+		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - 60, ammo_text_w + 40, 30)
+
+		surface.SetTextColor(AMMO_COLOR)
+		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - 60)
+		surface.DrawText(ammo_text)
+
+		surface.DisableClipping(false)
+		cam.PopModelMatrix()
+	end
 end)
