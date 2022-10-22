@@ -1,4 +1,3 @@
-
 local elements_to_hide = {
 	CHudBattery = true,
 	CHudHealth = true,
@@ -30,6 +29,14 @@ surface.CreateFont("gmx_hud", {
 	size = FONT_HEIGHT,
 })
 
+local FONT_HEIGHT_PERC = math.max(20, 32 * ScrH() / 1440)
+surface.CreateFont("gmx_hud_perc", {
+	font = "Roboto",
+	extended = true,
+	weight = 500,
+	size = FONT_HEIGHT_PERC,
+})
+
 local BG_COLOR = Color(10, 10, 10, 200)
 local HEALTH_COLOR = Color(220, 0, 60)
 local HEALTH_POISONED_COLOR = Color(170, 255, 60, 200)
@@ -38,8 +45,17 @@ local TEXT_COLOR = Color(255, 255, 255)
 local AMMO_COLOR = Color(200, 200, 200, 240)
 local HUD_ANG = Angle(0, 45, 0)
 
+local last_scrw, last_scrh = ScrW(), ScrH()
 local last_health_perc, last_armor_perc = 1, 1
 hook.Add("HUDPaint", "gmx_hud", function()
+	if ScrW() ~= last_scrw or ScrH() ~= last_scrh then
+		last_scrw, last_scrh = ScrW(), ScrH()
+
+		-- update these with resolution change
+		FONT_HEIGHT = ScrW() > 1900 and 24 or 18
+		FONT_HEIGHT_PERC = math.max(20, 32 * ScrH() / 1440)
+	end
+
 	local size_coef = ScrW() / 2560
 	local size, padding = 200 * size_coef, 80 * size_coef
 	local x, y = ScrW() / 2 - size / 2, ScrH() - size / 2
@@ -172,7 +188,7 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	surface.DisableClipping(false)
 	cam.PopModelMatrix()
 
-	surface.SetFont("gmx_hud")
+	surface.SetFont("gmx_hud_perc")
 
 	surface.SetTextColor(is_poisoned and HEALTH_POISONED_COLOR or HEALTH_COLOR)
 	local health_text = (is_poisoned or not LocalPlayer():Alive()) and "\xe2\x98\xa0" or ("%.0f%%"):format(last_health_perc * 100)
@@ -190,10 +206,14 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	surface.SetTextPos(ScrW() / 2 - 5 * size_coef, ScrH() - 50 * size_coef)
 	surface.DrawText("/")
 
+	surface.SetFont("gmx_hud")
+
 	local nick = LocalPlayer().EngineNick and LocalPlayer():EngineNick() or LocalPlayer():Nick()
 	local nick_text_w, _ = surface.GetTextSize(nick)
 	surface.SetTextPos(ScrW() / 2 - nick_text_w / 2, ScrH() - 90 * size_coef)
 	surface.DrawText(nick)
+
+	surface.SetFont("gmx_hud_perc")
 
 	if has_prim_ammo then
 		local ammo_text = tostring(math.min(9999, wep:Clip1())) .. " / " .. tostring(math.min(9999, LocalPlayer():GetAmmoCount(wep:GetPrimaryAmmoType())))
@@ -208,10 +228,10 @@ hook.Add("HUDPaint", "gmx_hud", function()
 		surface.DisableClipping(true)
 
 		surface.SetDrawColor(BG_COLOR)
-		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - FONT_HEIGHT * 2, ammo_text_w + 40, FONT_HEIGHT)
+		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - FONT_HEIGHT_PERC * 2 - 10 * size_coef, ammo_text_w + 40, FONT_HEIGHT_PERC)
 
 		surface.SetTextColor(AMMO_COLOR)
-		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - FONT_HEIGHT * 2)
+		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - FONT_HEIGHT_PERC * 2 - 10 * size_coef)
 		surface.DrawText(ammo_text)
 
 		surface.DisableClipping(false)
@@ -231,10 +251,10 @@ hook.Add("HUDPaint", "gmx_hud", function()
 		surface.DisableClipping(true)
 
 		surface.SetDrawColor(BG_COLOR)
-		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - FONT_HEIGHT * 2, ammo_text_w + 40, FONT_HEIGHT)
+		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - FONT_HEIGHT_PERC * 2 - 10 * size_coef, ammo_text_w + 40, FONT_HEIGHT_PERC)
 
 		surface.SetTextColor(AMMO_COLOR)
-		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - FONT_HEIGHT * 2)
+		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - FONT_HEIGHT_PERC * 2 - 10 * size_coef)
 		surface.DrawText(ammo_text)
 
 		surface.DisableClipping(false)
