@@ -22,11 +22,12 @@ hook.Add("HUDShouldDraw", "gmx_hud", function(element)
 	if elements_to_hide[element] then return false end
 end)
 
+local FONT_HEIGHT = ScrW() > 1900 and 24 or 18
 surface.CreateFont("gmx_hud", {
 	font = "Roboto",
 	extended = true,
 	weight = 500,
-	size = 24
+	size = FONT_HEIGHT,
 })
 
 local BG_COLOR = Color(10, 10, 10, 200)
@@ -39,9 +40,10 @@ local HUD_ANG = Angle(0, 45, 0)
 
 local last_health_perc, last_armor_perc = 1, 1
 hook.Add("HUDPaint", "gmx_hud", function()
-	local size, padding = 200, 80
+	local size_coef = ScrW() / 2560
+	local size, padding = 200 * size_coef, 80 * size_coef
 	local x, y = ScrW() / 2 - size / 2, ScrH() - size / 2
-	local bar_width, bar_margin = 36, 2
+	local bar_width, bar_margin = 36 * size_coef, 2 * size_coef
 	local steps = 4
 
 	local wep = LocalPlayer():GetActiveWeapon()
@@ -111,20 +113,20 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	if has_prim_ammo then
 		local max_clip = wep:GetMaxClip1() > -1 and wep:GetMaxClip1() or 255
 		local ammo_steps = math.min(30, max_clip)
-		local step_size = size / ammo_steps
+		local step_size = (size / ammo_steps)
 		local step_x, step_y = x - bar_width * 2, y
 		local cur_clip = wep:Clip1()
 
 		for i = 1, ammo_steps do
 			if cur_clip >= i then
 				surface.SetDrawColor(AMMO_COLOR)
-				surface.DrawRect(step_x, step_y + (i - 1) * step_size, 20, step_size - 2)
+				surface.DrawRect(step_x, step_y + (i - 1) * step_size, 20 * size_coef, step_size - 2)
 
 				surface.SetDrawColor(BG_COLOR)
-				surface.DrawOutlinedRect(step_x, step_y + (i - 1) * step_size, 20, step_size - 2)
+				surface.DrawOutlinedRect(step_x, step_y + (i - 1) * step_size, 20 * size_coef, step_size - 2)
 			else
 				surface.SetDrawColor(BG_COLOR)
-				surface.DrawRect(step_x, step_y + (i - 1) * step_size, 20, step_size - 2)
+				surface.DrawRect(step_x, step_y + (i - 1) * step_size, 20 * size_coef, step_size - 2)
 			end
 		end
 	end
@@ -149,19 +151,19 @@ hook.Add("HUDPaint", "gmx_hud", function()
 
 			local max_clip = wep:GetMaxClip2() > -1 and wep:GetMaxClip2() or 15
 			local ammo_steps = math.min(30, max_clip)
-			local step_size = size / ammo_steps
+			local step_size = (size / ammo_steps)
 			local step_x, step_y = x, y - bar_width * 2
 
 			for i = 1, ammo_steps do
 				if sec_ammo_count >= i then
 					surface.SetDrawColor(AMMO_COLOR)
-					surface.DrawRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20)
+					surface.DrawRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20 * size_coef)
 
 					surface.SetDrawColor(BG_COLOR)
-					surface.DrawOutlinedRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20)
+					surface.DrawOutlinedRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20 * size_coef)
 				else
 					surface.SetDrawColor(BG_COLOR)
-					surface.DrawRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20)
+					surface.DrawRect(step_x + (i - 1) * step_size, step_y, step_size - 2, 20 * size_coef)
 				end
 			end
 		end
@@ -170,33 +172,30 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	surface.DisableClipping(false)
 	cam.PopModelMatrix()
 
-	surface.SetFont("DermaLarge")
+	surface.SetFont("gmx_hud")
 
 	surface.SetTextColor(is_poisoned and HEALTH_POISONED_COLOR or HEALTH_COLOR)
 	local health_text = (is_poisoned or not LocalPlayer():Alive()) and "\xe2\x98\xa0" or ("%.0f%%"):format(last_health_perc * 100)
 	local health_text_w, _ = surface.GetTextSize(health_text)
-	surface.SetTextPos(ScrW() / 2 - health_text_w / 2 - 50, ScrH() - 50)
+	surface.SetTextPos(ScrW() / 2 - health_text_w / 2 - 50 * size_coef, ScrH() - 50 * size_coef)
 	surface.DrawText(health_text)
 
 	surface.SetTextColor(ARMOR_COLOR)
 	local armor_text = ("%.0f%%"):format(last_armor_perc * 100)
 	local armor_text_w, _ = surface.GetTextSize(armor_text)
-	surface.SetTextPos(ScrW() / 2 - armor_text_w / 2 + 50, ScrH() - 50)
+	surface.SetTextPos(ScrW() / 2 - armor_text_w / 2 + 50 * size_coef, ScrH() - 50 * size_coef)
 	surface.DrawText(armor_text)
 
 	surface.SetTextColor(TEXT_COLOR)
-	surface.SetTextPos(ScrW() / 2 - 5, ScrH() - 50)
+	surface.SetTextPos(ScrW() / 2 - 5 * size_coef, ScrH() - 50 * size_coef)
 	surface.DrawText("/")
 
-	surface.SetFont("gmx_hud")
 	local nick = LocalPlayer().EngineNick and LocalPlayer():EngineNick() or LocalPlayer():Nick()
 	local nick_text_w, _ = surface.GetTextSize(nick)
-	surface.SetTextPos(ScrW() / 2 - nick_text_w / 2, ScrH() - 90)
+	surface.SetTextPos(ScrW() / 2 - nick_text_w / 2, ScrH() - 90 * size_coef)
 	surface.DrawText(nick)
 
 	if has_prim_ammo then
-		surface.SetFont("DermaLarge")
-
 		local ammo_text = tostring(math.min(9999, wep:Clip1())) .. " / " .. tostring(math.min(9999, LocalPlayer():GetAmmoCount(wep:GetPrimaryAmmoType())))
 		local ammo_text_w, _ = surface.GetTextSize(ammo_text)
 
@@ -209,10 +208,10 @@ hook.Add("HUDPaint", "gmx_hud", function()
 		surface.DisableClipping(true)
 
 		surface.SetDrawColor(BG_COLOR)
-		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - 60, ammo_text_w + 40, 30)
+		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - FONT_HEIGHT * 2, ammo_text_w + 40, FONT_HEIGHT)
 
 		surface.SetTextColor(AMMO_COLOR)
-		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - 60)
+		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - FONT_HEIGHT * 2)
 		surface.DrawText(ammo_text)
 
 		surface.DisableClipping(false)
@@ -220,8 +219,6 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	end
 
 	if has_sec_ammo then
-		surface.SetFont("DermaLarge")
-
 		local ammo_text = tostring(sec_ammo_count)
 		local ammo_text_w, _ = surface.GetTextSize(ammo_text)
 
@@ -234,10 +231,10 @@ hook.Add("HUDPaint", "gmx_hud", function()
 		surface.DisableClipping(true)
 
 		surface.SetDrawColor(BG_COLOR)
-		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - 60, ammo_text_w + 40, 30)
+		surface.DrawRect(ScrW() / 2 - ammo_text_w / 2 - 20, ScrH() - size / 2 - FONT_HEIGHT * 2, ammo_text_w + 40, FONT_HEIGHT)
 
 		surface.SetTextColor(AMMO_COLOR)
-		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - 60)
+		surface.SetTextPos(ScrW() / 2 - ammo_text_w / 2, ScrH() - size / 2 - FONT_HEIGHT * 2)
 		surface.DrawText(ammo_text)
 
 		surface.DisableClipping(false)
