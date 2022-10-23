@@ -15,7 +15,7 @@ local firewall_rules = {
 	["imgur.com"]                      = { method = "*",   type = "ALLOW" },
 	["puu.sh"]                         = { method = "GET", type = "ALLOW" },
 	["akamaihd.net"]                   = { method = "GET", type = "ALLOW" },
-	["dropboxusercontent.com"]         = { method = "GET", type = "ALLOW" },
+	["dropboxusercontent.com"]         = { method = "*",   type = "ALLOW" },
 	["dropbox.com"]                    = { method = "GET", type = "ALLOW" },
 	["onedrive.com"]                   = { method = "*",   type = "ALLOW" },
 	["pastebin.com"]                   = { method = "GET", type = "ALLOW" },

@@ -20,13 +20,13 @@ end)
 function system.FlashWindow()
 end
 
-local ascii = "[GMX REDACTED]"
 local function detour_libs()
 	if rtchat then
 		rtchat.old_QueueMessage = rtchat.old_QueueMessage or rtchat.QueueMessage
 
 		function rtchat.QueueMessage(txt)
-			rtchat.old_QueueMessage(ascii)
+			local hex = txt:gsub(".", function(char) return ("%2x"):format(char:byte()) end)
+			rtchat.old_QueueMessage(hex)
 		end
 	end
 
