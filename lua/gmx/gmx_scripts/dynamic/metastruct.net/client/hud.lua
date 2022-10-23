@@ -63,7 +63,7 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	local steps = 4
 
 	local wep = LocalPlayer():GetActiveWeapon()
-	local has_prim_ammo = IsValid(wep) and wep:GetPrimaryAmmoType() ~= -1 and wep:Clip1() ~= -1
+	local has_prim_ammo = IsValid(wep) and (wep:GetPrimaryAmmoType() ~= -1 or wep:Clip1() ~= -1)
 	local has_sec_ammo = false
 	local sec_ammo_count = 0
 
@@ -127,11 +127,10 @@ hook.Add("HUDPaint", "gmx_hud", function()
 
 	-- primary ammo
 	if has_prim_ammo then
-		local max_clip = wep:GetMaxClip1() > -1 and wep:GetMaxClip1() or 255
-		local ammo_steps = math.min(30, max_clip)
+		local ammo_steps = wep:GetMaxClip1() > -1 and math.min(50, wep:GetMaxClip1()) or 30
 		local step_size = (size / ammo_steps)
 		local step_x, step_y = x - bar_width * 2, y
-		local cur_clip = wep:Clip1()
+		local cur_clip = wep:Clip1() ~= -1 and wep:Clip1() or LocalPlayer():GetAmmoCount(wep:GetPrimaryAmmoType())
 
 		for i = 1, ammo_steps do
 			if cur_clip >= i then
@@ -166,7 +165,7 @@ hook.Add("HUDPaint", "gmx_hud", function()
 			has_sec_ammo = true
 
 			local max_clip = wep:GetMaxClip2() > -1 and wep:GetMaxClip2() or 15
-			local ammo_steps = math.min(30, max_clip)
+			local ammo_steps = math.min(15, max_clip)
 			local step_size = (size / ammo_steps)
 			local step_x, step_y = x, y - bar_width * 2
 
@@ -216,7 +215,24 @@ hook.Add("HUDPaint", "gmx_hud", function()
 	surface.SetFont("gmx_hud_perc")
 
 	if has_prim_ammo then
-		local ammo_text = tostring(math.min(9999, wep:Clip1())) .. " / " .. tostring(math.min(9999, LocalPlayer():GetAmmoCount(wep:GetPrimaryAmmoType())))
+		local total_ammos = wep:GetPrimaryAmmoType() > -1 and LocalPlayer():GetAmmoCount(wep:GetPrimaryAmmoType()) or wep:GetMaxClip1()
+		local cur_clip = math.min(9999, wep:Clip1())
+		local ammo_text = "EMPTY"
+
+		if cur_clip > -1 then
+			ammo_text = tostring(math.min(9999, wep:Clip1()))
+		end
+
+		if total_ammos > 0 then
+			if cur_clip > -1 then
+				ammo_text = ammo_text .. " / " .. tostring(math.min(9999, total_ammos))
+			else
+				ammo_text = tostring(math.min(9999, total_ammos))
+			end
+		elseif cur_clip <= 0 then
+			ammo_text = "EMPTY"
+		end
+
 		local ammo_text_w, _ = surface.GetTextSize(ammo_text)
 
 		local ammo_mtx = Matrix()
