@@ -333,7 +333,7 @@ local function draw_own_hud()
 	end
 end
 
-local function draw_player_health_square(value, total_value, x, y, w, h, ang, color)
+local function rotated_perc_value_square(value, total_value, x, y, w, h, ang, color)
 	-- Reset everything to known good
 	render.SetStencilWriteMask(0xFF)
 	render.SetStencilTestMask(0xFF)
@@ -399,14 +399,18 @@ local function draw_players_hud()
 
 		-- health & armor square
 		do
-			blur(screen_pos.x, screen_pos.y, 45, 45, HUD_ANG.y, 2, 3)
+			--blur(screen_pos.x, screen_pos.y, 45, 45, HUD_ANG.y, 2, 3)
 
 			draw.NoTexture()
 			surface.SetDrawColor(BG_COLOR)
 			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 45, 45, HUD_ANG.y)
 
-			draw_player_health_square(ply:Armor(), ply:GetMaxArmor(), screen_pos.x, screen_pos.y, 70, 70, 45, AMMO_COLOR)
-			draw_player_health_square(ply:Health(), ply:GetMaxHealth(), screen_pos.x, screen_pos.y, 65, 65, 45, HEALTH_COLOR)
+			rotated_perc_value_square(ply:Armor(), ply:GetMaxArmor(), screen_pos.x, screen_pos.y, 100, 100, 45, AMMO_COLOR)
+			rotated_perc_value_square(ply:Health(), ply:GetMaxHealth(), screen_pos.x, screen_pos.y, 90, 90, 45, HEALTH_COLOR)
+
+			draw.NoTexture()
+			surface.SetDrawColor(0, 0, 0, 255)
+			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 37, 37, HUD_ANG.y)
 
 			local health_perc = ("%.0f%%"):format((ply:Health() / ply:GetMaxHealth()) * 100)
 			surface.SetTextColor(TEXT_COLOR)
