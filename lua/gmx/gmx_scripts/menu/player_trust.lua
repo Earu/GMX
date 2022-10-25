@@ -81,17 +81,31 @@ timer.Create("gmx_player_trust", 1, 0, function()
 	end
 end)
 
+local ignored_resons = {
+	"member of hack/troll group"
+}
+
+local function is_valid_reason(reason)
+	for _, ignored_reason in ipairs(ignored_resons) do
+		if reason:lower():find(ignored_reason, 1, true) then return false end
+	end
+
+	return true
+end
+
 hook.Add("GMXPlayerConnected", "gmx_check_malicious", function(steamid, player_name)
-	if gmx.SkidCheckDB[steamid] then
-		gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
+	local reason = gmx.SkidCheckDB[steamid]
+	if reason and is_valid_reason(reason) then
+		gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, reason))
 	end
 end)
 
 concommand.Add("gmx_check_malicious", function()
 	local players = gmx.GetConnectedPlayers()
 	for steamid, player_name in pairs(players) do
-		if gmx.SkidCheckDB[steamid] then
-			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, gmx.SkidCheckDB[steamid]))
+		local reason = gmx.SkidCheckDB[steamid]
+		if reason and is_valid_reason(reason)  then
+			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, reason))
 		end
 	end
 end)
