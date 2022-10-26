@@ -110,7 +110,8 @@ concommand.Add("gmx_check_malicious", function()
 	end
 end)
 
-timer.Create("gmx_fake_name", 1, 0, function()
+-- dont do that, too obvious
+--[[timer.Create("gmx_fake_name", 1, 0, function()
 	if not CNetChan then return end
 
 	local chan = CNetChan()
@@ -125,4 +126,4 @@ timer.Create("gmx_fake_name", 1, 0, function()
 	buffer:WriteByte(1) -- convar count
 	buffer:WriteString("name") -- convar name
 	buffer:WriteString(gmx.GenerateUID(6)) -- convar value
-end)
+end)]]
