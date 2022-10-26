@@ -20,6 +20,7 @@ local firewall_rules = {
 	["onedrive.com"]                   = { method = "*",   type = "ALLOW" },
 	["pastebin.com"]                   = { method = "GET", type = "ALLOW" },
 	["drive.google.com"]               = { method = "GET", type = "ALLOW" },
+	["cdn.discordapp.com"]             = { method = "*",   type = "ALLOW" },
 	["discordapp.com"]                 = { method = "GET", type = "ALLOW" },
 	["discordapp.net"]                 = { method = "GET", type = "ALLOW" },
 	["cdn.cloudflare.steamstatic.com"] = { method = "*",   type = "ALLOW" },
