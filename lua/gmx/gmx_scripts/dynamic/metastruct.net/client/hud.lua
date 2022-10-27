@@ -107,8 +107,20 @@ local function blur(x, y, w, h, ang, layers, quality)
 	render.SetStencilEnable(false)
 end
 
+local function smoothen_value(cur_value, target_value)
+	if cur_value < target_value then
+		local coef = (target_value - cur_value) * FrameTime() * 2
+		cur_value = math.min(target_value, cur_value + coef)
+	elseif cur_value > target_value then
+		local coef = (cur_value - target_value) * FrameTime() * 2
+		cur_value = math.max(target_value, cur_value - coef)
+	end
+
+	return cur_value
+end
+
 local last_health_perc, last_armor_perc = 1, 1
-local function draw_own_hud()
+local function draw_local_player_hud()
 	local size_coef = ScrW() / 2560
 	local size, padding = 200 * size_coef, 80 * size_coef
 	local x, y = ScrW() / 2 - size / 2, ScrH() - size / 2
@@ -123,21 +135,7 @@ local function draw_own_hud()
 	local health_perc = math.min(1, LocalPlayer():Health() / LocalPlayer():GetMaxHealth())
 	local armor_perc = math.min(1, LocalPlayer():Armor() / LocalPlayer():GetMaxArmor())
 
-	if last_health_perc < health_perc then
-		local coef = (health_perc - last_health_perc) * FrameTime() * 2
-		last_health_perc = math.min(health_perc, last_health_perc + coef)
-	elseif last_health_perc > health_perc then
-		local coef = (last_health_perc - health_perc) * FrameTime() * 2
-		last_health_perc = math.max(health_perc, last_health_perc - coef)
-	end
-
-	if last_armor_perc < armor_perc then
-		local coef = (armor_perc - last_armor_perc) * FrameTime() * 2
-		last_armor_perc = math.min(armor_perc, last_armor_perc + coef)
-	elseif last_armor_perc > armor_perc then
-		local coef = (last_armor_perc - armor_perc) * FrameTime() * 2
-		last_armor_perc = math.max(armor_perc, last_armor_perc - coef)
-	end
+	last_health_perc, last_armor_perc = smoothen_value(last_health_perc, health_perc), smoothen_value(last_armor_perc, armor_perc)
 
 	blur(x + size / 2, y + size / 2 + 85 * size_coef, size * 2, size * 2, HUD_ANG.y, 2, 3)
 
@@ -335,7 +333,7 @@ local function draw_own_hud()
 	end
 end
 
-local function rotated_perc_value_square(value, total_value, x, y, w, h, ang, color)
+local function draw_rotated_value_rect(value, total_value, x, y, w, h, ang, color)
 	-- Reset everything to known good
 	render.SetStencilWriteMask(0xFF)
 	render.SetStencilTestMask(0xFF)
@@ -376,8 +374,9 @@ local function draw_players_hud()
 		if not ply:Alive() then continue end
 		if ply == LocalPlayer() then continue end
 
-		local screen_pos = IsValid(looked_at_ent) and looked_at_ent == ply
-			and { x = ScrW() / 2, y = ScrH() / 2 - 100, visible = true }
+		local is_looked_at = IsValid(looked_at_ent) and looked_at_ent == ply
+		local screen_pos = is_looked_at
+			and { x = ScrW() / 2, y = ScrH() / 2, visible = true }
 			or (ply:EyePos() + HEAD_OFFSET):ToScreen()
 
 		if not screen_pos.visible then continue end
@@ -401,18 +400,21 @@ local function draw_players_hud()
 
 		-- health & armor square
 		do
-			--blur(screen_pos.x, screen_pos.y, 45, 45, HUD_ANG.y, 2, 3)
+			ply.GMXHUDLastHealthPerc = smoothen_value(ply.GMXHUDLastHealthPerc or 1, ply:Health())
+			ply.GMXHUDLastArmorPerc = smoothen_value(ply.GMXHUDLastArmorPerc or 1, ply:Armor())
+
+			local ang = is_looked_at and ((RealTime() * 100) % 360) or HUD_ANG.y
 
 			draw.NoTexture()
 			surface.SetDrawColor(BG_COLOR)
-			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 45, 45, HUD_ANG.y)
+			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 45, 45, ang)
 
-			rotated_perc_value_square(ply:Armor(), ply:GetMaxArmor(), screen_pos.x, screen_pos.y, 100, 100, 45, AMMO_COLOR)
-			rotated_perc_value_square(ply:Health(), ply:GetMaxHealth(), screen_pos.x, screen_pos.y, 90, 90, 45, HEALTH_COLOR)
+			draw_rotated_value_rect(ply.GMXHUDLastArmorPerc, ply:GetMaxArmor(), screen_pos.x, screen_pos.y, 100, 100, ang, AMMO_COLOR)
+			draw_rotated_value_rect(ply.GMXHUDLastHealthPerc, ply:GetMaxHealth(), screen_pos.x, screen_pos.y, 90, 90, ang, HEALTH_COLOR)
 
 			draw.NoTexture()
 			surface.SetDrawColor(0, 0, 0, 255)
-			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 37, 37, HUD_ANG.y)
+			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 37, 37, ang)
 
 			local health_perc = ("%.0f%%"):format((ply:Health() / ply:GetMaxHealth()) * 100)
 			surface.SetTextColor(TEXT_COLOR)
@@ -428,5 +430,5 @@ end
 hook.Add("HUDPaint", "gmx_hud", function()
 	update_font_sizes()
 	draw_players_hud()
-	draw_own_hud()
+	draw_local_player_hud()
 end)
