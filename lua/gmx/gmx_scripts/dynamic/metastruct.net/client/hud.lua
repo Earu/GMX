@@ -1,3 +1,5 @@
+local GMX_HUD = CreateClientConVar("gmx_hud", "1", true)
+
 local elements_to_hide = {
 	CHudBattery = true,
 	CHudHealth = true,
@@ -9,6 +11,8 @@ local elements_to_hide = {
 
 local is_poisoned = false
 hook.Add("HUDShouldDraw", "gmx_hud", function(element)
+	if not GMX_HUD:GetBool() then return end
+
 	if element == "CHudPoisonDamageIndicator" then
 		timer.Create("gmx_hud_poison", 1, 1, function()
 			is_poisoned = false
@@ -21,8 +25,15 @@ hook.Add("HUDShouldDraw", "gmx_hud", function(element)
 	if elements_to_hide[element] then return false end
 end)
 
-hook.Add("ShouldDrawNameTag", "gmx_hud", function() return false end)
-hook.Add("HUDDrawTargetID", "gmx_hud", function() return true end)
+hook.Add("ShouldDrawNameTag", "gmx_hud", function()
+	if not GMX_HUD:GetBool() then return end
+	return false
+end)
+
+hook.Add("HUDDrawTargetID", "gmx_hud", function()
+	if not GMX_HUD:GetBool() then return end
+	return true
+end)
 
 local FONT_HEIGHT = ScrW() > 1900 and 24 or 18
 surface.CreateFont("gmx_hud", {
@@ -428,6 +439,8 @@ local function draw_players_hud()
 end
 
 hook.Add("HUDPaint", "gmx_hud", function()
+	if not GMX_HUD:GetBool() then return end
+
 	update_font_sizes()
 	draw_players_hud()
 	draw_local_player_hud()
