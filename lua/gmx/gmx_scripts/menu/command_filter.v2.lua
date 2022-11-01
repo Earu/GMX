@@ -6,6 +6,7 @@ local WHITELIST = {
 	dsp_player = true,
 	gmod_toolmode = true,
 	r_cleardecals = true,
+	material_override = true,
 }
 
 local function command_filtering(_, read, write)
