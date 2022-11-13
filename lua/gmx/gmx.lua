@@ -243,6 +243,16 @@ hook.Add("ClientStateDestroyed", "gmx_client_init_scripts", function()
 	init_scripts_ran = false
 end)
 
+-- sourcenet
+if system.IsWindows() then
+	include("gmx/gmx_scripts/menu/sourcenet/incoming.lua")
+	include("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
+else
+	function FilterIncomingMessage(id, callback) end
+	function FilterOutgoingMessage(id, callback) end
+	function DiscardIncomingMessages(time) end
+end
+
 local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
 for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
 	include(menu_scripts_path .. file_name)

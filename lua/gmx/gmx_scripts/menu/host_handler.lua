@@ -106,7 +106,7 @@ hook.Add("AllowStringCommand", "gmx_host_address", function(cmd_str)
 		cached_address = sanitize_address(table.concat(args, " ", 2))
 
 		hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
-	elseif cmd_str:lower():match("^disconnect") then
+	elseif cmd_str:lower():match("^disconnect") or cmd_str:lower():match("^retry") then
 		cached_address = nil
 		hook.Run("GMXHostDisconnected")
 	end

@@ -250,3 +250,65 @@ hook.Add("GMXInitialized", "gmx_crash_report", function()
 	gmx.Print("Crash Report", dump_path .. "\n" .. file.Read(dump_path, "BASE_PATH"))
 	MsgN()
 end)
+
+local time_out_state = false
+local last_tick = -1
+function gmx.IsClientTimingOut()
+	if last_tick == -1 then return false end
+	return time_out_state, SysTime() - last_tick
+end
+
+FilterIncomingMessage(net_Tick, function(net_chan, read, write)
+	local tick = read:ReadLong()
+	local host_frame_time = read:ReadUInt(16)
+	local host_frame_time_deviation = read:ReadInt(16)
+
+	write:WriteUInt(net_Tick, NET_MESSAGE_BITS)
+	write:WriteLong(tick)
+	write:WriteUInt(host_frame_time, 16)
+	write:WriteInt(host_frame_time_deviation, 16)
+
+	last_tick = SysTime()
+
+	return true
+end)
+
+hook.Add("GMXHostDisconnected", "gmx_client_time_out", function()
+	time_out_state = false
+	last_tick = -1
+end)
+
+hook.Add("Think", "gmx_client_time_out", function()
+	if last_tick == -1 then return end
+
+	local is_timing_out = SysTime() - last_tick > 1
+	if is_timing_out ~= time_out_state then
+		time_out_state = is_timing_out
+		if is_timing_out then
+			gmx.Print("TimeOut", "client is timing out, enabling debugging!")
+			RunGameUICommand("engine net_showmsg 1")
+			RunGameUICommand("engine net_showpeaks 2000")
+
+			local i = 0
+			timer.Create("gmx_client_time_out_safety_measures", 0, 1, function()
+				if not is_timing_out then
+					timer.Remove("gmx_client_time_out_safety_measures")
+					return
+				end
+
+				i = i + 1
+
+				-- after 6 seconds of timeout, each 5 seconds, discard messages for half of the time to give the client a chance to recover
+				if i > 6 and i % 5 == 0 then
+					DiscardIncomingMessages(2.5)
+				end
+			end)
+		else
+			gmx.Print("TimeOut", "client recovered!")
+			RunGameUICommand("engine net_showmsg 0")
+			RunGameUICommand("engine net_showpeaks none")
+		end
+
+		hook.Run("GMXClientTimeOut", time_out_state)
+	end
+end)
