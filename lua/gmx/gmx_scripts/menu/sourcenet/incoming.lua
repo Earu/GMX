@@ -49,8 +49,10 @@ local function DefaultCopy(netchan, read, write, handler)
 	handler:WriteToBuffer(write)
 end
 
+local should_discard = false
 hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localchan)
 	if not IsInGame() then return false end
+	if should_discard then return true end
 
 	local islocal = netchan == localchan
 	if ((islocal and SERVER) or (not islocal and CLIENT)) then
@@ -95,4 +97,12 @@ end
 
 function UnFilterIncomingMessage(msg_type)
 	return FilterIncomingMessage(msg_type, nil)
+end
+
+function DiscardIncomingMessages(time)
+	should_discard = true
+
+	timer.Create("gmx_sourcenet_discard_msgs", time, 1, function()
+		should_discard = false
+	end)
 end

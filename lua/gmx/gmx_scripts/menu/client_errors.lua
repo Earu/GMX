@@ -1,7 +1,3 @@
-if not system.IsWindows() then return end
-
-include("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
-
 local function error_filtering(_, read, write)
 	local bits = read:ReadUInt(20)
 	local msg_type = read:ReadByte()

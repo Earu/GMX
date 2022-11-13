@@ -1,7 +1,3 @@
-if not system.IsWindows() then return end
-
-include("gmx/gmx_scripts/menu/sourcenet/incoming.lua")
-
 local WHITELIST = {
 	dsp_player = true,
 	gmod_toolmode = true,
