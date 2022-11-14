@@ -245,13 +245,15 @@ end)
 
 -- sourcenet fallbacks
 function FilterIncomingMessage(id, callback) end
+function UnFilterIncomingMessage(id) end
 function FilterOutgoingMessage(id, callback) end
+function UnFilterOutgoingMessage(id) end
 function DiscardIncomingMessages(time) end
 
 -- sourcenet
 if system.IsWindows() then
-	include("gmx/gmx_scripts/menu/sourcenet/incoming.lua")
-	include("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
+	include("gmx/sourcenet_modded/incoming.lua")
+	include("gmx/sourcenet_modded/outgoing.lua")
 end
 
 local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
