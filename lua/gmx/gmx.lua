@@ -248,16 +248,16 @@ function FilterIncomingMessage(id, callback) end
 function FilterOutgoingMessage(id, callback) end
 function DiscardIncomingMessages(time) end
 
-local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
-for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
-	include(menu_scripts_path .. file_name)
-	gmx.Print(("Running \"%s\""):format(file_name))
-end
-
 -- sourcenet
 if system.IsWindows() then
 	include("gmx/gmx_scripts/menu/sourcenet/incoming.lua")
 	include("gmx/gmx_scripts/menu/sourcenet/outgoing.lua")
+end
+
+local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
+for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
+	include(menu_scripts_path .. file_name)
+	gmx.Print(("Running \"%s\""):format(file_name))
 end
 
 hook.Run("GMXInitialized")
