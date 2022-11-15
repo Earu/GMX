@@ -278,6 +278,7 @@ hook.Add("GMXHostDisconnected", "gmx_client_time_out", function()
 	last_tick = -1
 end)
 
+local time_out_start_time = -1
 hook.Add("Think", "gmx_client_time_out", function()
 	if last_tick == -1 then return end
 
@@ -285,7 +286,10 @@ hook.Add("Think", "gmx_client_time_out", function()
 	if is_timing_out ~= time_out_state then
 		time_out_state = is_timing_out
 		if is_timing_out then
+			time_out_start_time = SysTime()
+
 			gmx.Print("TimeOut", "client is timing out, enabling debugging!")
+
 			RunGameUICommand("engine net_showmsg 1")
 			RunGameUICommand("engine net_showpeaks 2000")
 
@@ -304,7 +308,7 @@ hook.Add("Think", "gmx_client_time_out", function()
 				end
 			end)
 		else
-			gmx.Print("TimeOut", "client recovered!")
+			gmx.Print("TimeOut", time_out_start_time ~= -1 and ("client recovered (%ds)!"):format(SysTime() - time_out_start_time) or "client recovered!")
 			RunGameUICommand("engine net_showmsg 0")
 			RunGameUICommand("engine net_showpeaks none")
 		end
