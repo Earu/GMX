@@ -331,3 +331,29 @@ hook.Add("Think", "gmx_ui_scaling", function()
 		RunGameUICommand("engine gmx reload")
 	end
 end)
+
+hook.Add("DrawOverlay", "gmx_time_out_hud", function()
+	if not IsInGame() then return end
+
+	local is_timing_out, time_out_time = gmx.IsClientTimingOut()
+	if not is_timing_out then return end
+
+	local scrw, scrh = ScrW(), ScrH()
+	surface.SetTextColor(gmx.Colors.Accent)
+	surface.SetFont("gmx_button")
+
+	local diff = math.max(time_out_time, 0)
+	local m, s, ms = math.floor(diff / 60), math.floor(diff) % 60, math.Round(math.fmod(diff, 1) * 1000)
+	local time_left = ("TIMEOUT %d:%d:%d"):format(m, s, ms)
+	local tw, th = surface.GetTextSize(time_left)
+	local pos_x, pos_y = scrw / 2 - tw / 2, scrh / 2 - th / 2
+
+	surface.SetDrawColor(gmx.Colors.Background.r, gmx.Colors.Background.g, gmx.Colors.Background.b, 230)
+	surface.DrawRect(pos_x - 5, pos_y - 5, tw + 10, th + 10)
+
+	surface.SetDrawColor(gmx.Colors.Accent)
+	surface.DrawOutlinedRect(pos_x - 5, pos_y - 5, tw + 10, th + 10)
+
+	surface.SetTextPos(pos_x, pos_y)
+	surface.DrawText(time_left)
+end)
