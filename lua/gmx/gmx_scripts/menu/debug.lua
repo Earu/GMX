@@ -276,7 +276,13 @@ end)
 hook.Add("GMXHostDisconnected", "gmx_client_time_out", function()
 	time_out_state = false
 	last_tick = -1
+
+	RunGameUICommand("engine net_showmsg 0")
+	RunGameUICommand("engine net_showpeaks none")
 end)
+
+RunGameUICommand("engine net_showmsg 0")
+RunGameUICommand("engine net_showpeaks none")
 
 local time_out_start_time = -1
 hook.Add("Think", "gmx_client_time_out", function()
