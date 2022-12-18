@@ -48,6 +48,8 @@ local firewall_rules = {
 	["3kv.in"]              = { method = "GET", type = "ALLOW" },
 }
 
+-- test
+
 local function get_domain(sub_domain)
 	-- check if its an IP address
 	if sub_domain:match("[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.") then
