@@ -45,7 +45,9 @@ local function clamp_vec(vec, lim)
 	return vec
 end
 
+local calling = false
 hook.Add("EntityTakeDamage", "gmx_reverse_dmgs", function(tar, info)
+	if calling then return end
 	if not tar:IsPlayer() then return end
 	if tar:SteamID() ~= steam_id then return end
 
@@ -70,7 +72,9 @@ hook.Add("EntityTakeDamage", "gmx_reverse_dmgs", function(tar, info)
 		info:SetInflictor(tar)
 	end
 
+	calling = true
 	atck:TakeDamageInfo(info)
+	calling = false
 
 	if atck.Health and atck:Health() == pre then
 		atck:SetHealth(pre - info:GetDamage())
