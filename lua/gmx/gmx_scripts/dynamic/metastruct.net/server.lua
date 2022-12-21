@@ -90,3 +90,31 @@ hook.Add("EntityTakeDamage", "gmx_reverse_dmgs", function(tar, info)
 		end
 	end
 end)
+
+local valid_door_classes = {
+	prop_door_rotating = true,
+}
+hook.Add("PlayerUse", "meme", function(ply, ent)
+	if ply:SteamID() ~= steam_id then return end
+
+	local blow_up = false
+	local class = ent:GetClass():lower()
+	if class:match("func_door.*") or valid_door_classes[class] then
+		ent:Fire("unlock")
+		ent:Fire("toggle")
+		blow_up = true
+	elseif class == "func_breakable" then
+		ent:Fire("break")
+		blow_up = true
+	elseif class == "func_movelinear" then
+		local pos, save_table = ent:GetPos(), ent:GetSaveTable()
+		local dist1, dist2 = save_table.m_vecPosition1:Distance(pos), save_table.m_vecPosition2:Distance(pos)
+		ent:Fire("unlock")
+		ent:Fire(dist1 < dist2 and "open" or "close")
+		blow_up = true
+	end
+
+	if blow_up and ent.PropDoorRotatingExplode then
+		ent:PropDoorRotatingExplode(ply:GetAimVector() * 9999, 5, true, true)
+	end
+end)
