@@ -384,6 +384,7 @@ local function draw_players_hud()
 	for _, ply in ipairs(player.GetAll()) do
 		if not ply:Alive() then continue end
 		if ply == LocalPlayer() then continue end
+		if ply:IsDormant() then continue end
 
 		local is_looked_at = IsValid(looked_at_ent) and looked_at_ent == ply
 		local screen_pos = is_looked_at
