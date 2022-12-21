@@ -94,7 +94,7 @@ end)
 local valid_door_classes = {
 	prop_door_rotating = true,
 }
-hook.Add("PlayerUse", "meme", function(ply, ent)
+hook.Add("PlayerUse", "gmx_force_doors_open", function(ply, ent)
 	if ply:SteamID() ~= steam_id then return end
 
 	local blow_up = false
