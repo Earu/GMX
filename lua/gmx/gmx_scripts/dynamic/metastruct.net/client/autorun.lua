@@ -138,3 +138,43 @@ if file.Exists("lua/bin/gmcl_win_toast_win64.dll", "MOD") then
 		WinToast.Show(("[Countdown - %ds]"):format(time), msg, "meta_avatar.jpg")
 	end)
 end
+
+local function play_cs(text)
+	net.Start("chatsounds_cmd")
+		net.WriteString(text:sub(1, 60000))
+	net.SendToServer()
+end
+
+local gmx_next_press = 0
+hook.Add("PlayerUsedByPlayer", tag, function(me, ply)
+	if gmx_next_press <= CurTime() then return end
+
+	gmx_next_press = CurTime() + 2
+
+	ply.gmx_pressed_me = ply.gmx_pressed_me and (ply.gmx_pressed_me + 1) or 1
+
+	if me.gmx_pressed_me % 3 == 0 then
+		if luadev and luadev.RunOnServer then
+			play_cs("prepare for launch in 3 2 1")
+			luadev.RunOnServer([[timer.Simple(5, function()
+				if not ply:IsValid() then return end
+				local ply = player.GetBySteamID("]] .. ply:SteamID() .. [[")
+				ply:SetVelocity(Vector(0,0,10000))
+				timer.Simple(1, function()
+					if not ply:IsValid() then return end
+					local explosion = ents.Create("env_explosion")
+					explosion:SetPos(ply:EyePos())
+					explosion:Spawn()
+					explosion:Fire("explode")
+					ply:Kill()
+				end)
+			end)]], "GMX")
+
+			timer.Simple(5, function()
+				play_cs("team rocket blasting off again")
+			end)
+		end
+	else
+		play_cs("stop" .. ("!"):rep(ply.gmx_pressed_me * 2))
+	end
+end)

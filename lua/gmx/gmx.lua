@@ -252,8 +252,8 @@ function DiscardIncomingMessages(time) end
 
 -- sourcenet
 if system.IsWindows() then
-	include("gmx/sourcenet_modded/incoming.lua")
-	include("gmx/sourcenet_modded/outgoing.lua")
+	--include("gmx/sourcenet_modded/incoming.lua")
+	--include("gmx/sourcenet_modded/outgoing.lua")
 end
 
 local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
