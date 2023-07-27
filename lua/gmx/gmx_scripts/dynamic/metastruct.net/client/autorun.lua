@@ -147,13 +147,11 @@ end
 
 local gmx_next_press = 0
 hook.Add("PlayerUsedByPlayer", tag, function(me, ply)
-	if gmx_next_press <= CurTime() then return end
-
-	gmx_next_press = CurTime() + 2
+	if CurTime() <= gmx_next_press then return end
 
 	ply.gmx_pressed_me = ply.gmx_pressed_me and (ply.gmx_pressed_me + 1) or 1
 
-	if me.gmx_pressed_me % 3 == 0 then
+	if ply.gmx_pressed_me % 3 == 0 then
 		if luadev and luadev.RunOnServer then
 			play_cs("prepare for launch in 3 2 1")
 			luadev.RunOnServer([[timer.Simple(5, function()
@@ -174,7 +172,11 @@ hook.Add("PlayerUsedByPlayer", tag, function(me, ply)
 				play_cs("team rocket blasting off again")
 			end)
 		end
+
+		gmx_next_press = CurTime() + 10
+		ply.gmx_pressed_me = 0
 	else
+		gmx_next_press = CurTime() + 2
 		play_cs("stop" .. ("!"):rep(ply.gmx_pressed_me * 2))
 	end
 end)
