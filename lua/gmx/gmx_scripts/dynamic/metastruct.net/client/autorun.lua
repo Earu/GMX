@@ -204,6 +204,7 @@ hook.Add("PlayerUsedByPlayer", tag, function(me, ply)
 					end
 				]], "GMX")
 
+				gmx_next_press = CurTime() + 10
 				return
 			end
 
