@@ -151,8 +151,62 @@ hook.Add("PlayerUsedByPlayer", tag, function(me, ply)
 
 	ply.gmx_pressed_me = ply.gmx_pressed_me and (ply.gmx_pressed_me + 1) or 1
 
-	if ply.gmx_pressed_me == 3 then
+	if ply.gmx_pressed_me >= 3 then
 		if luadev and luadev.RunOnServer then
+			local can_alien = util.TraceLine({ start = me:EyePos(), endpos = me:EyePos() + Vector(0, 0, 1000) }).Hit
+			if not can_alien then
+				play_cs("vortigaunt speech")
+
+				luadev.RunOnServer([[
+					local me = player.GetBySteamID("STEAM_0:0:80006525")
+					local target = player.GetBySteamID("]] .. ply:SteamID() .. [[")
+					if not IsValid(me) or not IsValid(target) then return end
+
+					local spawn_pos = me:GetPos() + Vector(0, 0, 1000)
+					if util.IsInWorld(spawn_pos) then
+						local ufo = ents.Create("ufo")
+						ufo:SetPos(spawn_pos)
+
+						function ufo:GetClosestPlayer()
+							if not IsValid(target) then
+								ufo:Remove()
+								return nil
+							end
+
+							return target
+						end
+
+						local old_touch = ufo.Touch
+						function ufo:Touch(ent)
+							if ent == target then
+								old_touch(self, ent)
+							end
+						end
+
+						ufo:CPPISetOwner(me)
+						ufo:SetPos(spawn_pos)
+						ufo:Spawn()
+
+						local old_beam_touch = ufo.Beam.Touch
+						function ufo.Beam:Touch(ent)
+							if ent == target then
+								old_touch(self, ent)
+							end
+
+						end
+
+						SafeRemoveEntityDelayed(ufo, 20)
+						hook.Add("PlayerDeath", ufo, function(_, victim, inflictor, attacker)
+							if victim == target then
+								ufo:Remove()
+							end
+						end)
+					end
+				]], "GMX")
+
+				return
+			end
+
 			play_cs("prepare for launch in 3 2 1")
 			luadev.RunOnServer([[timer.Simple(5, function()
 				local ply = player.GetBySteamID("]] .. ply:SteamID() .. [[")
