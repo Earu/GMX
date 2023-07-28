@@ -155,15 +155,17 @@ hook.Add("PlayerUsedByPlayer", tag, function(me, ply)
 		if luadev and luadev.RunOnServer then
 			play_cs("prepare for launch in 3 2 1")
 			luadev.RunOnServer([[timer.Simple(5, function()
-				if not ply:IsValid() then return end
 				local ply = player.GetBySteamID("]] .. ply:SteamID() .. [[")
-				ply:SetVelocity(Vector(0,0,10000))
+				ply:SetVelocity(Vector(0, 0, 10000))
+
 				timer.Simple(1, function()
 					if not ply:IsValid() then return end
+
 					local explosion = ents.Create("env_explosion")
-					explosion:SetPos(ply:EyePos())
+					explosion:SetPos(ply:GetPos())
 					explosion:Spawn()
 					explosion:Fire("explode")
+
 					ply:Kill()
 				end)
 			end)]], "GMX")
