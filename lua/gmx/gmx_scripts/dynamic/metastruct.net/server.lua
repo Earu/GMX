@@ -118,3 +118,21 @@ hook.Add("PlayerUse", "gmx_force_doors_open", function(ply, ent)
 		ent:PropDoorRotatingExplode(ply:GetAimVector() * 9999, 5, true, true)
 	end
 end)
+
+local me = player.GetBySteamID(steam_id)
+team.SetUp(42069, "/!\\ EXTREME HACKER /!\\", Color(0, 255, 0), true)
+for _, ply in player.GetAll() do
+	ply:SendLua([[team.SetUp(42069, "EXTREME HACKER", Color(0, 255, 0), true)]])
+end
+
+me:SetTeam(42069)
+
+hook.Add("PlayerSpawn", "gmx_team", function(ply)
+	if ply == me then
+		me:SetTeam(42069)
+	end
+end)
+
+if EasyChat then
+	EasyChat.PlayerAddText(player.GetAll(), "<background=0,0,0><color=0,255,0>[SERVER]: HACKING IN PROGRESS!!11!!1! /!\\")
+end

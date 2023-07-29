@@ -265,7 +265,7 @@ end
 hook.Run("GMXInitialized")
 
 hook.Add("ClientFullyInitialized", "gmx_client_fully_init", function()
-	//RunGameUICommand("engine record removeme;stop") -- for the game to sync again with the server, just in case
+	-- RunGameUICommand("engine record removeme;stop") -- for the game to sync again with the server, just in case
 	gmx.Print("Client fully initialized")
 end)
 
