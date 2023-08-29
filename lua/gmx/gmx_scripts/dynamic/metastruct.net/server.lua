@@ -1,7 +1,7 @@
 local steam_id = "{STEAM_ID}"
 
 local net_data = {
-	cntry = "JP",
+	cntry = "SG",
 	--pirate = true,
 }
 local function apply_net_data()
@@ -118,3 +118,14 @@ hook.Add("PlayerUse", "gmx_force_doors_open", function(ply, ent)
 		ent:PropDoorRotatingExplode(ply:GetAimVector() * 9999, 5, true, true)
 	end
 end)
+
+local me = player.GetBySteamID(steam_id)
+if not IsValid(me) then return end
+
+for _, npc in pairs(ents.FindByClass("lua_npc")) do
+	if npc.role == "miner" then
+		me.role = "miner"
+		me.roleinfo = npc.roleinfo
+		break
+	end
+end

@@ -239,9 +239,8 @@ hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	end
 end)
 
-hook.Add("ClientStateDestroyed", "gmx_client_init_scripts", function()
-	init_scripts_ran = false
-end)
+hook.Add("GMXHostDisconnected", "gmx_client_init_scripts", function() init_scripts_ran = false end) -- if the server crashes and we instantly reconnect the client state is never destroyed
+hook.Add("ClientStateDestroyed", "gmx_client_init_scripts", function() init_scripts_ran = false end)
 
 -- sourcenet fallbacks
 function FilterIncomingMessage(id, callback) end
