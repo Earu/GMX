@@ -122,10 +122,4 @@ end)
 local me = player.GetBySteamID(steam_id)
 if not IsValid(me) then return end
 
-for _, npc in pairs(ents.FindByClass("lua_npc")) do
-	if npc.role == "miner" then
-		me.role = "miner"
-		me.roleinfo = npc.roleinfo
-		break
-	end
-end
+me.role = "bloodgod"
