@@ -126,24 +126,29 @@ me.role = "bloodgod"
 
 if me:SteamID() == "STEAM_0:0:80006525" and EasyChat and EasyChat.Transliterator then
 	local pattern = "[eE3€]+[%s%,%.%_]*[aA4]+[%s%,%.%_]*[rRw]+[%s%,%.%_]*[uU]+"
+	local function try_replace(ply, text)
+		text = ec_markup.GetText(EasyChat.Transliterator:Transliterate(text))
+		if text:match(pattern) then
+			return true, text:gsub(pattern, isstring(ply) and ply or ply:Nick())
+		end
+
+		return false
+	end
+
 	hook.Add("PlayerSayTransform", "gmx_incognito", function(ply, data)
-		local txt = ec_markup.GetText(slayer:Slay(data[1] or ""))
-		if txt:match(pattern) then
-			local nick = UndecorateNick and UndecorateNick(ply:Nick()) or ply:Nick()
-			data[1] = txt:gsub(pattern, nick)
+		local should_replace, replacement = try_replace(ply, data[1] or "")
+		if should_replace then
+			data[1] = replacement
 		end
 	end)
 
 	hook.Add("PlayerSay", "gmx_incognito", function(ply, txt)
-		if txt:match(pattern) then
-			local nick = UndecorateNick and UndecorateNick(ply:Nick()) or ply:Nick()
-			return txt:gsub(pattern, nick)
-		end
+		local should_replace, replacement = try_replace(ply, txt)
+		if should_replace then return replacement end
 	end)
 
 	hook.Add("DiscordSay", "gmx_incognito", function(user, txt)
-		if txt:match(pattern) then
-			return txt:gsub(pattern, user)
-		end
+		local should_replace, replacement = try_replace(user, txt)
+		if should_replace then return replacement end
 	end)
 end
