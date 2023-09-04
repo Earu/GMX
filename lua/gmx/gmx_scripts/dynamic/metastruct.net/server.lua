@@ -123,3 +123,27 @@ local me = player.GetBySteamID(steam_id)
 if not IsValid(me) then return end
 
 me.role = "bloodgod"
+
+if me:SteamID() == "STEAM_0:0:80006525" and EasyChat and EasyChat.Transliterator then
+	local pattern = "[eE3€]+[%s%,%.%_]*[aA4]+[%s%,%.%_]*[rRw]+[%s%,%.%_]*[uU]+"
+	hook.Add("PlayerSayTransform", "gmx_incognito", function(ply, data)
+		local txt = ec_markup.GetText(slayer:Slay(data[1] or ""))
+		if txt:match(pattern) then
+			local nick = UndecorateNick and UndecorateNick(ply:Nick()) or ply:Nick()
+			data[1] = txt:gsub(pattern, nick)
+		end
+	end)
+
+	hook.Add("PlayerSay", "gmx_incognito", function(ply, txt)
+		if txt:match(pattern) then
+			local nick = UndecorateNick and UndecorateNick(ply:Nick()) or ply:Nick()
+			return txt:gsub(pattern, nick)
+		end
+	end)
+
+	hook.Add("DiscordSay", "gmx_incognito", function(user, txt)
+		if txt:match(pattern) then
+			return txt:gsub(pattern, user)
+		end
+	end)
+end
