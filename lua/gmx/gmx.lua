@@ -261,6 +261,15 @@ for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD
 	gmx.Print(("Running \"%s\""):format(file_name))
 end
 
+-- mount all games
+for _, game_data in ipairs(engine.GetGames()) do
+	if not game_data.installed then continue end
+	if game_data.mounted then continue end
+
+	engine.SetMounted(game_data.depot, true)
+	gmx.Print("Mounting " .. game_data.title)
+end
+
 hook.Run("GMXInitialized")
 
 hook.Add("ClientFullyInitialized", "gmx_client_fully_init", function()
