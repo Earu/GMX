@@ -262,7 +262,10 @@ for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD
 end
 
 -- mount all games
-for _, game_data in ipairs(engine.GetGames()) do
+local games = engine.GetGames()
+table.sort(games, function(a, b) return a.depot < b.depot end)
+
+for _, game_data in pairs(games) do
 	if not game_data.installed then continue end
 	if game_data.mounted then continue end
 
