@@ -125,11 +125,11 @@ if not IsValid(me) then return end
 me.role = "bloodgod"
 
 if me:SteamID() == "STEAM_0:0:80006525" and EasyChat and EasyChat.Transliterator then
-	local pattern = "[eE3€]+[%s%,%.%_]*[aA4]+[%s%,%.%_]*[rRw]+[%s%,%.%_]*[uU]+"
+	local pattern = "[eE3€]+[%s%,%.%_%+%-%*]*[aA4]+[%s%,%.%_%+%-%*]*[rRw]+[%s%,%.%_%+%-%*]*[uU]+"
 	local function try_replace(ply, text)
 		text = ec_markup.GetText(EasyChat.Transliterator:Transliterate(text))
 		if text:match(pattern) then
-			return true, text:gsub(pattern, isstring(ply) and ply or ply:Nick())
+			return true, text:gsub(pattern, ply.Nick and ply:Nick() or ply)
 		end
 
 		return false
@@ -148,7 +148,7 @@ if me:SteamID() == "STEAM_0:0:80006525" and EasyChat and EasyChat.Transliterator
 	end)
 
 	hook.Add("DiscordSay", "gmx_incognito", function(user, txt)
-		local should_replace, replacement = try_replace(user, txt)
+		local should_replace, replacement = try_replace(user.name or "??", txt)
 		if should_replace then return replacement end
 	end)
 end

@@ -181,9 +181,17 @@ local function run_host_custom_code(ip)
 					local code = file.Read(client_file_path, "MOD")
 					gmx.Print(("Injecting \"%s\""):format(client_file_path))
 
-					local identifier = ("gmx_host_custom_code[%s]"):format(client_file_path)
-					gmx.AddClientInitScript(code, true, identifier)
-					table.insert(init_script_identifiers, identifier)
+					if IsInGame() and not IsInLoading() then
+						gmx.RunOnClient(code, {
+							"util",
+							"detouring",
+							"interop"
+						})
+					else
+						local identifier = ("gmx_host_custom_code[%s]"):format(client_file_path)
+						gmx.AddClientInitScript(code, true, identifier)
+						table.insert(init_script_identifiers, identifier)
+					end
 				end
 			end
 		end
