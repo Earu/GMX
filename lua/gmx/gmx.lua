@@ -3,6 +3,35 @@ gmx = gmx or { Colors = {} }
 local HEADER_COLOR = Color(255, 157, 0)
 local BODY_COLOR = Color(255, 196, 0)
 local EXTRA_COLOR = Color(255, 255, 255)
+
+-- this makes sure all the prints and messages in the console are printed in the custom UI
+do
+	local init_console_buffer = {}
+	local fns = { "MsgC", "Msg", "MsgN", "print" }
+	local native_fns = {}
+
+	for _, fn_name in ipairs(fns) do
+		local native_fn = _G[fn_name]
+		native_fns[fn_name] = native_fn
+
+		_G[fn_name] = function(...)
+			table.insert(init_console_buffer, { fn = native_fn, args = { ... } })
+		end
+	end
+
+	function gmx.FlushInitConsoleBuffer()
+		for _, data in ipairs(init_console_buffer) do
+			data.fn(unpack(data.args))
+		end
+
+		for fn_name, native_fn in pairs(native_fns) do
+			_G[fn_name] = native_fn
+		end
+
+		gmx.FlushInitConsoleBuffer = function() end
+	end
+end
+
 function gmx.Print(...)
 	local args = {}
 	for key, arg in pairs({ ... }) do
@@ -249,16 +278,23 @@ function FilterOutgoingMessage(id, callback) end
 function UnFilterOutgoingMessage(id) end
 function DiscardIncomingMessages(time) end
 
--- sourcenet
-if system.IsWindows() then
-	include("gmx/sourcenet_modded/incoming.lua")
-	include("gmx/sourcenet_modded/outgoing.lua")
-end
-
 local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
 for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
 	include(menu_scripts_path .. file_name)
 	gmx.Print(("Running \"%s\""):format(file_name))
+end
+
+gmx.FlushInitConsoleBuffer()
+
+-- sourcenet
+if system.IsWindows() then
+	local success, err = pcall(require, "sourcenet")
+	if success then
+		include("gmx/sourcenet_modded/incoming.lua")
+		include("gmx/sourcenet_modded/outgoing.lua")
+	else
+		MsgC(Color(255, 0, 0), "[sourcenet_modded] ", err, "\n")
+	end
 end
 
 -- mount all games

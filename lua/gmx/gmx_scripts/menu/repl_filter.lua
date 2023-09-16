@@ -59,6 +59,19 @@ gmx.AddClientInitScript([[
 	end)
 ]], true)
 
+-- quality of life, if we're using console instead of chat
+-- but dont necessarily rely on the module
+if util.IsBinaryModuleInstalled("asc") then
+	require("asc")
+
+	hook.Add("AllowStringCommand", "gmx_repl_filter", function(cmd_str)
+		if cmd_str:lower():match("^aowl pm") or cmd_str:lower():match("^aowl psc") then
+			gmx.NextGComputeCommandAllowed = true
+			hook.Run("GMXNotify", "Temporarily allowing GCompute command")
+		end
+	end)
+end
+
 -- LuaCmd => SendLuas
 -- @repl_0 => command
 -- <0:0:80006525|Earu><cmd:lsc> => command
@@ -103,10 +116,8 @@ hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- blocks SendLua
 	if path == "LuaCmd" then
 		store_code(path, str, "SendLua")
-		if not gmx.IsHostWhitelisted() then
-			gmx.Print(("Blocked SendLua %s"):format(str))
-			return false
-		end
+		gmx.Print(("Blocked SendLua %s"):format(str))
+		return false
 	end
 
 	local found_steam_id = path:match("[0-9]%:[0-9]%:[0-9]+")
