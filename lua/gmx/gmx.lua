@@ -122,11 +122,12 @@ end
 local cur_msg = ""
 concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
 	if data:match("%@END$") then
-		cur_msg = cur_msg .. data:gsub("%@END$", "")
-		RunString(util.Base64Decode(cur_msg), "gmx_interop")
+		cur_msg = cur_msg .. data:gsub("%@END$", ""):Trim()
+
+		RunString(cur_msg, "gmx_interop")
 		cur_msg = ""
 	else
-		cur_msg = cur_msg .. data
+		cur_msg = cur_msg .. data:Trim()
 	end
 end)
 
