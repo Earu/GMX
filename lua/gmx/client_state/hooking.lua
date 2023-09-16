@@ -1,10 +1,16 @@
+local table_insert = _G.table.insert
+local timer_simple = _G.timer.Simple
+local unpack = _G.unpack
+local ipairs = _G.ipairs
+local pairs = _G.pairs
+
 local PRIORITY_HOOKS = {}
 local function HOOK(event_name, fn)
 	if not PRIORITY_HOOKS[event_name] then
 		PRIORITY_HOOKS[event_name] = {}
 	end
 
-	table.insert(PRIORITY_HOOKS[event_name], fn)
+	table_insert(PRIORITY_HOOKS[event_name], fn)
 end
 
 local old_hook_call = hook.Call
@@ -24,7 +30,7 @@ DETOUR(hook, "Call", old_hook_call, hook_call_detour)
 local function detour_reg_hook_call()
 	if not debug.getregistry then
 		MENU_HOOK("GMXNotify", "debug.getregistry does not exist?!")
-		timer.Simple(0.25, detour_reg_hook_call)
+		timer_simple(0.25, detour_reg_hook_call)
 		return
 	end
 
@@ -50,7 +56,7 @@ local function detour_reg_hook_call()
 		DETOUR(cur_reg, hook_call_reg_index, old_hook_call, hook_call_detour)
 		MENU_HOOK("GMXNotify", "Detoured hook.Call in registry")
 	else
-		timer.Simple(0.25, detour_reg_hook_call)
+		timer_simple(0.25, detour_reg_hook_call)
 	end
 end
 

@@ -65,7 +65,7 @@ local function get_domain(sub_domain)
 end
 
 local unknown_domains = {}
-hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, content_type, body)
+local function on_http_request(url, method, headers, content_type, body)
 	if not url then return end
 
 	local sub_domain = url:gsub("^https?://", ""):Split("/")[1]:Trim():gsub(":[0-9]+$", "")
@@ -94,6 +94,16 @@ hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, co
 
 		return true
 	end
+end
+
+hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, content_type, body)
+	local ret = on_http_request(url, method, headers, content_type, body)
+	if isnumber(gmx.HTTPReplyCode) then
+		gmx.RunOnClient(("_G[%d] = %s"):format(gmx.HTTPReplyCode, ret or false))
+		gmx.HTTPReplyCode = nil
+	end
+
+	return ret
 end)
 
 concommand.Add("gmx_unknown_domains_requests", function()

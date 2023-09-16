@@ -1,3 +1,5 @@
+local unpack = _G.unpack
+
 local detour_cache = {}
 local function DETOUR(container, fn_name, old_fn, new_fn)
 	if not container then container = _G end
