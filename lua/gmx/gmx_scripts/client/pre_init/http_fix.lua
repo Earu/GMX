@@ -14,7 +14,7 @@ DETOUR(nil, "HTTP", old_http, function(req, ...)
 	local time = 0
 	local timer_name = "__" .. reply_index .. "__"
 	local args = { req, ... }
-	timer_create(timer_name, 1, 0, function()
+	timer_create(timer_name, 0.2, 0, function()
 		if _G[reply_index] ~= nil then
 			if _G[reply_index] ~= true then
 				old_http(unpack(args))
