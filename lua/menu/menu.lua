@@ -10,7 +10,3 @@ include("openurl.lua") -- called by the engine for permissions and gui.OpenURL
 include("menu_dupe.lua") -- called by the engine, cant remove
 
 include("gmx/gmx.lua")
-
-if util.IsBinaryModuleInstalled("xconsole") then
-	require("xconsole")
-end
