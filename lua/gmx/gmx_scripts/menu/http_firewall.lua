@@ -49,8 +49,6 @@ local firewall_rules = {
 	["3kv.in"]              = { method = "GET", type = "ALLOW" },
 }
 
--- test
-
 local function get_domain(sub_domain)
 	-- check if its an IP address
 	if sub_domain:match("[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.[0-9][0-9]?[0-9]?%.") then
@@ -84,7 +82,6 @@ local function on_http_request(url, method, headers, content_type, body)
 		end
 	else
 		if not unknown_domains[domain] then
-			gmx.Print("Firewall", "Blocking HTTP request because no rule was defined for: ", domain)
 			unknown_domains[domain] = {}
 		end
 
@@ -93,18 +90,34 @@ local function on_http_request(url, method, headers, content_type, body)
 			Method = method,
 		})
 
-		return true
+		return true, domain
 	end
 end
 
-hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, content_type, body)
-	local ret = on_http_request(url, method, headers, content_type, body)
-	if isnumber(gmx.HTTPReplyCode) then
-		gmx.RunOnClient(("_G[%d] = %s"):format(gmx.HTTPReplyCode, ret or false))
-		gmx.HTTPReplyCode = nil
+function gmx.SetFirewallRule(domain, rule)
+	firewall_rules[domain] = rule
+	unknown_domains[domain] = nil
+end
+
+hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, content_type, body, non_native)
+	local blocked, unknown_domain = on_http_request(url, method, headers, content_type, body)
+
+	local reply_code = gmx.HTTPReplyCode
+	gmx.HTTPReplyCode = nil
+
+	if non_native and isnumber(reply_code) then
+		if blocked and unknown_domain then
+			local handled = hook.Run("GMXOnUnknownDomain", reply_code, unknown_domains[unknown_domain])
+			if handled ~= true then
+				gmx.Print("Firewall", "Blocking HTTP request because no rule was defined for: ", unknown_domain)
+				gmx.RunOnClient(("_G[%d] = %s"):format(reply_code, true))
+			end
+		else
+			gmx.RunOnClient(("_G[%d] = %s"):format(reply_code, blocked or false))
+		end
 	end
 
-	return ret
+	return blocked
 end)
 
 concommand.Add("gmx_unknown_domains_requests", function()
