@@ -22,7 +22,6 @@ DETOUR(_G.util, "GetModelMeshes", old_util_GetModelMeshes, function(model, lod, 
 	end
 
 	file.Write(path, util.TableToJSON(data))
-	print("cached new mdl meshes: " .. key)
 
 	return data
 end)
