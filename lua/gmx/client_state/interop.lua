@@ -29,7 +29,6 @@ local function MENU(code)
 	local chunk_count = math_ceil(len / max)
 	for i = 0, chunk_count do
 		local chunk = string_sub(data, i * max, (i + 1) * max)
-		print(chunk)
 		CMD("{COM_IDENTIFIER} " .. chunk)
 	end
 
