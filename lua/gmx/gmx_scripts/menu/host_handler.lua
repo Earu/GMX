@@ -138,6 +138,10 @@ for _, hostname in ipairs(HOSTNAMES_TO_REVERSE) do
 	end
 end
 
+function gmx.GetConnectedServerHostname()
+	return HOSTNAME_LOOKUP[gmx.GetConnectedServerIPAddress()]
+end
+
 local init_script_identifiers = {}
 local function run_host_custom_code(ip)
 	local hostname = HOSTNAME_LOOKUP[ip]

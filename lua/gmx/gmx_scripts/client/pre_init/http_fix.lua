@@ -9,7 +9,7 @@ local FindMetaTable = _G.FindMetaTable
 local function http_detour(native_fn, args, url, method, content_type, body)
 	local reply_index = rand(-2e9, 2e9)
 	MENU("gmx.HTTPReplyCode = " .. reply_index)
-	MENU_HOOK("OnHTTPRequest", url, string_upper(method or "GET"), "", content_type or "text/plain", body)
+	MENU_HOOK("OnHTTPRequest", url, string_upper(method or "GET"), "", content_type or "text/plain", body or "", true)
 
 	local time = 0
 	local timer_name = "__" .. reply_index .. "__"

@@ -3,6 +3,7 @@ gmx = gmx or { Colors = {} }
 local HEADER_COLOR = Color(255, 157, 0)
 local BODY_COLOR = Color(255, 196, 0)
 local EXTRA_COLOR = Color(255, 255, 255)
+local ERR_COLOR = Color(255, 0, 0)
 
 -- this makes sure all the prints and messages in the console are printed in the custom UI
 do
@@ -78,7 +79,7 @@ concommand.Add("gmx", function(_, _, _, cmd)
 	end
 
 	gmx.Print("Menu running:", cmd)
-	local err = RunString([[print(select(1, ]] .. cmd .. [[))]], "gmx", false)
+	local err = RunString([[(GMX_DBG_PRINT and GMX_DBG_PRINT or print)(select(1, ]] .. cmd .. [[))]], "gmx", false)
 	if err then err = RunString(cmd, "gmx", false) end
 	if err then print(err) end
 end)
@@ -123,8 +124,11 @@ local cur_msg = ""
 concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
 	if data:match("%@END$") then
 		cur_msg = cur_msg .. data:gsub("%@END$", ""):Trim()
+		local err = RunString(cur_msg, "gmx_interop", false)
+		if isstring(err) then
+			MsgC(ERR_COLOR, "[gmx_interop] ", err, "\n---------------\n", cur_msg)
+		end
 
-		RunString(cur_msg, "gmx_interop")
 		cur_msg = ""
 	else
 		cur_msg = cur_msg .. data:Trim()
@@ -294,7 +298,7 @@ if system.IsWindows() then
 		include("gmx/sourcenet_modded/incoming.lua")
 		include("gmx/sourcenet_modded/outgoing.lua")
 	else
-		MsgC(Color(255, 0, 0), "[sourcenet_modded] ", err, "\n")
+		MsgC(ERR_COLOR, "[sourcenet_modded] ", err, "\n")
 	end
 end
 
