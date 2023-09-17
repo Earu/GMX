@@ -1,3 +1,10 @@
+local string_gsub = _G.string.gsub
+local string_match = _G.string.match
+local string_sub = _G.string.sub
+local string_find = _G.string.find
+local string_len = _G.string.len
+local pairs = _G.pairs
+
 local pattern_escape_replacements = {
 	["("] = "%(",
 	[")"] = "%)",
@@ -16,17 +23,15 @@ local pattern_escape_replacements = {
 
 local function STR_TRIM(s, char)
 	if char then
-		char = string.gsub(char, ".", pattern_escape_replacements)
+		char = string_gsub(char, ".", pattern_escape_replacements)
 	else
 		char = "%s"
 	end
 
-	return string.match(s, "^" .. char .. "*(.-)" .. char .. "*$") or s
+	return string_match(s, "^" .. char .. "*(.-)" .. char .. "*$") or s
 end
 
-local string_sub = string.sub
-local string_find = string.find
-local string_len = string.len
+
 local function STR_SPLIT(str, separator, with_pattern)
 	if with_pattern == nil then with_pattern = false end
 

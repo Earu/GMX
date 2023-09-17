@@ -67,6 +67,7 @@ end
 local unknown_domains = {}
 local function on_http_request(url, method, headers, content_type, body)
 	if not url then return end
+	if not url:match("^https?://") then return end
 
 	local sub_domain = url:gsub("^https?://", ""):Split("/")[1]:Trim():gsub(":[0-9]+$", "")
 	local domain = get_domain(sub_domain)

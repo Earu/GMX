@@ -1,21 +1,29 @@
 local unpack = _G.unpack
+local print = _G.print
+local ipairs = _G.ipairs
+local type = _G.type
 
 local detour_cache = {}
 local function DETOUR(container, fn_name, old_fn, new_fn)
 	if not container then container = _G end
+	if type(container) ~= "table" or not container[fn_name] or type(old_fn) ~= "function" or type(new_fn) ~= "function" then
+		print("!!!!!!! BAD DETOUR: ", container, fn_name, old_fn, new_fn)
+		return
+	end
+
 	container[fn_name] = new_fn
 	detour_cache[new_fn] = old_fn
 end
 
 local detours = {
-	{ FunctionName = "getinfo",    OriginalFunction = debug.getinfo,       Container = debug, CheckRet = true },
-	{ FunctionName = "getupvalue", OriginalFunction = debug.getupvalue,    Container = debug    },
-	{ FunctionName = "dump",       OriginalFunction = string.dump,         Container = string   },
-	{ FunctionName = "tostring",   OriginalFunction = tostring,            Container = _G       },
-	{ FunctionName = "funcinfo",   OriginalFunction = jit.util.funcinfo,   Container = jit.util },
-	{ FunctionName = "funcbc",     OriginalFunction = jit.util.funcbc,     Container = jit.util },
-	{ FunctionName = "funck",      OriginalFunction = jit.util.funck,      Container = jit.util },
-	{ FunctionName = "funcuvname", OriginalFunction = jit.util.funcuvname, Container = jit.util },
+	{ FunctionName = "getinfo",    OriginalFunction = _G.debug.getinfo,       Container = _G.debug, CheckRet = true },
+	{ FunctionName = "getupvalue", OriginalFunction = _G.debug.getupvalue,    Container = _G.debug    },
+	{ FunctionName = "dump",       OriginalFunction = _G.string.dump,         Container = _G.string   },
+	{ FunctionName = "tostring",   OriginalFunction = _G.tostring,            Container = _G       },
+	{ FunctionName = "funcinfo",   OriginalFunction = _G.jit.util.funcinfo,   Container = _G.jit.util },
+	{ FunctionName = "funcbc",     OriginalFunction = _G.jit.util.funcbc,     Container = _G.jit.util },
+	{ FunctionName = "funck",      OriginalFunction = _G.jit.util.funck,      Container = _G.jit.util },
+	{ FunctionName = "funcuvname", OriginalFunction = _G.jit.util.funcuvname, Container = _G.jit.util },
 }
 
 for _, detour in ipairs(detours) do
