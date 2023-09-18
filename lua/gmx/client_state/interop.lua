@@ -38,7 +38,7 @@ end
 local function MENU_HOOK(name, ...)
 	local args = { ... }
 	for k, v in pairs(args) do
-		args[k] = string_format("\"%s\"", tostring(v))
+		args[k] = string_format("%q", tostring(v))
 	end
 
 	local code = [[hook.Run("]] .. name .. [[", ]] .. table_concat(args, ", ") .. [[)]]
