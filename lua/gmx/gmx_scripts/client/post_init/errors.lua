@@ -1,3 +1,4 @@
+local MsgC = _G.MsgC
 local COLOR_RED = Color(255, 0, 0)
 
 DETOUR(nil, "ErrorNoHalt", ErrorNoHalt, function(...)
