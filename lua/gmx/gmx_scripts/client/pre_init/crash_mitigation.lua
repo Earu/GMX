@@ -1,4 +1,4 @@
-local string_gsub = _G.string_gsub
+local string_gsub = _G.string.gsub
 local string_format = _G.string.format
 local file_exists = _G.file.Exists
 local file_read = _G.file.Read
