@@ -120,20 +120,50 @@ else
 	gmx.ComIdentifier = gmx.GenerateUID()
 end
 
-local cur_msg = ""
+gmx.CypherOffset = gmx.CypherOffset or math.random(1, 100)
+
+function gmx.Decypher(str)
+	local t = {}
+	local chunks = str:Split(".")
+	for _, chunk in ipairs(chunks) do
+		local n = tonumber(chunk)
+		if not n then continue end
+
+		table.insert(t, n + gmx.CypherOffset)
+	end
+
+	return utf8.char(unpack(t))
+end
+
+local msg_buffers = {}
 concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
-	if data:match("%@END$") then
-		cur_msg = cur_msg .. data:gsub("%@END$", ""):Trim()
-		local err = RunString(cur_msg, "gmx_interop", false)
+	local id = data:match("^@(%d+)%s")
+	if not id then return end
+
+	data = data:gsub("^@(%d+)%s", ""):Trim()
+
+	if not msg_buffers[id] then
+		msg_buffers[id] = {}
+	end
+
+	if data:match("@END$") then
+		data = data:gsub("@END$", "")
+
+		table.insert(msg_buffers[id], data)
+
+		local code = table.concat(msg_buffers[id], "")
+		local err = RunString(code, "gmx_interop", false)
 		if isstring(err) then
-			MsgC(ERR_COLOR, "[gmx_interop] ", err, "\n---------------\n", cur_msg)
+			MsgC(ERR_COLOR, "[gmx_interop] ", err, "\n---------------\n", code)
 		end
 
-		cur_msg = ""
+		msg_buffers[id] = nil
 	else
-		cur_msg = cur_msg .. data:Trim()
+		table.insert(msg_buffers[id], data)
 	end
 end)
+
+--_G.GMX_MSG_BUFFERS = msg_buffers
 
 function gmx.PrepareCode(code, deps)
 	if not code then code = "" end
@@ -143,7 +173,10 @@ function gmx.PrepareCode(code, deps)
 	for _, dep in ipairs(deps) do
 		local path = ("lua/gmx/client_state/%s.lua"):format(dep)
 		if file.Exists(path, "MOD") then
-			local content = file.Read(path, "MOD"):gsub("{COM_IDENTIFIER}", gmx.ComIdentifier)
+			local content = file.Read(path, "MOD")
+				:gsub("{COM_IDENTIFIER}", gmx.ComIdentifier)
+				:gsub("{CYPHER_OFFSET}", gmx.CypherOffset)
+
 			table.insert(outs, content)
 		end
 	end
