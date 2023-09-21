@@ -5,6 +5,18 @@
 1) **Scattered lua implementation**
 	- Bypasses repl_filter checks
 
+2) **Sourcenet not working**
+	- ConCommands are not blocked anymore
+	- Errors are sent to the server
+	- Custom scripts might not run in some cases because host is not properly detected
+
+3) **HTTP calls**
+	- Needs back and forth between client and menu state, even though everything is hidden behind random tokens, guessing the correct one could grant access to the current session
+	- Since latest gmod update client state uses curl instead of ISteamHTTP meaning each single thing using HTTP needs to be detoured, its possible to forget a function or to wrongly detour it
+
+4) **Crash Mitigation regarding util.GetModelMeshes**
+	- Creates files in DATA folder making it detectable through client state
+
 ## Patched
 - **Running concommands and known cvar to detect whether someone has the RunOnClient function**
 	- Deny access to said concommands
