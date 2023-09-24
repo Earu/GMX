@@ -129,41 +129,30 @@ function gmx.Decypher(str)
 		local n = tonumber(chunk)
 		if not n then continue end
 
-		table.insert(t, n + gmx.CypherOffset)
+		table.insert(t, string.char(n + gmx.CypherOffset))
 	end
 
-	return utf8.char(unpack(t))
+	return table.concat(t, "")
 end
 
-local msg_buffers = {}
 concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
-	local id = data:match("^@(%d+)%s")
-	if not id then return end
+	local secure_id = data:Trim()
+	if #secure_id == 0 then return end
 
-	data = data:gsub("^@(%d+)%s", ""):Trim()
+	local path = "materials/" .. secure_id .. ".vtf"
+	if not file.Exists(path, "DATA") then return end
 
-	if not msg_buffers[id] then
-		msg_buffers[id] = {}
-	end
+	local contents = file.Read(path, "DATA")
+	file.Delete(path, "DATA")
 
-	if data:match("@END$") then
-		data = data:gsub("@END$", "")
+	if not contents or #contents == 0 then return end
 
-		table.insert(msg_buffers[id], data)
-
-		local code = table.concat(msg_buffers[id], "")
-		local err = RunString(code, "gmx_interop", false)
-		if isstring(err) then
-			MsgC(ERR_COLOR, "[gmx_interop] ", err, "\n---------------\n", code)
-		end
-
-		msg_buffers[id] = nil
-	else
-		table.insert(msg_buffers[id], data)
+	local code = gmx.Decypher(util.Base64Decode(contents))
+	local err = RunString(code, "gmx_interop", false)
+	if isstring(err) then
+		MsgC(ERR_COLOR, "[gmx_interop] ", err, "\n---------------\n", code)
 	end
 end)
-
---_G.GMX_MSG_BUFFERS = msg_buffers
 
 function gmx.PrepareCode(code, deps)
 	if not code then code = "" end
