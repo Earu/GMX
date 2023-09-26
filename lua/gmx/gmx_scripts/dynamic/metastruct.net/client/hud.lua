@@ -66,8 +66,8 @@ local ARMOR_COLOR = Color(3, 140, 252)
 local TEXT_COLOR = Color(255, 255, 255)
 local AMMO_COLOR = Color(200, 200, 200, 240)
 local HUD_ANG = Angle(0, 45, 0)
-local INACTIVE_FRIEND = Color(255, 255, 255)
-local INACTIVE_NOT_FRIEND = Color(220, 0, 60)
+local FAR_FRIEND = Color(255, 255, 255)
+local FAR_NOT_FRIEND = Color(220, 0, 60)
 
 local last_scrw, last_scrh = ScrW(), ScrH()
 local function update_font_sizes()
@@ -388,19 +388,20 @@ local function draw_players_hud()
 	for _, ply in ipairs(player.GetAll()) do
 		if not ply:Alive() then continue end
 		if ply == LocalPlayer() then continue end
+		if ply:IsDormant() then continue end
 
 		local is_friend = ply:GetFriendStatus() == "friend"
-		local inactive = ply:GetPos():DistToSqr(LocalPlayer():GetPos()) >= MAX_DIST_FOR_VEHICLE or ply:IsDormant()
+		local is_far = ply:GetPos():DistToSqr(LocalPlayer():GetPos()) >= MAX_DIST_FOR_VEHICLE
 		local is_looked_at = IsValid(looked_at_ent) and looked_at_ent == ply
 		local screen_pos = is_looked_at
 			and DEFAULT_SCREEN_POS
-			or (inactive and ply:EyePos() or ply:EyePos() + HEAD_OFFSET):ToScreen()
+			or (is_far and ply:EyePos() or ply:EyePos() + HEAD_OFFSET):ToScreen()
 
 		if not screen_pos.visible then continue end
 
-		if inactive and not is_looked_at then
+		if is_far and not is_looked_at then
 			draw.NoTexture()
-			surface.SetDrawColor(is_friend and INACTIVE_FRIEND or INACTIVE_NOT_FRIEND)
+			surface.SetDrawColor(is_friend and FAR_FRIEND or FAR_NOT_FRIEND)
 			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 8, 8, HUD_ANG.y)
 
 			local screen_pos2 = ply:GetPos():ToScreen()
