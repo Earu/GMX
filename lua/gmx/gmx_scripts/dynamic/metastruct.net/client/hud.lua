@@ -66,6 +66,8 @@ local ARMOR_COLOR = Color(3, 140, 252)
 local TEXT_COLOR = Color(255, 255, 255)
 local AMMO_COLOR = Color(200, 200, 200, 240)
 local HUD_ANG = Angle(0, 45, 0)
+local INACTIVE_FRIEND = Color(255, 255, 255)
+local INACTIVE_NOT_FRIEND = Color(220, 0, 60)
 
 local last_scrw, last_scrh = ScrW(), ScrH()
 local function update_font_sizes()
@@ -376,6 +378,8 @@ local function draw_rotated_value_rect(value, total_value, x, y, w, h, ang, colo
 end
 
 local HEAD_OFFSET = Vector(0, 0, 25)
+local DEFAULT_SCREEN_POS = { x = ScrW() / 2, y = ScrH() / 2, visible = true }
+local MAX_DIST_FOR_VEHICLE = 500 * 500
 local function draw_players_hud()
 	--local size_coef = ScrW() / 2560
 	--local size = 50 * size_coef
@@ -384,14 +388,26 @@ local function draw_players_hud()
 	for _, ply in ipairs(player.GetAll()) do
 		if not ply:Alive() then continue end
 		if ply == LocalPlayer() then continue end
-		if ply:IsDormant() then continue end
 
+		local is_friend = ply:GetFriendStatus() == "friend"
+		local inactive = ply:GetPos():DistToSqr(LocalPlayer():GetPos()) >= MAX_DIST_FOR_VEHICLE or ply:IsDormant()
 		local is_looked_at = IsValid(looked_at_ent) and looked_at_ent == ply
 		local screen_pos = is_looked_at
-			and { x = ScrW() / 2, y = ScrH() / 2, visible = true }
-			or (ply:EyePos() + HEAD_OFFSET):ToScreen()
+			and DEFAULT_SCREEN_POS
+			or (inactive and ply:EyePos() or ply:EyePos() + HEAD_OFFSET):ToScreen()
 
 		if not screen_pos.visible then continue end
+
+		if inactive and not is_looked_at then
+			draw.NoTexture()
+			surface.SetDrawColor(is_friend and INACTIVE_FRIEND or INACTIVE_NOT_FRIEND)
+			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 8, 8, HUD_ANG.y)
+
+			local screen_pos2 = ply:GetPos():ToScreen()
+			surface.DrawLine(screen_pos.x - 1.5, screen_pos.y, screen_pos2.x - 1.5, screen_pos2.y)
+
+			continue
+		end
 
 		-- nick
 		do
@@ -408,14 +424,22 @@ local function draw_players_hud()
 
 			surface.SetTextPos(screen_pos.x + 40, screen_pos.y - FONT_HEIGHT_SMALL / 2)
 			surface.DrawText(nick)
+
+			if is_friend then
+				surface.SetDrawColor(TEXT_COLOR)
+				surface.DrawOutlinedRect(x + w + 5, y, h, h)
+
+				surface.SetTextPos(x + w + 10, y + 2.5, h, h)
+				surface.DrawText("F")
+			end
 		end
 
 		-- health & armor square
 		do
+			local ang = is_looked_at and ((RealTime() * 100) % 360) or HUD_ANG.y
+
 			ply.GMXHUDLastHealthPerc = smoothen_value(ply.GMXHUDLastHealthPerc or 1, ply:Health())
 			ply.GMXHUDLastArmorPerc = smoothen_value(ply.GMXHUDLastArmorPerc or 1, ply:Armor())
-
-			local ang = is_looked_at and ((RealTime() * 100) % 360) or HUD_ANG.y
 
 			draw.NoTexture()
 			surface.SetDrawColor(BG_COLOR)
