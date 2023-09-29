@@ -328,6 +328,7 @@ include("gmx/gmx_scripts/menu/ui/lua_repl_cache.lua")
 include("gmx/gmx_scripts/menu/ui/binary_editor.lua")
 include("gmx/gmx_scripts/menu/ui/multiplayer.lua")
 include("gmx/gmx_scripts/menu/ui/notifications.lua")
+include("gmx/gmx_scripts/menu/ui/host_code.lua")
 
 local last_scrw, last_scrh = ScrW(), ScrH()
 hook.Add("Think", "gmx_ui_scaling", function()

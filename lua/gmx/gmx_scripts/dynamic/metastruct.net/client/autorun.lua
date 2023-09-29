@@ -9,6 +9,7 @@ hook.Add("Tick", tag, function(self)
 		RunConsoleCommand("aowl", "revive")
 
 		if CurTime() > next_sound then
+			RunConsoleCommand("saysound", "hurt#1")
 			next_sound = CurTime() + 2
 		end
 	end

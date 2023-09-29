@@ -378,7 +378,6 @@ local function draw_rotated_value_rect(value, total_value, x, y, w, h, ang, colo
 end
 
 local HEAD_OFFSET = Vector(0, 0, 25)
-local DEFAULT_SCREEN_POS = { x = ScrW() / 2, y = ScrH() / 2, visible = true }
 local MAX_DIST_FOR_VEHICLE = 500 * 500
 local function draw_players_hud()
 	--local size_coef = ScrW() / 2560
@@ -394,7 +393,7 @@ local function draw_players_hud()
 		local is_far = ply:GetPos():DistToSqr(LocalPlayer():GetPos()) >= MAX_DIST_FOR_VEHICLE
 		local is_looked_at = IsValid(looked_at_ent) and looked_at_ent == ply
 		local screen_pos = is_looked_at
-			and DEFAULT_SCREEN_POS
+			and { x = ScrW() / 2 + 100, y = ScrH() / 2, visible = true }
 			or (is_far and ply:EyePos() or ply:EyePos() + HEAD_OFFSET):ToScreen()
 
 		if not screen_pos.visible then continue end
@@ -443,6 +442,12 @@ local function draw_players_hud()
 			ply.GMXHUDLastArmorPerc = smoothen_value(ply.GMXHUDLastArmorPerc or 1, ply:Armor())
 
 			draw.NoTexture()
+			if is_looked_at then
+				surface.SetDrawColor(is_friend and FAR_FRIEND or FAR_NOT_FRIEND)
+				surface.DrawTexturedRectRotated(screen_pos.x - 100, screen_pos.y, 7, 7, HUD_ANG.y)
+				surface.DrawLine(screen_pos.x - 100, screen_pos.y, screen_pos.x, screen_pos.y)
+			end
+
 			surface.SetDrawColor(BG_COLOR)
 			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 45, 45, ang)
 
@@ -453,7 +458,9 @@ local function draw_players_hud()
 			surface.SetDrawColor(0, 0, 0, 255)
 			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 37, 37, ang)
 
-			local health_perc = ("%.0f%%"):format((ply:Health() / ply:GetMaxHealth()) * 100)
+			local health_raw_perc = (ply:Health() / ply:GetMaxHealth()) * 100
+			local health_perc = health_raw_perc >= 1000 and ("%dK%%"):format(health_raw_perc / 1000) or ("%.0f%%"):format(health_raw_perc)
+
 			surface.SetTextColor(TEXT_COLOR)
 			surface.SetFont("gmd_hud_small")
 
