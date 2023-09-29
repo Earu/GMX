@@ -8,14 +8,17 @@ end
 local string_sub = _G.string.sub
 local string_byte = _G.string.byte
 local string_gsub = _G.string.gsub
+local string_reverse = _G.string.reverse
 local string_format = _G.string.format
 local table_concat = _G.table.concat
 local table_insert = _G.table.insert
 local math_random = _G.math.random
+local math_randomseed = _G.math.randomseed
 local util_base64_encode = _G.util.Base64Encode
 local file_open = _G.file.Open
 local file_exists = _G.file.Exists
 local file_create_dir = _G.file.CreateDir
+local os_time = _G.os.time
 local pairs = _G.pairs
 local tostring = _G.tostring
 local tonumber = _G.tonumber
@@ -31,15 +34,15 @@ local function cypher(str)
 	return table_concat(t, ".")
 end
 
-local function generate_id()
-	local base = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	local ret = ""
-	for _ = 1, 32 do
-		local i = math_random(#base)
-		ret = ret .. string_sub(base, i, i)
-	end
+local function uuid()
+	local seed = tonumber(string_sub(string_reverse(tostring(os_time())), 1, 9))
+	math_randomseed(seed)
 
-	return ret
+	local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
+	return string_gsub(template, "[xy]", function(c)
+		local v = (c == "x") and math_random(0, 0xf) or math_random(8, 0xb)
+		return string_format("%x", v)
+	end)
 end
 
 function file_write(file_name, contents)
@@ -52,7 +55,7 @@ end
 
 local function MENU(code)
 	local data = util_base64_encode(cypher(string_gsub(code, "[\n\r]", "")))
-	local secure_id = generate_id()
+	local secure_id = uuid()
 
 	if not file_exists("materials", "DATA") then
 		file_create_dir("materials")

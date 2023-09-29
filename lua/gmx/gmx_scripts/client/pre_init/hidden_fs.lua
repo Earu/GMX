@@ -6,7 +6,7 @@ local pairs = _G.pairs
 local ipairs = _G.ipairs
 
 local BAD_PATHS = {
-	".*gmx.*",
+	"lua/gmx.*",
 	"lua/bin/.*luaerror.*%.dll$",
 	"lua/bin/.*http_filter.*%.dll$",
 	"lua/bin/.*enginespew.*%.dll$",
