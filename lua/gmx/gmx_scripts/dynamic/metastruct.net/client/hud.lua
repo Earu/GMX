@@ -62,7 +62,7 @@ surface.CreateFont("gmd_hud_small", {
 local BG_COLOR = Color(10, 10, 10, 200)
 local HEALTH_COLOR = Color(220, 0, 60)
 local HEALTH_POISONED_COLOR = Color(170, 255, 60, 200)
-local ARMOR_COLOR = Color(3, 140, 252)
+local ARMOR_COLOR = Color(255, 162, 0, 240)
 local TEXT_COLOR = Color(255, 255, 255)
 local AMMO_COLOR = Color(200, 200, 200, 240)
 local HUD_ANG = Angle(0, 45, 0)
@@ -370,7 +370,7 @@ local function draw_rotated_value_rect(value, total_value, x, y, w, h, ang, colo
 	render.SetStencilFailOperation(STENCIL_KEEP)
 	render.SetStencilCompareFunction(STENCIL_EQUAL)
 
-	local perc = value / total_value
+	local perc = math.max(0, math.min(1, value / total_value))
 	surface.SetDrawColor(color)
 	surface.DrawRect(x - w / 2, y + h  / 2 - h * perc, w, h * 10)
 
@@ -446,7 +446,7 @@ local function draw_players_hud()
 			surface.SetDrawColor(BG_COLOR)
 			surface.DrawTexturedRectRotated(screen_pos.x, screen_pos.y, 45, 45, ang)
 
-			draw_rotated_value_rect(ply.GMXHUDLastArmorPerc, ply:GetMaxArmor(), screen_pos.x, screen_pos.y, 100, 100, ang, AMMO_COLOR)
+			draw_rotated_value_rect(ply.GMXHUDLastArmorPerc, ply:GetMaxArmor(), screen_pos.x, screen_pos.y, 100, 100, ang, ARMOR_COLOR)
 			draw_rotated_value_rect(ply.GMXHUDLastHealthPerc, ply:GetMaxHealth(), screen_pos.x, screen_pos.y, 90, 90, ang, HEALTH_COLOR)
 
 			draw.NoTexture()

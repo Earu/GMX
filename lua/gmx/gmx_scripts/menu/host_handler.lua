@@ -142,6 +142,11 @@ function gmx.GetConnectedServerHostname()
 	return HOSTNAME_LOOKUP[gmx.GetConnectedServerIPAddress()]
 end
 
+local scripts_running = false
+function gmx.RunningHostCode()
+	return scripts_running
+end
+
 local init_script_identifiers = {}
 local function run_host_custom_code(ip)
 	local hostname = HOSTNAME_LOOKUP[ip]
@@ -174,6 +179,8 @@ local function run_host_custom_code(ip)
 					menu_file_path = menu_file_path:gsub("^lua/", "")
 					gmx.Print(("Running \"%s\""):format(menu_file_path))
 					include(menu_file_path)
+
+					scripts_running = true
 				end
 			end
 		end
@@ -196,6 +203,8 @@ local function run_host_custom_code(ip)
 						gmx.AddClientInitScript(code, true, identifier)
 						table.insert(init_script_identifiers, identifier)
 					end
+
+					scripts_running = true
 				end
 			end
 		end
@@ -210,5 +219,6 @@ hook.Add("GMXHostDisconnected", "gmx_hostname_custom_code", function()
 		gmx.RemoveClientInitScript(true, identifier)
 	end
 
+	scripts_running = false
 	init_script_identifiers = {}
 end)
