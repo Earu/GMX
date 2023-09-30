@@ -8,17 +8,14 @@ end
 local string_sub = _G.string.sub
 local string_byte = _G.string.byte
 local string_gsub = _G.string.gsub
-local string_reverse = _G.string.reverse
 local string_format = _G.string.format
 local table_concat = _G.table.concat
 local table_insert = _G.table.insert
 local math_random = _G.math.random
-local math_randomseed = _G.math.randomseed
 local util_base64_encode = _G.util.Base64Encode
 local file_open = _G.file.Open
 local file_exists = _G.file.Exists
 local file_create_dir = _G.file.CreateDir
-local os_time = _G.os.time
 local pairs = _G.pairs
 local tostring = _G.tostring
 local tonumber = _G.tonumber
@@ -35,9 +32,6 @@ local function cypher(str)
 end
 
 local function uuid()
-	local seed = tonumber(string_sub(string_reverse(tostring(os_time())), 1, 9))
-	math_randomseed(seed)
-
 	local template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx"
 	return string_gsub(template, "[xy]", function(c)
 		local v = (c == "x") and math_random(0, 0xf) or math_random(8, 0xb)
