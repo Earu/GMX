@@ -1,5 +1,12 @@
+local GMX_HUD = GetConVar("gmx_hud")
+if not GMX_HUD then
+	GMX_HUD = CreateClientConVar("gmx_hud", "1", true)
+end
+
 local active_slot, active_pos = 0, 1
 local function get_weapons()
+	if not IsValid(LocalPlayer()) then return {}, -1 end -- during init
+
 	local weps = LocalPlayer():GetWeapons()
 	local weps_per_slot = {}
 
@@ -27,13 +34,15 @@ local function get_weapons()
 	return weps_per_slot, max_slot
 end
 
-local held_weps, max_slot = get_weapons()
+local held_weps, max_slot = {}, -1
 local cur_slot = max_slot < 1 and 0 or 1
 local cur_pos = 1
 local is_active = false
 local next_wheel = 0
 local fast_switch = GetConVar("hud_fastswitch")
 hook.Add("InputMouseApply", "gmx_hud_weapon_select", function(cmd, x, y, ang)
+	if not GMX_HUD:GetBool() then return end
+
 	local wep = LocalPlayer():GetActiveWeapon()
 	if IsValid(wep) and wep:GetClass() == "weapon_physgun" and input.IsMouseDown(MOUSE_LEFT) then return end
 
@@ -107,10 +116,12 @@ hook.Add("InputMouseApply", "gmx_hud_weapon_select", function(cmd, x, y, ang)
 end)
 
 hook.Add("HUDShouldDraw", "gmx_hud_weapon_select", function(name)
+	if not GMX_HUD:GetBool() then return end
 	if name == "CHudWeaponSelection" then return false end
 end)
 
 hook.Add("PlayerButtonDown", "gmx_hud_weapon_select", function(ply, btn)
+	if not GMX_HUD:GetBool() then return end
 	if not IsFirstTimePredicted() then return end
 	if btn >= 1 and btn <= 6 then
 		held_weps, max_slot = get_weapons()
@@ -140,6 +151,7 @@ hook.Add("PlayerButtonDown", "gmx_hud_weapon_select", function(ply, btn)
 end)
 
 hook.Add("PlayerBindPress", "gmx_hud_weapon_select", function(ply, bind)
+	if not GMX_HUD:GetBool() then return end
 	if ply ~= LocalPlayer() then return end
 	if not is_active then return end
 
@@ -201,6 +213,7 @@ local function blur(x, y, w, h, ang, layers, quality)
 end
 
 hook.Add("DrawOverlay", "gmx_hud_weapon_select", function()
+	if not GMX_HUD:GetBool() then return end
 	if not is_active then return end
 	if not LocalPlayer():Alive() then return end
 

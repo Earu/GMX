@@ -1,4 +1,7 @@
-local GMX_HUD = CreateClientConVar("gmx_hud", "1", true)
+local GMX_HUD = GetConVar("gmx_hud")
+if not GMX_HUD then
+	GMX_HUD = CreateClientConVar("gmx_hud", "1", true)
+end
 
 local elements_to_hide = {
 	CHudBattery = true,
