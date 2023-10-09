@@ -31,7 +31,7 @@ local function GetOutgoingCopyTableForMessageType(msgtype)
 		return NET_MESSAGES_OUTGOING_COPY.NET
 	end
 
-	if CLIENT and NET_MESSAGES.CLC[msgtype] ~= nil then
+	if MENU_DLL and NET_MESSAGES.CLC[msgtype] ~= nil then
 		return NET_MESSAGES_OUTGOING_COPY.CLC
 	end
 
@@ -62,8 +62,9 @@ local function HandleStream(name, netchan, write)
 	while read:GetNumBitsLeft() >= NET_MESSAGE_BITS do
 		local msgtype = read:ReadUInt(NET_MESSAGE_BITS)
 		local handler = GetNetMessageInstance(netchan, msgtype)
+		print("OUT", msgtype, handler, name)
 		if handler == nil then
-			--MsgC(Color(255, 0, 0), "Unknown outgoing message " .. msgtype .. " on " .. name .. " stream with " .. read:GetNumBitsLeft() .. " bit(s) left\n")
+			MsgC(Color(255, 0, 0), "Unknown outgoing message " .. msgtype .. " on " .. name .. " stream with " .. read:GetNumBitsLeft() .. " bit(s) left\n")
 			return false
 		end
 
@@ -87,7 +88,8 @@ end
 
 hook.Add("PreSendDatagram", "OutFilter", function(netchan, localchan, data, reliablestream, unreliablestream, voicestream)
 	local islocal = netchan == localchan
-	if ((islocal and SERVER) or (not islocal and CLIENT)) then
+	print('islocal', islocal)
+	if not islocal then
 		return
 	end
 
