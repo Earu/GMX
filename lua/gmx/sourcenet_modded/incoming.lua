@@ -33,7 +33,7 @@ local function GetIncomingCopyTableForMessageType(msgtype)
 		return NET_MESSAGES_INCOMING_COPY.NET
 	end
 
-	if CLIENT and NET_MESSAGES.SVC[msgtype] ~= nil then
+	if MENU_DLL and NET_MESSAGES.SVC[msgtype] ~= nil then
 		return NET_MESSAGES_INCOMING_COPY.SVC
 	end
 
@@ -49,13 +49,9 @@ local function DefaultCopy(netchan, read, write, handler)
 	handler:WriteToBuffer(write)
 end
 
-local should_discard = false
 hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localchan)
-	if not IsInGame() then return false end
-	if should_discard then return true end
-
 	local islocal = netchan == localchan
-	if ((islocal and SERVER) or (not islocal and CLIENT)) then
+	if not islocal or not IsInGame() then -- this is a very ugly fix because one of the net messages on join is handled incorrectly
 		return
 	end
 
@@ -63,7 +59,7 @@ hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localc
 		local msgtype = read:ReadUInt(NET_MESSAGE_BITS)
 		local handler = GetNetMessageInstance(netchan, msgtype)
 		if handler == nil then
-			--MsgC(Color(255, 0, 0), "Unknown outgoing message " .. msgtype .. " with " .. read:GetNumBitsLeft() .. " bit(s) left\n")
+			MsgC(Color(255, 0, 0), "Unknown incoming message " .. msgtype .. " with " .. read:GetNumBitsLeft() .. " bit(s) left\n")
 			return false
 		end
 
@@ -97,12 +93,4 @@ end
 
 function UnFilterIncomingMessage(msg_type)
 	return FilterIncomingMessage(msg_type, nil)
-end
-
-function DiscardIncomingMessages(time)
-	should_discard = true
-
-	timer.Create("gmx_sourcenet_discard_msgs", time, 1, function()
-		should_discard = false
-	end)
 end

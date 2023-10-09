@@ -79,8 +79,7 @@ concommand.Add("gmx", function(_, _, _, cmd)
 	end
 
 	gmx.Print("Menu running:", cmd)
-	local err = RunString([[(GMX_DBG_PRINT and GMX_DBG_PRINT or print)(select(1, ]] .. cmd .. [[))]], "gmx", false)
-	if err then err = RunString(cmd, "gmx", false) end
+	local err = RunString([[local ret = (]] .. cmd .. [[) local p = ((isfunction(ret) or istable(ret)) and GMX_DBG_PRINT or print) p(ret)]], "gmx", true)
 	if err then print(err) end
 end)
 
@@ -305,14 +304,6 @@ function FilterOutgoingMessage(id, callback) end
 function UnFilterOutgoingMessage(id) end
 function DiscardIncomingMessages(time) end
 
-local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
-for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
-	include(menu_scripts_path .. file_name)
-	gmx.Print(("Running \"%s\""):format(file_name))
-end
-
-gmx.FlushInitConsoleBuffer()
-
 -- sourcenet
 if system.IsWindows() then
 	local success, err = pcall(require, "sourcenet")
@@ -323,6 +314,14 @@ if system.IsWindows() then
 		MsgC(ERR_COLOR, "[sourcenet_modded] ", err, "\n")
 	end
 end
+
+local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
+for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
+	include(menu_scripts_path .. file_name)
+	gmx.Print(("Running \"%s\""):format(file_name))
+end
+
+gmx.FlushInitConsoleBuffer()
 
 -- mount all games
 local games = engine.GetGames()

@@ -14,6 +14,10 @@ MAX_ENTITYMESSAGE_BITS = 11
 MAX_SERVER_CLASS_BITS = 9
 MAX_EDICT_BITS = 13
 
+function SourceNetMsg(msg)
+	Msg("[snmi] " .. msg .. "\n")
+end
+
 NET_MESSAGES = {
 	NET = {
 		[net_NOP] = { -- 0
@@ -350,7 +354,7 @@ NET_MESSAGES = {
 					buffer:WriteLong(self.sendtablecrc)
 					buffer:WriteBit(self.ishltv and 1 or 0)
 					buffer:WriteLong(self.friendsid)
-					buffer:WriteString(self.guid or "")
+					buffer:WriteString(self.guid)
 
 					for i = 1, MAX_CUSTOM_FILES do
 						local filecrc = self.customfiles[i]
@@ -529,6 +533,202 @@ NET_MESSAGES = {
 				Reset = function(self)
 					self.initialized = nil
 					self.events = nil
+				end
+			}
+		},
+
+		[clc_RespondCvarValue] = { -- 13
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_RespondCvarValue"
+				end
+
+				return string.format("clc_RespondCvarValue: cookie = %i, status = %i, cvarname = %s, cvarvalue = %s", self.cookie, self.status, self.cvarname, self.cvarvalue)
+			end,
+			__index = {
+				GetType = function()
+					return clc_RespondCvarValue
+				end,
+				GetName = function()
+					return "clc_RespondCvarValue"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.cookie = buffer:ReadInt(32)
+					self.status = buffer:ReadInt(4)
+					self.cvarname = buffer:ReadString()
+					self.cvarvalue = buffer:ReadString()
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_RespondCvarValue, NET_MESSAGE_BITS)
+					buffer:WriteInt(self.cookie, 32)
+					buffer:WriteInt(self.status, 4)
+					buffer:WriteString(self.cvarname)
+					buffer:WriteString(self.cvarvalue)
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.cookie = nil
+					self.status = nil
+					self.cvarname = nil
+					self.cvarvalue = nil
+				end
+			}
+		},
+
+		[clc_FileCRCCheck] = { -- 14
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_FileCRCCheck"
+				end
+
+				return string.format("clc_FileCRCCheck: %s, %s, %s, %i, %s, %i", self.reserved, self.gamepath, self.pathid, self.prefixid, self.filename, self.crc)
+			end,
+			__index = {
+				GetType = function()
+					return clc_FileCRCCheck
+				end,
+				GetName = function()
+					return "clc_FileCRCCheck"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.reserved = buffer:ReadBit() == 1
+					self.gamepath = buffer:ReadUInt(2)
+					self.pathid = "commonpath"
+					if self.gamepath == 0 then
+						self.pathid = buffer:ReadString()
+					end
+					self.prefixid = buffer:ReadUInt(3)
+					self.filename = buffer:ReadString()
+					self.crc = buffer:ReadUInt(32)
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_FileCRCCheck, NET_MESSAGE_BITS)
+					buffer:WriteBit(self.reserved and 1 or 0)
+					buffer:WriteUInt(self.gamepath, 2)
+					if self.gamepath == 0 then
+						buffer:WriteString(self.pathid)
+					end
+					buffer:WriteUInt(self.prefixid, 3)
+					buffer:WriteString(self.filename)
+					buffer:WriteUInt(self.crc, 32)
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.reserved = nil
+					self.gamepath = nil
+					self.pathid = nil
+					self.prefixid = nil
+					self.filename = nil
+					self.crc = nil
+				end
+			}
+		},
+
+		[clc_CmdKeyValues] = { -- 16
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_CmdKeyValues"
+				end
+
+				return "clc_CmdKeyValues: " .. self.length
+			end,
+			__index = {
+				GetType = function()
+					return clc_CmdKeyValues
+				end,
+				GetName = function()
+					return "clc_CmdKeyValues"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.length = buffer:ReadUInt(32)
+					if self.length > 0 then
+						self.keyvalues = buffer:ReadBytes(self.length)
+					end
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_CmdKeyValues, NET_MESSAGE_BITS)
+					buffer:WriteUInt(self.length, 32)
+					if self.length > 0 then
+						buffer:WriteBytes(self.keyvalues)
+					end
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.length = nil
+					self.keyvalues = nil
+				end
+			}
+		},
+
+		[clc_FileMD5Check] = { -- 17
+			__tostring = function(self)
+				if not self.initialized then
+					return "clc_FileMD5Check"
+				end
+
+				return string.format("clc_FileMD5Check: reserved = %s, gamepath = %s, pathid = %s, prefixid = %i, filename = %s, md5 = %s", self.reserved, self.gamepath, self.pathid, self.prefixid, self.filename, self.md5)
+			end,
+			__index = {
+				GetType = function()
+					return clc_FileMD5Check
+				end,
+				GetName = function()
+					return "clc_FileMD5Check"
+				end,
+				ReadFromBuffer = function(self, buffer)
+					self.reserved = buffer:ReadBit() == 1
+					self.gamepath = buffer:ReadUInt(2)
+					self.pathid = "commonpath"
+					if self.gamepath == 0 then
+						self.pathid = buffer:ReadString()
+					end
+					self.prefixid = buffer:ReadUInt(3)
+					self.filename = buffer:ReadString()
+					self.md5 = buffer:ReadBytes(16)
+					self.initialized = true
+				end,
+				WriteToBuffer = function(self, buffer)
+					if not self.initialized then
+						return false
+					end
+
+					buffer:WriteUInt(clc_FileMD5Check, NET_MESSAGE_BITS)
+					buffer:WriteBit(self.reserved and 1 or 0)
+					buffer:WriteUInt(self.gamepath, 2)
+					if self.gamepath == 0 then
+						buffer:WriteString(self.pathid)
+					end
+					buffer:WriteUInt(self.prefixid, 3)
+					buffer:WriteString(self.filename)
+					buffer:WriteUInt(self.md5, 16)
+					return true
+				end,
+				Reset = function(self)
+					self.initialized = nil
+					self.reserved = nil
+					self.gamepath = nil
+					self.pathid = nil
+					self.prefixid = nil
+					self.filename = nil
+					self.md5 = nil
 				end
 			}
 		},
@@ -1861,6 +2061,59 @@ for net_messages_prefix, net_messages in pairs(NET_MESSAGES) do
 		end
 	end
 end
+
+local NET_MESSAGES_NATIVE_CONSTRUCTORS = {
+	NET = {
+		[net_NOP] = NET_MESSAGES_CONSTRUCTORS.NET[net_NOP],
+		[net_Disconnect] = NET_Disconnect,
+		[net_File] = NET_File,
+		[net_Tick] = NET_Tick,
+		[net_StringCmd] = NET_StringCmd,
+		[net_SetConVar] = NET_SetConVar,
+		[net_SignonState] = NET_SignonState
+	},
+
+	CLC = {
+		[clc_ClientInfo] = CLC_ClientInfo,
+		[clc_Move] = CLC_Move,
+		[clc_VoiceData] = CLC_VoiceData,
+		[clc_BaselineAck] = CLC_BaselineAck,
+		[clc_ListenEvents] = CLC_ListenEvents,
+		[clc_RespondCvarValue] = CLC_RespondCvarValue,
+		[clc_FileCRCCheck] = CLC_FileCRCCheck,
+		[clc_CmdKeyValues] = CLC_CmdKeyValues,
+		[clc_FileMD5Check] = CLC_FileMD5Check,
+		[clc_GMod_ClientToServer] = CLC_GMod_ClientToServer
+	},
+
+	SVC = {
+		[svc_Print] = SVC_Print,
+		[svc_ServerInfo] = SVC_ServerInfo,
+		[svc_SendTable] = SVC_SendTable,
+		[svc_ClassInfo] = SVC_ClassInfo,
+		[svc_SetPause] = SVC_SetPause,
+		[svc_CreateStringTable] = SVC_CreateStringTable,
+		[svc_UpdateStringTable] = SVC_UpdateStringTable,
+		[svc_VoiceInit] = SVC_VoiceInit,
+		[svc_VoiceData] = SVC_VoiceData,
+		[svc_Sounds] = SVC_Sounds,
+		[svc_SetView] = SVC_SetView,
+		[svc_FixAngle] = SVC_FixAngle,
+		[svc_CrosshairAngle] = SVC_CrosshairAngle,
+		[svc_BSPDecal] = SVC_BSPDecal,
+		[svc_UserMessage] = SVC_UserMessage,
+		[svc_EntityMessage] = SVC_EntityMessage,
+		[svc_GameEvent] = SVC_GameEvent,
+		[svc_PacketEntities] = SVC_PacketEntities,
+		[svc_TempEntities] = SVC_TempEntities,
+		[svc_Prefetch] = SVC_Prefetch,
+		[svc_Menu] = SVC_Menu,
+		[svc_GameEventList] = SVC_GameEventList,
+		[svc_GetCvarValue] = SVC_GetCvarValue,
+		[svc_CmdKeyValues] = SVC_CmdKeyValues,
+		[svc_GMod_ServerToClient] = SVC_GMod_ServerToClient
+	}
+}
 
 function NetMessage(netchan, msgtype, server)
 	local constructor = NET_MESSAGES_CONSTRUCTORS.NET[msgtype]
