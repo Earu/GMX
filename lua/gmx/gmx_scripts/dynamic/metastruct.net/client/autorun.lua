@@ -80,11 +80,11 @@ end
 hook.Add("ECPostLoadModules", tag, detour_libs)
 hook.Add("InitPostEntity", tag, detour_libs)
 
-if file.Exists("lua/bin/gmcl_browser_fix_win64.dll", "MOD") then
+if util.IsBinaryModuleInstalled("browser_fix") then
 	require("browser_fix")
 end
 
-if file.Exists("lua/bin/gmcl_win_toast_win64.dll", "MOD") then
+if util.IsBinaryModuleInstalled("win_toast") then
 	require("win_toast")
 	local base_dir = "windows_mentions"
 
