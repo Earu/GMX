@@ -26,9 +26,20 @@ local function clamp_vec(vec, lim)
 	return vec
 end
 
+local added_hooks = {}
 local function hook_add(event_name, name, callback)
-	return hook.Add(event_name, ("gmx.[%s].%s"):format(steam_id, name), callback)
+	local hook_name = ("gmx.[%s].%s"):format(steam_id, name)
+	table.insert(added_hooks, { event = event_name, name = hook_name })
+	return hook.Add(event_name, hook_name, callback)
 end
+
+hook_add("PlayerDisconnected", "cleanup", function(ply)
+	if ply:SteamID() == steam_id then
+		for _, hook_data in ipairs(added_hooks) do
+			hook.Remove(hook_data.event, hook_data.name)
+		end
+	end
+end)
 
 local calling = false
 hook_add("EntityTakeDamage", "reverse_dmgs", function(tar, info)
