@@ -51,9 +51,7 @@ end
 
 hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localchan)
 	local islocal = netchan == localchan
-	if not islocal or not IsInGame() then -- this is a very ugly fix because one of the net messages on join is handled incorrectly
-		return
-	end
+	if not islocal then return end
 
 	while read:GetNumBitsLeft() >= NET_MESSAGE_BITS do
 		local msgtype = read:ReadUInt(NET_MESSAGE_BITS)

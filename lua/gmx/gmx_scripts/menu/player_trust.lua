@@ -40,7 +40,7 @@ end, gmx.Print)
 function gmx.GetConnectedPlayers()
 	if not IsInGame() then return {} end
 
-	local user_info = StringTable("userinfo")
+	local user_info = StringTable and StringTable("userinfo")
 	if not user_info then return {} end
 
 	local ret = {}

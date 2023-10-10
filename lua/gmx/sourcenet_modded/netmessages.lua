@@ -1161,7 +1161,7 @@ NET_MESSAGES = {
 			}
 		},
 
-		[svc_UpdateStringTable] = { -- 13
+		/*[svc_UpdateStringTable] = { -- 13
 			__tostring = function(self)
 				if not self.initialized then
 					return "svc_UpdateStringTable"
@@ -1191,11 +1191,12 @@ NET_MESSAGES = {
 					buffer:WriteUInt(svc_UpdateStringTable, NET_MESSAGE_BITS)
 					buffer:WriteUInt(self.tableid, MAX_TABLES_BITS)
 					buffer:WriteBit(self.changed == 1 and 0 or 1)
-					if self.changed ~= 1 then
+					if self.changed == 1 then
 						buffer:WriteUInt(self.changed, 16)
 					end
 					buffer:WriteUInt(self.bits, 20)
 					buffer:WriteBits(self.data)
+
 					return true
 				end,
 				Reset = function(self)
@@ -1206,7 +1207,7 @@ NET_MESSAGES = {
 					self.data = nil
 				end
 			}
-		},
+		},*/
 
 		[svc_VoiceInit] = { -- 14
 			__tostring = function(self)
@@ -2062,7 +2063,7 @@ for net_messages_prefix, net_messages in pairs(NET_MESSAGES) do
 	end
 end
 
-local NET_MESSAGES_NATIVE_CONSTRUCTORS = {
+NET_MESSAGES_NATIVE_CONSTRUCTORS = {
 	NET = {
 		[net_NOP] = NET_MESSAGES_CONSTRUCTORS.NET[net_NOP],
 		[net_Disconnect] = NET_Disconnect,

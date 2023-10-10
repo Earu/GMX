@@ -199,7 +199,7 @@ function bg:Paint(w, h)
 
 	surface.SetFont("gmx_info")
 
-	local base_y = 520
+	local base_y = 560
 	surface.SetTextPos(55, base_y)
 	surface.DrawText("FPS: " .. math.Round(1 / FrameTime()))
 
@@ -284,15 +284,19 @@ do
 		gmx.ShowMultiplayerPanel()
 	end)
 
-	add_button("Settings", 50 , 320, 300, 50, function()
+	add_button("Addons", 50 , 320, 300, 50, function()
+		gmx.ShowAddonsPanel()
+	end)
+
+	add_button("Settings", 50 , 380, 300, 50, function()
 		RunGameUICommand("OpenOptionsDialog")
 	end)
 
-	add_button("Disconnect", 50, 380, 300, 50, function()
+	add_button("Disconnect", 50, 440, 300, 50, function()
 		RunConsoleCommand("disconnect")
 	end)
 
-	add_button("Exit", 50, 440, 300, 50, function()
+	add_button("Exit", 50, 500, 300, 50, function()
 		RunGameUICommand("Quit")
 	end)
 end
@@ -329,6 +333,7 @@ include("gmx/gmx_scripts/menu/ui/binary_editor.lua")
 include("gmx/gmx_scripts/menu/ui/multiplayer.lua")
 include("gmx/gmx_scripts/menu/ui/notifications.lua")
 include("gmx/gmx_scripts/menu/ui/host_code.lua")
+include("gmx/gmx_scripts/menu/ui/addons.lua")
 
 local last_scrw, last_scrh = ScrW(), ScrH()
 hook.Add("Think", "gmx_ui_scaling", function()

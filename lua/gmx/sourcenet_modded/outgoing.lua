@@ -88,7 +88,7 @@ end
 
 hook.Add("PreSendDatagram", "OutFilter", function(netchan, localchan, data, reliablestream, unreliablestream, voicestream)
 	local islocal = netchan == localchan
-	print('islocal', islocal)
+	print("OUT", islocal)
 	if not islocal then
 		return
 	end
