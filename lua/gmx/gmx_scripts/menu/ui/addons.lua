@@ -86,9 +86,22 @@ local function toggle_addons()
 				local menu = DermaMenu()
 				menu:SetPos(gui.MouseX(), gui.MouseY())
 
+				menu:AddOption("Show Page", function()
+					local url = "https://steamcommunity.com/sharedfiles/filedetails/?id=" .. data.wsid
+					gui.OpenURL(url)
+				end):SetIcon("icon16/link_go.png")
+
+				menu:AddSpacer()
+
+				menu:AddOption("Copy URL", function()
+					SetClipboardText("https://steamcommunity.com/sharedfiles/filedetails/?id=" .. data.wsid)
+				end):SetIcon("icon16/link.png")
+
 				menu:AddOption("Copy path", function()
 					SetClipboardText((data.file):GetPathFromFilename():gsub("\\", "/"))
 				end):SetIcon("icon16/folder_link.png")
+
+				menu:AddSpacer()
 
 				menu:AddOption(data.mounted and "Unmount" or "Mount", function()
 					steamworks.SetShouldMountAddon(data.wsid, not data.mounted)
@@ -96,8 +109,6 @@ local function toggle_addons()
 
 					update_list()
 				end):SetIcon("icon16/brick_edit.png")
-
-				menu:AddSpacer()
 
 				menu:AddOption("Unsubscribe", function()
 					steamworks.Unsubscribe(data.wsid)
