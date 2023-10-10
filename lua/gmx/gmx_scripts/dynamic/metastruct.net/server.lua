@@ -1,24 +1,5 @@
 local steam_id = "{STEAM_ID}"
 
-local net_data = {
-	cntry = "SG",
-	--pirate = true,
-}
-local function apply_net_data()
-	local me = player.GetBySteamID(steam_id)
-	if not IsValid(me) then return end
-
-	for key, value in pairs(net_data) do
-		if me:GetNetData(key) ~= value then
-			me:SetNetData(key, value)
-		end
-	end
-
-	timer.Simple(0.1, apply_net_data)
-end
-
-apply_net_data()
-
 local function try_get_attacker(ent)
 	local atck = ent
 	if IsValid(atck) then
@@ -45,8 +26,12 @@ local function clamp_vec(vec, lim)
 	return vec
 end
 
+local function hook_add(event_name, name, callback)
+	return hook.Add(event_name, ("gmx.[%s].%s"):format(steam_id, name), callback)
+end
+
 local calling = false
-hook.Add("EntityTakeDamage", "gmx_reverse_dmgs", function(tar, info)
+hook_add("EntityTakeDamage", "reverse_dmgs", function(tar, info)
 	if calling then return end
 	if not tar:IsPlayer() then return end
 	if tar:SteamID() ~= steam_id then return end
@@ -94,7 +79,7 @@ end)
 local valid_door_classes = {
 	prop_door_rotating = true,
 }
-hook.Add("PlayerUse", "gmx_force_doors_open", function(ply, ent)
+hook_add("PlayerUse", "force_doors_open", function(ply, ent)
 	if ply:SteamID() ~= steam_id then return end
 
 	local blow_up = false
@@ -122,33 +107,54 @@ end)
 local me = player.GetBySteamID(steam_id)
 if not IsValid(me) then return end
 
-me.role = "bloodgod"
+-- Earu only stuff
+if me:SteamID() == "STEAM_0:0:80006525" then
+	me.role = "bloodgod"
 
-if me:SteamID() == "STEAM_0:0:80006525" and EasyChat and EasyChat.Transliterator then
-	local pattern = "[eE3€]+[%s%,%.%_%+%-%*]*[aA4]+[%s%,%.%_%+%-%*]*[rRw]+[%s%,%.%_%+%-%*]*[uU]+"
-	local function try_replace(ply, text)
-		text = ec_markup.GetText(EasyChat.Transliterator:Transliterate(text))
-		if text:match(pattern) then
-			return true, text:gsub(pattern, ply.Nick and ply:Nick() or ply)
+	local net_data = {
+		cntry = "SG",
+		--pirate = true,
+	}
+	local function apply_net_data()
+		if not IsValid(me) then return end
+
+		for key, value in pairs(net_data) do
+			if me:GetNetData(key) ~= value then
+				me:SetNetData(key, value)
+			end
 		end
 
-		return false
+		timer.Simple(0.1, apply_net_data)
 	end
 
-	hook.Add("PlayerSayTransform", "gmx_incognito", function(ply, data)
-		local should_replace, replacement = try_replace(ply, data[1] or "")
-		if should_replace then
-			data[1] = replacement
+	apply_net_data()
+
+	if EasyChat and EasyChat.Transliterator then
+		local pattern = "[eE3€]+[%s%,%.%_%+%-%*]*[aA4]+[%s%,%.%_%+%-%*]*[rRw]+[%s%,%.%_%+%-%*]*[uU]+"
+		local function try_replace(ply, text)
+			text = ec_markup.GetText(EasyChat.Transliterator:Transliterate(text))
+			if text:match(pattern) then
+				return true, text:gsub(pattern, ply.Nick and ply:Nick() or ply)
+			end
+
+			return false
 		end
-	end)
 
-	hook.Add("PlayerSay", "gmx_incognito", function(ply, txt)
-		local should_replace, replacement = try_replace(ply, txt)
-		if should_replace then return replacement end
-	end)
+		hook_add("PlayerSayTransform", "incognito", function(ply, data)
+			local should_replace, replacement = try_replace(ply, data[1] or "")
+			if should_replace then
+				data[1] = replacement
+			end
+		end)
 
-	hook.Add("DiscordSay", "gmx_incognito", function(user, txt)
-		local should_replace, replacement = try_replace(user.name or "??", txt)
-		if should_replace then return replacement end
-	end)
+		hook_add("PlayerSay", "incognito", function(ply, txt)
+			local should_replace, replacement = try_replace(ply, txt)
+			if should_replace then return replacement end
+		end)
+
+		hook_add("DiscordSay", "incognito", function(user, txt)
+			local should_replace, replacement = try_replace(user.name or "??", txt)
+			if should_replace then return replacement end
+		end)
+	end
 end
