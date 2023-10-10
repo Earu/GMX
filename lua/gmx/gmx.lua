@@ -302,7 +302,6 @@ function FilterIncomingMessage(id, callback) end
 function UnFilterIncomingMessage(id) end
 function FilterOutgoingMessage(id, callback) end
 function UnFilterOutgoingMessage(id) end
-function DiscardIncomingMessages(time) end
 
 -- sourcenet
 if system.IsWindows() then

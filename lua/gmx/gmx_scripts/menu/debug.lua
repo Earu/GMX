@@ -300,23 +300,9 @@ hook.Add("Think", "gmx_client_time_out", function()
 
 			RunGameUICommand("engine net_showmsg 1")
 			RunGameUICommand("engine net_showpeaks 2000")
-
-			local i = 0
-			timer.Create("gmx_client_time_out_safety_measures", 0, 1, function()
-				if not is_timing_out then
-					timer.Remove("gmx_client_time_out_safety_measures")
-					return
-				end
-
-				i = i + 1
-
-				-- after 6 seconds of timeout, each 5 seconds, discard messages for half of the time to give the client a chance to recover
-				if i > 6 and i % 5 == 0 then
-					DiscardIncomingMessages(2.5)
-				end
-			end)
 		else
-			gmx.Print("TimeOut", time_out_start_time ~= -1 and ("client recovered (%ds)!"):format(SysTime() - time_out_start_time) or "client recovered!")
+			gmx.Print("TimeOut", time_out_start_time ~= -1 and ("client recovered (%fs)!"):format(SysTime() - time_out_start_time) or "client recovered!")
+
 			RunGameUICommand("engine net_showmsg 0")
 			RunGameUICommand("engine net_showpeaks none")
 		end

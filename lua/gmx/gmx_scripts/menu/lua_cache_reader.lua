@@ -15,7 +15,7 @@ end
 local function get_server_lua_files()
 	if not IsInGame() then return {} end
 
-	local success, string_tbl = pcall(StringTable, "client_lua_files")
+	local success, string_tbl = pcall(StringTable or function() error("Missing StringTable function") end, "client_lua_files")
 	if not success then
 		gmx.Print("Unable to load string table for client_lua_files")
 		return {}
@@ -44,7 +44,7 @@ local path_cache
 local function process_cached_file(path)
 	if not IsInGame() then return "" end
 
-	local success, string_tbl = pcall(StringTable, "client_lua_files")
+	local success, string_tbl = pcall(StringTable or function() error("Missing StringTable function") end, "client_lua_files")
 	if not success then
 		gmx.Print("Unable to load string table for client_lua_files")
 		return ""
