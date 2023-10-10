@@ -88,7 +88,7 @@ local function toggle_addons()
 
 				menu:AddOption("Copy path", function()
 					SetClipboardText((data.file):GetPathFromFilename():gsub("\\", "/"))
-				end)
+				end):SetIcon("icon16/folder_link.png")
 
 				menu:AddOption(data.mounted and "Unmount" or "Mount", function()
 					steamworks.SetShouldMountAddon(data.wsid, not data.mounted)
