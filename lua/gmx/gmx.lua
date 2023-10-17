@@ -5,7 +5,7 @@ local BODY_COLOR = Color(255, 196, 0)
 local EXTRA_COLOR = Color(255, 255, 255)
 local ERR_COLOR = Color(255, 0, 0)
 
-local DISABLE_SOURCENET = not system.IsWindows() -- SET THIS TO FALSE IF YOU HAVE ANY ISSUES WITH SOURCENET
+local DISABLE_SOURCENET = true --not system.IsWindows() -- SET THIS TO TRUE IF YOU HAVE ANY ISSUES WITH SOURCENET
 
 -- this makes sure all the prints and messages in the console are printed in the custom UI
 do
