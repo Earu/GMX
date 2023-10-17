@@ -5,6 +5,8 @@ local BODY_COLOR = Color(255, 196, 0)
 local EXTRA_COLOR = Color(255, 255, 255)
 local ERR_COLOR = Color(255, 0, 0)
 
+local DISABLE_SOURCENET = not system.IsWindows() -- SET THIS TO FALSE IF YOU HAVE ANY ISSUES WITH SOURCENET
+
 -- this makes sure all the prints and messages in the console are printed in the custom UI
 do
 	local init_console_buffer = {}
@@ -304,7 +306,7 @@ function FilterOutgoingMessage(id, callback) end
 function UnFilterOutgoingMessage(id) end
 
 -- sourcenet
-if system.IsWindows() then
+if not DISABLE_SOURCENET then
 	local success, err = pcall(require, "sourcenet")
 	if success then
 		include("gmx/sourcenet_modded/incoming.lua")
@@ -312,6 +314,8 @@ if system.IsWindows() then
 	else
 		MsgC(ERR_COLOR, "[sourcenet_modded] ", err, "\n")
 	end
+else
+	MsgC(ERR_COLOR, "[sourcenet_modded] disabled\n")
 end
 
 local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
