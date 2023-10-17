@@ -2,16 +2,17 @@ include("client.lua")
 include("netmessages.lua")
 
 -- Initialization
-HookNetChannel(
-	-- nochan prevents a net channel being passed to the attach/detach functions
-	-- CNetChan::ProcessMessages doesn't use a virtual hook, so we don't need to pass the net channel
-	{name = "CNetChan::ProcessMessages", nochan = true}
-)
+HookNetChannel({
+	-- nochan prevents a net channel being passed to the attach/detach functions -- CNetChan::ProcessMessages doesn't use a virtual hook, so we don't need to pass the net channel
+	name = "CNetChan::ProcessMessages",
+	nochan = true
+})
 
 local NET_MESSAGES_INSTANCES = {}
 
 local function GetNetMessageInstance(netchan, msgtype)
 	local handler = NET_MESSAGES_INSTANCES[msgtype]
+
 	if handler == nil then
 		handler = NetMessage(netchan, msgtype, not SERVER)
 		NET_MESSAGES_INSTANCES[msgtype] = handler
@@ -29,17 +30,9 @@ local NET_MESSAGES_INCOMING_COPY = {
 }
 
 local function GetIncomingCopyTableForMessageType(msgtype)
-	if NET_MESSAGES.NET[msgtype] ~= nil then
-		return NET_MESSAGES_INCOMING_COPY.NET
-	end
-
-	if MENU_DLL and NET_MESSAGES.SVC[msgtype] ~= nil then
-		return NET_MESSAGES_INCOMING_COPY.SVC
-	end
-
-	if SERVER and NET_MESSAGES.CLC[msgtype] ~= nil then
-		return NET_MESSAGES_INCOMING_COPY.CLC
-	end
+	if NET_MESSAGES.NET[msgtype] ~= nil then return NET_MESSAGES_INCOMING_COPY.NET end
+	if MENU_DLL and NET_MESSAGES.SVC[msgtype] ~= nil then return NET_MESSAGES_INCOMING_COPY.SVC end
+	if SERVER and NET_MESSAGES.CLC[msgtype] ~= nil then return NET_MESSAGES_INCOMING_COPY.CLC end
 
 	return nil
 end
@@ -56,15 +49,16 @@ hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localc
 	while read:GetNumBitsLeft() >= NET_MESSAGE_BITS do
 		local msgtype = read:ReadUInt(NET_MESSAGE_BITS)
 		local handler = GetNetMessageInstance(netchan, msgtype)
+		print("IN", handler)
 		if handler == nil then
-			--MsgC(Color(255, 0, 0), "Unknown incoming message " .. msgtype .. " with " .. read:GetNumBitsLeft() .. " bit(s) left\n")
+			MsgC(Color(255, 0, 0), "Unknown incoming message " .. msgtype .. " with " .. read:GetNumBitsLeft() .. " bit(s) left\n")
+
 			return false
 		end
 
 		local incoming_copy_table = GetIncomingCopyTableForMessageType(msgtype)
 		local copy_function = incoming_copy_table ~= nil and incoming_copy_table[msgtype] or DefaultCopy
 		copy_function(netchan, read, write, handler)
-
 		--MsgC(Color(255, 255, 255), "NetMessage: " .. tostring(handler) .. "\n")
 	end
 
@@ -79,16 +73,15 @@ hook.Add("PreProcessMessages", "InFilter", function(netchan, read, write, localc
 	return true
 end)
 
-function FilterIncomingMessage(msg_type, func)
-	local incoming_copy_table = GetIncomingCopyTableForMessageType(msg_type)
-	if incoming_copy_table == nil then
-		return false
-	end
+function FilterIncomingMessage(msgtype, func)
+	local incoming_copy_table = GetIncomingCopyTableForMessageType(msgtype)
+	if incoming_copy_table == nil then return false end
 
-	incoming_copy_table[msg_type] = func
+	incoming_copy_table[msgtype] = func
+
 	return true
 end
 
-function UnFilterIncomingMessage(msg_type)
-	return FilterIncomingMessage(msg_type, nil)
+function UnFilterIncomingMessage(msgtype)
+	return FilterIncomingMessage(msgtype, nil)
 end

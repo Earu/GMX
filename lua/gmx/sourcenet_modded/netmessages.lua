@@ -14,9 +14,7 @@ MAX_ENTITYMESSAGE_BITS = 11
 MAX_SERVER_CLASS_BITS = 9
 MAX_EDICT_BITS = 13
 
-function SourceNetMsg(msg)
-	Msg("[snmi] " .. msg .. "\n")
-end
+function SourceNetMsg(msg) end
 
 NET_MESSAGES = {
 	NET = {
@@ -1161,7 +1159,7 @@ NET_MESSAGES = {
 			}
 		},
 
-		/*[svc_UpdateStringTable] = { -- 13
+		[svc_UpdateStringTable] = { -- 13
 			__tostring = function(self)
 				if not self.initialized then
 					return "svc_UpdateStringTable"
@@ -1196,7 +1194,6 @@ NET_MESSAGES = {
 					end
 					buffer:WriteUInt(self.bits, 20)
 					buffer:WriteBits(self.data)
-
 					return true
 				end,
 				Reset = function(self)
@@ -1207,7 +1204,7 @@ NET_MESSAGES = {
 					self.data = nil
 				end
 			}
-		},*/
+		},
 
 		[svc_VoiceInit] = { -- 14
 			__tostring = function(self)
