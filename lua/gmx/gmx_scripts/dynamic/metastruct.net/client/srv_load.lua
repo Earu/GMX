@@ -1,5 +1,45 @@
 hook.Remove("HUDPaint", "svfpshud") -- remove this annoying one
 
+local BLUR_MAT = Material("pp/blurscreen")
+local function blur(x, y, w, h, ang, layers, quality)
+	-- Reset everything to known good
+	render.SetStencilWriteMask(0xFF)
+	render.SetStencilTestMask(0xFF)
+	render.SetStencilReferenceValue(0)
+	render.SetStencilCompareFunction(STENCIL_ALWAYS)
+	render.SetStencilPassOperation(STENCIL_KEEP)
+	render.SetStencilFailOperation(STENCIL_KEEP)
+	render.SetStencilZFailOperation(STENCIL_KEEP)
+	render.ClearStencil()
+
+	render.SetStencilEnable(true)
+
+	-- Set the reference value to 1. This is what the compare function tests against
+	render.SetStencilReferenceValue(1)
+	render.SetStencilFailOperation(STENCIL_REPLACE)
+	-- Refuse to write things to the screen unless that pixel's value is 1
+	render.SetStencilCompareFunction(STENCIL_NEVER)
+
+	draw.NoTexture()
+	surface.SetDrawColor(255, 255, 255, 255)
+	surface.DrawTexturedRectRotated(x, y, w, h, ang)
+
+	render.SetStencilFailOperation(STENCIL_KEEP)
+	render.SetStencilCompareFunction(STENCIL_EQUAL)
+
+	surface.SetMaterial(BLUR_MAT)
+	surface.SetDrawColor(255, 255, 255, 255)
+	for i = 1, layers do
+		BLUR_MAT:SetFloat("$blur", (i / layers) * quality)
+		BLUR_MAT:Recompute()
+
+		render.UpdateScreenEffectTexture()
+		surface.DrawTexturedRect(0, 0, ScrW(), ScrH())
+	end
+
+	render.SetStencilEnable(false)
+end
+
 surface.CreateFont("gmx_perf_hud", {
 	font = "Arial",
 	extended = true,
@@ -37,8 +77,10 @@ hook.Add("HUDPaint", "gmx_perf_hud", function()
 	surface.SetTextPos(base_x, base_y - 35)
 	surface.DrawText("SERVER LOAD")
 
+	blur(base_x + (MAX_DATA_POINTS * 5) / 2, base_y + (MAX_HEIGHT + 10) / 2, MAX_DATA_POINTS * 5, MAX_HEIGHT + 10, 0, 2, 3)
+
 	surface.SetDrawColor(0, 0, 0, 200)
-	surface.DrawRect(base_x, base_y, MAX_DATA_POINTS * 5, MAX_HEIGHT + 10, 2)
+	surface.DrawRect(base_x, base_y, MAX_DATA_POINTS * 5, MAX_HEIGHT + 10)
 
 	surface.SetDrawColor(0, 0, 0, 255)
 	surface.DrawOutlinedRect(base_x, base_y, MAX_DATA_POINTS * 5, MAX_HEIGHT + 10)
