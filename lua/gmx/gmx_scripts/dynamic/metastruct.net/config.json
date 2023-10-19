@@ -10,7 +10,8 @@
 	"ClientFiles": [
 		"client/autorun.lua",
 		"client/hud.lua",
-		"client/weapon_select.lua"
+		"client/weapon_select.lua",
+		"client/srv_load.lua"
 	],
 	"Trusted": true
 }
