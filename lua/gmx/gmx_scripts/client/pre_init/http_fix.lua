@@ -5,6 +5,8 @@ local string_upper = _G.string.upper
 local unpack = _G.unpack
 local type = _G.type
 local FindMetaTable = _G.FindMetaTable
+local PANEL = FindMetaTable("Panel")
+local PANEL_is_valid = PANEL.IsValid
 
 local function http_detour(native_fn, args, url, method, content_type, body)
 	local reply_index = rand(-2e9, 2e9)
@@ -16,7 +18,14 @@ local function http_detour(native_fn, args, url, method, content_type, body)
 	timer_create(timer_name, 0.2, 0, function()
 		if _G[reply_index] ~= nil then
 			if _G[reply_index] ~= true then
-				native_fn(unpack(args))
+				local skip = false
+				if type(args[1]) == "Panel" and not PANEL_is_valid(args[1]) then
+					skip = true
+				end
+
+				if not skip then
+					native_fn(unpack(args))
+				end
 			end
 
 			_G[reply_index] = nil
@@ -55,7 +64,6 @@ DETOUR(_G.sound, "PlayURL", old_sound_playurl, function(url, ...)
 	http_detour(old_sound_playurl, { url, ... }, url, "GET", "application/octet-stream", nil)
 end)
 
-local PANEL = FindMetaTable("Panel")
 local old_panel_openurl = PANEL.OpenURL
 DETOUR(PANEL, "OpenURL", old_panel_openurl, function(self, url, ...)
 	if type(url) ~= "string" then return old_panel_openurl(self, url, ...) end
