@@ -149,24 +149,35 @@ end
 
 local init_script_identifiers = {}
 local function run_host_custom_code(ip)
+	local host_script_base_path
 	local hostname = HOSTNAME_LOOKUP[ip]
-	if not hostname then return end
+	if not hostname then
+		local _, dirs = file.Find("lua/gmx/gmx_scripts/dynamic/" .. ip .. "*", "MOD")
+		if dirs[1]:StartWith(ip) then
+			hostname = dirs[1]
+			host_script_base_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(dirs[1])
+		else
+			-- discard
+			return
+		end
+	else
+		host_script_base_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(hostname)
 
-	gmx.Print("Hostname Detected", ip)
-
-	local host_script_base_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(hostname)
-	if not file.Exists(host_script_base_path, "MOD") then -- priority to subdomains then global domain
-		local hostname_components = hostname:Split(".")
-		local base_hostname = ("%s.%s"):format(hostname_components[#hostname_components - 1], hostname_components[#hostname_components])
-		host_script_base_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(base_hostname)
+		if not file.Exists(host_script_base_path, "MOD") then -- priority to subdomains then global domain
+			local hostname_components = hostname:Split(".")
+			local base_hostname = ("%s.%s"):format(hostname_components[#hostname_components - 1], hostname_components[#hostname_components])
+			host_script_base_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(base_hostname)
+		end
 	end
 
-	gmx.Print("Loading Custom Code", hostname, host_script_base_path)
+	gmx.Print("Hostname Detected", ip)
 
 	local host_config_path = ("%s/config.json"):format(host_script_base_path)
 	if file.Exists(host_config_path, "MOD") then
 		local json = file.Read(host_config_path, "MOD")
 		local config = util.JSONToTable(json)
+
+		gmx.Print("Loading Custom Code", ("[ %s ]"):format(config.Name or hostname), host_script_base_path)
 
 		if config.Trusted then
 			gmx.Print("Host is TRUSTED/WHITELISTED")

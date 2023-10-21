@@ -7,17 +7,7 @@ local ipairs = _G.ipairs
 
 local BAD_PATHS = {
 	"lua/gmx.*",
-	"lua/bin/.*luaerror.*%.dll$",
-	"lua/bin/.*http_filter.*%.dll$",
-	"lua/bin/.*enginespew.*%.dll$",
-	"lua/bin/.*rocx.*%.dll$",
-	"lua/bin/.*sourcenet.*%.dll$",
-	"lua/bin/.*stringtable.*%.dll$",
-	"lua/bin/.*zip.*%.dll$",
-	"lua/bin/.*fontsx.*%.dll$",
-	"lua/bin/.*naughty.*%.dll$",
-	"lua/bin/.*dns.*%.dll$",
-	"lua/bin/.*asc.*%.dll$",
+	"lua/bin/.*%.dll$",
 	"lua/menu/_menu.lua$",
 	--"lua/wip/*",
 }
