@@ -1,4 +1,7 @@
-hook.Remove("HUDPaint", "svfpshud") -- remove this annoying one
+local GMX_HUD = GetConVar("gmx_hud")
+if not GMX_HUD then
+	GMX_HUD = CreateClientConVar("gmx_hud", "1", true)
+end
 
 local BLUR_MAT = Material("pp/blurscreen")
 local function blur(x, y, w, h, ang, layers, quality)
@@ -60,11 +63,15 @@ local data_points = {}
 local next_load = 0
 local display_ratio = 0
 hook.Add("HUDPaint", "gmx_perf_hud", function()
+	if not GMX_HUD:GetBool() then return end
+
+	hook.Remove("HUDPaint", "svfpshud") -- remove this annoying one
+
 	local max_fps = 1 / engine.TickInterval()
-	local sfps, deviation = engine.ServerFrameTime()
+	local sfps, _ = engine.ServerFrameTime()
 	sfps = 1 / sfps
 
-	local new_data_point = { max_fps = max_fps, fps = sfps, deviation = deviation }
+	local new_data_point = { max_fps = max_fps, fps = sfps }
 	table.insert(data_points, new_data_point)
 	if #data_points >= MAX_DATA_POINTS then
 		table.remove(data_points, 1)
@@ -109,9 +116,7 @@ hook.Add("HUDPaint", "gmx_perf_hud", function()
 		if next_data_point then
 			local next_ratio = math.min(1, next_data_point.fps / next_data_point.max_fps)
 			local next_x, next_y = ScrW() - (40 + 5 * j), ScrH() - (40 + MAX_HEIGHT * (1 - next_ratio))
-			--local bad_factor = 1 - (math.abs(data_point.deviation - next_data_point.deviation) * 10000) / 100
 
-			--surface.SetDrawColor(255, 255 * bad_factor, 255 * bad_factor, 255)
 			surface.DrawLine(x, y, next_x, next_y)
 		end
 	end
