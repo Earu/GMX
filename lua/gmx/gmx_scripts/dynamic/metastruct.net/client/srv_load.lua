@@ -57,24 +57,51 @@ surface.CreateFont("gmx_perf_hud_bg", {
 	weight = 800,
 })
 
+local net_buffer_size = 0
+hook.Add("netincoming", "gmx_perf_hud", function(msg_name, len, client, fn)
+	net_buffer_size = net_buffer_size + len
+end)
+
+local empty_buffer_frames = 0
+hook.Add("Tick", "gmx_perf_hud", function()
+	if net_buffer_size == 0 then
+		empty_buffer_frames = empty_buffer_frames + 1
+	else
+		empty_buffer_frames = 0
+	end
+
+	net_buffer_size = 0
+end)
+
 local MAX_DATA_POINTS = 100
 local MAX_HEIGHT = 80
 local data_points = {}
 local next_load = 0
-local display_ratio = 0
+local avg_ratio = 0
+local same_frame_count = 0
 hook.Add("HUDPaint", "gmx_perf_hud", function()
 	if not GMX_HUD:GetBool() then return end
 
 	hook.Remove("HUDPaint", "svfpshud") -- remove this annoying one
 
+	local is_timing_out = GetTimeoutInfo()
 	local max_fps = 1 / engine.TickInterval()
-	local sfps, _ = engine.ServerFrameTime()
+	local sfps, deviation = engine.ServerFrameTime()
 	sfps = 1 / sfps
 
-	local new_data_point = { max_fps = max_fps, fps = sfps }
-	table.insert(data_points, new_data_point)
-	if #data_points >= MAX_DATA_POINTS then
-		table.remove(data_points, 1)
+	if data_points[#data_points] and data_points[#data_points].fps == sfps and data_points[#data_points].deviation == deviation then
+		same_frame_count = same_frame_count + 1
+	else
+		same_frame_count = 0
+	end
+
+	local is_net_buffering = empty_buffer_frames >= 20 and same_frame_count >= 10 and avg_ratio >= 0.25
+	if not is_timing_out then
+		local new_data_point = { max_fps = max_fps, fps = sfps, deviation = deviation }
+		table.insert(data_points, new_data_point)
+		if #data_points >= MAX_DATA_POINTS then
+			table.remove(data_points, 1)
+		end
 	end
 
 	local scale_coef = ScrW() / 2560
@@ -122,14 +149,19 @@ hook.Add("HUDPaint", "gmx_perf_hud", function()
 	end
 
 	if SysTime() >= next_load then
-		display_ratio = total / #data_points
+		avg_ratio = total / #data_points
 		next_load = SysTime() + 0.25
 	end
 
-	surface.SetTextColor(255, 100 + 155 * display_ratio, 100 + 155 * display_ratio, 255)
+	if is_timing_out or is_net_buffering then
+		surface.SetTextColor(255, 0, 0, 255)
+	else
+		surface.SetTextColor(255, 100 + 155 * avg_ratio, 100 + 155 * avg_ratio, 255)
+	end
+
 	surface.SetFont("gmx_perf_hud")
 	surface.SetTextPos(base_x + 10, base_y + 5)
-	surface.DrawText(("%d%%"):format((1 - display_ratio) * 100))
+	surface.DrawText(is_timing_out and "TIMEOUT" or is_net_buffering and "BUFFERING" or ("%d%%"):format((1 - avg_ratio) * 100))
 
 	cam.PopModelMatrix()
 end)
