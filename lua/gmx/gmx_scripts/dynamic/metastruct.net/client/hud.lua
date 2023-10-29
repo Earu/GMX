@@ -446,6 +446,7 @@ local function draw_players_hud()
 
 			ply.GMXHUDLastHealthPerc = smoothen_value(ply.GMXHUDLastHealthPerc or 1, ply:Health())
 			ply.GMXHUDLastArmorPerc = smoothen_value(ply.GMXHUDLastArmorPerc or 1, ply:Armor())
+			ply.GMXHUDLastOxygenPerc = smoothen_value(ply.GMXHUDLastOxygenPerc or 1, ply.GetOxygen and ply:GetOxygen() or 100)
 
 			draw.NoTexture()
 			if is_looked_at then
@@ -459,6 +460,11 @@ local function draw_players_hud()
 
 			draw_rotated_value_rect(ply.GMXHUDLastArmorPerc, ply:GetMaxArmor(), screen_pos.x, screen_pos.y, 100, 100, ang, ARMOR_COLOR)
 			draw_rotated_value_rect(ply.GMXHUDLastHealthPerc, ply:GetMaxHealth(), screen_pos.x, screen_pos.y, 90, 90, ang, HEALTH_COLOR)
+
+			local ply_oxygen = ply.GetOxygen and ply:GetOxygen() or 100
+			if ply_oxygen < 100 then
+				draw_rotated_value_rect(ply.GMXHUDLastOxygenPerc, 100, screen_pos.x, screen_pos.y, 90, 90, ang, OXYGEN_COLOR)
+			end
 
 			draw.NoTexture()
 			surface.SetDrawColor(0, 0, 0, 255)
