@@ -71,6 +71,7 @@ local AMMO_COLOR = Color(200, 200, 200, 240)
 local HUD_ANG = Angle(0, 45, 0)
 local FAR_FRIEND = Color(255, 255, 255)
 local FAR_NOT_FRIEND = Color(220, 0, 60)
+local OXYGEN_COLOR = Color(0, 100, 255, 155)
 
 local last_scrw, last_scrh = ScrW(), ScrH()
 local function update_font_sizes()
@@ -135,7 +136,7 @@ local function smoothen_value(cur_value, target_value)
 	return cur_value
 end
 
-local last_health_perc, last_armor_perc = 1, 1
+local last_health_perc, last_armor_perc, last_oxygen_perc = 1, 1, 1
 local function draw_local_player_hud()
 	local size_coef = ScrW() / 2560
 	local size, padding = 200 * size_coef, 80 * size_coef
@@ -150,8 +151,9 @@ local function draw_local_player_hud()
 
 	local health_perc = math.min(1, LocalPlayer():Health() / LocalPlayer():GetMaxHealth())
 	local armor_perc = math.min(1, LocalPlayer():Armor() / LocalPlayer():GetMaxArmor())
+	local oxygen_perc = math.min(1, (LocalPlayer().GetOxygen and LocalPlayer():GetOxygen() or 100) / 100)
 
-	last_health_perc, last_armor_perc = smoothen_value(last_health_perc, health_perc), smoothen_value(last_armor_perc, armor_perc)
+	last_health_perc, last_armor_perc, last_oxygen_perc = smoothen_value(last_health_perc, health_perc), smoothen_value(last_armor_perc, armor_perc), smoothen_value(last_oxygen_perc, oxygen_perc)
 
 	blur(x + size / 2, y + size / 2 + 85 * size_coef, size * 2, size * 2, HUD_ANG.y, 2, 3)
 
@@ -181,13 +183,8 @@ local function draw_local_player_hud()
 	size = size + (size / 2)
 
 	-- health
-	surface.SetDrawColor(HEALTH_COLOR)
+	surface.SetDrawColor(is_poisoned and HEALTH_POISONED_COLOR or HEALTH_COLOR)
 	surface.DrawRect(x - (bar_width + bar_margin), y + ((size - padding) * -last_health_perc) + (size - padding), bar_width, (size - padding) * last_health_perc + size)
-
-	if is_poisoned then
-		surface.SetDrawColor(HEALTH_POISONED_COLOR)
-		surface.DrawRect(x - (bar_width + bar_margin), y + ((size - padding) * -last_health_perc) + (size - padding), bar_width, (size - padding) * last_health_perc + size)
-	end
 
 	surface.SetDrawColor(BG_COLOR)
 	for i = 0, steps do
@@ -213,6 +210,12 @@ local function draw_local_player_hud()
 				surface.DrawRect(step_x, step_y + (i - 1) * step_size, 20 * size_coef, step_size - 2)
 			end
 		end
+	end
+
+	if oxygen_perc < 1 then
+		hook.Remove("HUDPaint", "oxygen_hud")
+		surface.SetDrawColor(OXYGEN_COLOR)
+		surface.DrawRect(x - (bar_width + bar_margin), y + ((size - padding) * -last_oxygen_perc) + (size - padding), bar_width, (size - padding) * last_oxygen_perc + size)
 	end
 
 	-- armor
