@@ -138,6 +138,8 @@ end
 
 local last_health_perc, last_armor_perc, last_oxygen_perc = 1, 1, 1
 local function draw_local_player_hud()
+	if not LocalPlayer():Alive() then return end
+
 	local size_coef = ScrW() / 2560
 	local size, padding = 200 * size_coef, 80 * size_coef
 	local x, y = ScrW() / 2 - size / 2, ScrH() - size / 2
