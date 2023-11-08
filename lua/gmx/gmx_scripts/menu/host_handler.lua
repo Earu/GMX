@@ -153,7 +153,7 @@ local function run_host_custom_code(ip)
 	local hostname = HOSTNAME_LOOKUP[ip]
 	if not hostname then
 		local _, dirs = file.Find("lua/gmx/gmx_scripts/dynamic/" .. ip .. "*", "MOD")
-		if dirs[1]:StartWith(ip) then
+		if dirs[1] and dirs[1]:StartWith(ip) then
 			hostname = dirs[1]
 			host_script_base_path = ("lua/gmx/gmx_scripts/dynamic/%s"):format(dirs[1])
 		else
