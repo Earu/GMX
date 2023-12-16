@@ -155,7 +155,7 @@ hook.Add("PlayerBindPress", "gmx_hud_weapon_select", function(ply, bind)
 	if ply ~= LocalPlayer() then return end
 	if not is_active then return end
 
-	if bind == "+attack" and IsValid(held_weps[cur_slot][cur_pos]) then
+	if bind == "+attack" and held_weps[cur_slot] and IsValid(held_weps[cur_slot][cur_pos]) then
 		surface.PlaySound("common/wpn_hudoff.wav")
 		timer.Remove("gmx_hud_weapon_select")
 		input.SelectWeapon(held_weps[cur_slot][cur_pos])

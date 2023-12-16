@@ -62,7 +62,7 @@ surface.CreateFont("gmd_hud_small", {
 	size = FONT_HEIGHT_SMALL,
 })
 
-local BG_COLOR = Color(10, 10, 10, 200)
+local BG_COLOR = Color(10, 10, 10, 255)
 local HEALTH_COLOR = Color(220, 0, 60)
 local HEALTH_POISONED_COLOR = Color(170, 255, 60, 200)
 local ARMOR_COLOR = Color(255, 162, 0, 240)

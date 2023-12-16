@@ -109,7 +109,7 @@ function console_input:Paint(w, h)
 end
 
 function console_input:OnValueChange(text)
-	cur_completions = ConsoleAutoComplete(text) or {}
+	cur_completions = ConsoleAutoComplete and ConsoleAutoComplete(text) or {}
 	cur_selection = -1
 end
 
