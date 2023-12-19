@@ -108,8 +108,39 @@ function console_input:Paint(w, h)
 	surface.DisableClipping(false)
 end
 
+local CURRENT_COMMANDS = {}
+local function build_command_list(...)
+	CURRENT_COMMANDS = {}
+
+	local cmd_list = {}
+	for _, cvar_list in pairs({ ... }) do
+		cmd_list = table.Add(cmd_list, cvar_list)
+	end
+
+	local seen_cmds = {}
+	for _, cmd in pairs(cmd_list) do
+		if seen_cmds[seen_cmds] then continue end
+
+		table.insert(CURRENT_COMMANDS, cmd)
+		seen_cmds[cmd] = true
+	end
+
+	table.sort(CURRENT_COMMANDS, function(a, b) return b < a end)
+end
+
+function ConsoleAutoCompleteFix(text)
+	local matches = {}
+	for _, cmd in pairs(CURRENT_COMMANDS) do
+		if cmd:match(text) then
+			table.insert(matches, cmd)
+		end
+	end
+
+	return matches
+end
+
 function console_input:OnValueChange(text)
-	cur_completions = ConsoleAutoComplete and ConsoleAutoComplete(text) or {}
+	cur_completions = ConsoleAutoCompleteFix(text)
 	cur_selection = -1
 end
 
@@ -241,11 +272,32 @@ hook.Add("DrawOverlay", "gmx_console", function()
 	end
 end)
 
+local fetching_commands = false
+local function fetch_commands_list()
+	if fetching_commands then return end
+
+	fetching_commands = true
+	gmx.RequestClientData("table.concat(table.GetKeys(cvars.GetTable()), ';')", function(cvars_string)
+		local cvars_list = cvars_string:Split(";")
+		gmx.RequestClientData("table.concat(table.GetKeys(concommand.GetTable()), ';')", function(concommands_string)
+			concommands_list = concommands_string:Split(";")
+			build_command_list(cvars_list, concommands_list, table.GetKeys(concommand.GetTable()))
+			fetching_commands = false
+		end)
+	end)
+end
+
 hook.Add("ClientFullyInitialized", "gmx_console", function()
+	fetch_commands_list()
 	has_init = true
 end)
 
+hook.Add("GMXInitialized", "gmx_console", function()
+	build_command_list(table.GetKeys(concommand.GetTable()))
+end)
+
 hook.Add("ClientStateDestroyed", "gmx_console", function()
+	build_command_list(table.GetKeys(concommand.GetTable()))
 	has_init = false
 end)
 
@@ -261,6 +313,10 @@ concommand.Add("gmx_toggleconsole", function()
 
 	console:MakePopup()
 	console_input:RequestFocus()
+
+	if IsInGame() then
+		fetch_commands_list()
+	end
 end)
 
 RunGameUICommand("engine alias toggleconsole gmx_toggleconsole")
