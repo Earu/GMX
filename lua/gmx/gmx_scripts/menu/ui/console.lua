@@ -134,6 +134,7 @@ function ConsoleAutoCompleteFix(text)
 	for _, cmd in pairs(CURRENT_COMMANDS) do
 		if cmd:match(text) then
 			table.insert(matches, cmd)
+			if #matches > 20 then break end
 		end
 	end
 
