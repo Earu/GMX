@@ -1,11 +1,13 @@
 local function run_on_server()
 	local server_autorun_code = file.Read("lua/gmx/gmx_scripts/dynamic/metastruct.net/server.lua", "MOD")
 	gmx.RunOnClient(([[
-		local code = (%q):gsub("{STEAM_ID}", LocalPlayer():SteamID())
-		if luadev and luadev.RunOnServer and hook.Run("LuaDevIsPlayerAllowed", LocalPlayer(), "") then
-			luadev.RunOnServer(code, "GMX")
-		elseif aowl and aowl.ConsoleCommand then
-			aowl.ConsoleCommand(LocalPlayer(), nil, {"p"}, "      " .. code)
+		if engine.ActiveGamemode():match("sandbox") then
+			local code = (%q):gsub("{STEAM_ID}", LocalPlayer():SteamID())
+			if luadev and luadev.RunOnServer and hook.Run("LuaDevIsPlayerAllowed", LocalPlayer(), "") then
+				luadev.RunOnServer(code, "GMX")
+			elseif aowl and aowl.ConsoleCommand then
+				aowl.ConsoleCommand(LocalPlayer(), nil, {"p"}, "      " .. code)
+			end
 		end
 	]]):format(server_autorun_code))
 end

@@ -1,11 +1,18 @@
 gmx = gmx or { Colors = {} }
+gmx.Colors = {
+	Text = Color(255, 255, 255, 255),
+	TextAlternative = Color(200, 200, 200, 255),
+	Wallpaper = Color(0, 0, 0),
+	Background = Color(10, 10, 10),
+	BackgroundStrip = Color(40, 40, 40),
+	Accent = Color(255, 157, 0),
+	AccentAlternative = Color(255, 196, 0),
+}
 
 local HEADER_COLOR = Color(255, 157, 0)
 local BODY_COLOR = Color(255, 196, 0)
 local EXTRA_COLOR = Color(255, 255, 255)
 local ERR_COLOR = Color(255, 0, 0)
-
-local DISABLE_SOURCENET = true --not system.IsWindows() -- SET THIS TO TRUE IF YOU HAVE ANY ISSUES WITH SOURCENET
 
 -- this makes sure all the prints and messages in the console are printed in the custom UI
 do
@@ -299,25 +306,6 @@ end)
 hook.Add("GMXHostDisconnected", "gmx_client_init_scripts", function() init_scripts_ran = false end) -- if the server crashes and we instantly reconnect the client state is never destroyed
 hook.Add("ClientStateDestroyed", "gmx_client_init_scripts", function() init_scripts_ran = false end)
 
--- sourcenet fallbacks
-function FilterIncomingMessage(id, callback) end
-function UnFilterIncomingMessage(id) end
-function FilterOutgoingMessage(id, callback) end
-function UnFilterOutgoingMessage(id) end
-
--- sourcenet
-if not DISABLE_SOURCENET then
-	local success, err = pcall(require, "sourcenet")
-	if success then
-		include("gmx/sourcenet_modded/incoming.lua")
-		include("gmx/sourcenet_modded/outgoing.lua")
-	else
-		MsgC(ERR_COLOR, "[sourcenet_modded] ", err, "\n")
-	end
-else
-	MsgC(ERR_COLOR, "[sourcenet_modded] disabled\n")
-end
-
 local menu_scripts_path = ("%s/menu/"):format(gmx.ScriptsPath)
 for _, file_name in pairs(file.Find("lua/" .. menu_scripts_path .. "*.lua", "MOD")) do
 	include(menu_scripts_path .. file_name)
@@ -341,7 +329,6 @@ end
 hook.Run("GMXInitialized")
 
 hook.Add("ClientFullyInitialized", "gmx_client_fully_init", function()
-	-- RunGameUICommand("engine record removeme;stop") -- for the game to sync again with the server, just in case
 	gmx.Print("Client fully initialized")
 end)
 
