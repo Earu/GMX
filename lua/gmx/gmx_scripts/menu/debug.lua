@@ -235,24 +235,6 @@ function print(...)
 end
 GMX_DBG_PRINT = print
 
-hook.Add("GMXInitialized", "gmx_crash_report", function()
-	local dump_path = file.Find("crashes/*.txt", "BASE_PATH", "datedesc")[1]
-	if not dump_path then
-		gmx.Print("Crash Report", "no file")
-		return
-	end
-
-	dump_path =  "crashes/" .. dump_path
-
-	if file.Size(dump_path, "BASE_PATH") == 0 then
-		gmx.Print("Crash Report", dump_path, "empty file")
-		return
-	end
-
-	gmx.Print("Crash Report", dump_path .. "\n" .. file.Read(dump_path, "BASE_PATH"))
-	MsgN()
-end)
-
 local time_out_state = false
 local last_tick = -1
 function gmx.IsClientTimingOut()
@@ -260,31 +242,10 @@ function gmx.IsClientTimingOut()
 	return time_out_state, SysTime() - last_tick
 end
 
-FilterIncomingMessage(net_Tick, function(net_chan, read, write)
-	local tick = read:ReadLong()
-	local host_frame_time = read:ReadUInt(16)
-	local host_frame_time_deviation = read:ReadInt(16)
-
-	write:WriteUInt(net_Tick, NET_MESSAGE_BITS)
-	write:WriteLong(tick)
-	write:WriteUInt(host_frame_time, 16)
-	write:WriteInt(host_frame_time_deviation, 16)
-
-	last_tick = SysTime()
-
-	return true
-end)
-
 hook.Add("GMXHostDisconnected", "gmx_client_time_out", function()
 	time_out_state = false
 	last_tick = -1
-
-	RunGameUICommand("engine net_showmsg 0")
-	RunGameUICommand("engine net_showpeaks none")
 end)
-
-RunGameUICommand("engine net_showmsg 0")
-RunGameUICommand("engine net_showpeaks none")
 
 local time_out_start_time = -1
 hook.Add("Think", "gmx_client_time_out", function()
@@ -296,15 +257,9 @@ hook.Add("Think", "gmx_client_time_out", function()
 		if is_timing_out then
 			time_out_start_time = SysTime()
 
-			gmx.Print("TimeOut", "client is timing out, enabling debugging!")
-
-			RunGameUICommand("engine net_showmsg 1")
-			RunGameUICommand("engine net_showpeaks 2000")
+			gmx.Print("TimeOut", "client is timing out!")
 		else
 			gmx.Print("TimeOut", time_out_start_time ~= -1 and ("client recovered (%fs)!"):format(SysTime() - time_out_start_time) or "client recovered!")
-
-			RunGameUICommand("engine net_showmsg 0")
-			RunGameUICommand("engine net_showpeaks none")
 		end
 
 		hook.Run("GMXClientTimeOut", time_out_state)
