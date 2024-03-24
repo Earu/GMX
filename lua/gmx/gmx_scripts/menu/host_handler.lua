@@ -60,6 +60,12 @@ end
 
 _G.OldGameDetails = _G.OldGameDetails or _G.GameDetails
 function GameDetails(server_name, server_url, map_name, max_players, steamid, gm)
+	-- this fixes times when joining directly from another server, retrying while connected, etc...
+	if cached_address then
+		cached_address = nil
+		hook.Run("GMXHostDisconnected")
+	end
+
 	if gmx.GetConnectedServerIPAddress() == INVALID_IP then
 		if CNetChan and CNetChan() then
 			cached_address = tostring(CNetChan():GetAddress()):gsub("%:[0-9]+$", "")
