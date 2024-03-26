@@ -1,5 +1,7 @@
-require("asc")
 require("dns")
+require("gameevent")
+gameevent.Listen("client_beginconnect")
+gameevent.Listen("client_disconnect")
 
 local WHITELIST = {
 	["0"] = true, -- menu
@@ -58,35 +60,29 @@ function gmx.GetConnectedServerIPAddress()
 	return INVALID_IP
 end
 
-_G.OldGameDetails = _G.OldGameDetails or _G.GameDetails
-function GameDetails(server_name, server_url, map_name, max_players, steamid, gm)
-	-- this fixes times when joining directly from another server, retrying while connected, etc...
-	if cached_address then
-		cached_address = nil
+local is_connected = false
+local function set_host_state(state, addr)
+	if is_connected == state then return end
+
+	if state then
+		cached_address = addr
+		hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
+	else
+		cached_address = addr
 		hook.Run("GMXHostDisconnected")
 	end
+end
 
-	if gmx.GetConnectedServerIPAddress() == INVALID_IP then
-		if CNetChan and CNetChan() then
-			cached_address = tostring(CNetChan():GetAddress()):gsub("%:[0-9]+$", "")
-			hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
+hook.Add("client_beginconnect", "GMXHostConnectionStatus", function(connection_data)
+	set_host_state(true, sanitize_address(connection_data.address))
+end)
 
-			return
-		end
+hook.Add("client_disconnect", "GMXHostConnectionStatus", function()
+	set_host_state(false, nil)
+end)
 
-		gmx.Print("Joining server via Steam or retry command, relying on public Steam API...")
-		http.Fetch("http://steamcommunity.com/profiles/" .. steamid .. "?xml=1", function(xml)
-			cached_address = sanitize_address(xml:match("%<inGameServerIP%>(.+)%<%/inGameServerIP%>"))
-			if not cached_address then
-				gmx.Print("Failed to get server IP address, Steam profile is private!")
-			else
-				hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
-			end
-		end, function(err)
-			gmx.Print("Failed to get server IP address: " .. err)
-		end)
-	end
-
+_G.OldGameDetails = _G.OldGameDetails or _G.GameDetails
+function GameDetails(server_name, server_url, map_name, max_players, steamid, gm)
 	local is_blocked = hook.Run("OnHTTPRequest", server_url, "GET", {}, "text/html", "")
 	if is_blocked then return end
 
@@ -94,29 +90,12 @@ function GameDetails(server_name, server_url, map_name, max_players, steamid, gm
 end
 
 if IsInGame() then
-	if CNetChan and CNetChan() then
-		cached_address = tostring(CNetChan():GetAddress()):gsub("%:[0-9]+$", "")
-	else
-		gmx.RequestClientData("game.GetIPAddress()", function(ip)
-			cached_address = sanitize_address(ip)
-		end)
-	end
+	gmx.RequestClientData("game.GetIPAddress()", function(ip)
+		cached_address = sanitize_address(ip)
+	end)
+
+	is_connected = true
 end
-
---
--- GetConfigValue( ESteamNetworkingConfigValue eValue, ESteamNetworkingConfigScope eScopeType, intptr_t scopeObj, ESteamNetworkingConfigDataType *pOutDataType, void *pResult, size_t *cbResult );
-
-hook.Add("AllowStringCommand", "gmx_host_address", function(cmd_str)
-	if cmd_str:lower():match("^connect") then
-		local args = cmd_str:lower():Split(" ")
-		cached_address = sanitize_address(table.concat(args, " ", 2))
-
-		hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
-	elseif cmd_str:lower():match("^disconnect") or cmd_str:lower():match("^retry") then
-		cached_address = nil
-		hook.Run("GMXHostDisconnected")
-	end
-end)
 
 local host_ip_cvar = GetConVar("hostip")
 function gmx.GetLocalNetworkIPAddress()
