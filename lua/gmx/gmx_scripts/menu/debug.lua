@@ -16,6 +16,8 @@ local function compute_spacing_print_pos(tbl, compute_keys, max_spacing)
 	return min
 end
 
+gmx.Debug = {}
+
 local RED_COLOR = Color(199, 116, 78)
 local VALUE_SPACING_MAX, INFO_SPACING_MAX = 40, 24
 function PrintTable(tbl)
@@ -29,7 +31,12 @@ function PrintTable(tbl)
 
 	local min_equal_pos = compute_spacing_print_pos(tbl, true, VALUE_SPACING_MAX)
 	local min_info_pos = compute_spacing_print_pos(tbl, false, INFO_SPACING_MAX)
-	for key, value in pairs(tbl) do
+
+	local tbl_keys = table.GetKeys(tbl)
+	table.sort(tbl_keys)
+
+	for _, key in ipairs(tbl_keys) do
+		local value = tbl[key]
 		local comment = type(value)
 		if isfunction(value) then
 			local info = debug.getinfo(value)
@@ -69,6 +76,8 @@ function PrintTable(tbl)
 
 	MsgC(gmx.Colors.Accent, "}\n")
 end
+
+gmx.Debug.PrintTable = PrintTable
 
 FindMetaTable("Vector").__tostring = function(self)
 	return ("Vector (%d, %d, %d)"):format(self.x, self.y, self.z)
@@ -126,6 +135,69 @@ local LUA_KEYWORDS = {
 	"false", "true"
 }
 local BASE_LUA_KEYWORD_PATTERN = "[\n\t%s%)%(%{%}%,%<%>]"
+function PrintCode(code)
+	-- syntax
+	code = code
+		:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(gmx.Colors.Accent))
+		:gsub("[^%[]%[[^%[]",function(match) -- table indexing [
+			return match[1] .. markup_with_color(gmx.Colors.Accent, true)(match[2]) .. match[3]
+		end)
+		:gsub("[^%]]%][^%]]",function(match) -- table indexing ]
+			return match[1] .. markup_with_color(gmx.Colors.Accent, true)(match[2]) .. match[3]
+		end)
+
+	-- keywords
+	for _, keyword in ipairs(LUA_KEYWORDS) do
+		local pattern_body = ("%s%s%s"):format(BASE_LUA_KEYWORD_PATTERN, keyword, BASE_LUA_KEYWORD_PATTERN)
+		local pattern_start = ("^%s%s"):format(keyword, BASE_LUA_KEYWORD_PATTERN)
+		local pattern_end = ("%s%s$"):format(BASE_LUA_KEYWORD_PATTERN, keyword)
+		code = code
+			:gsub(pattern_body, markup_keyword)
+			:gsub(pattern_start, markup_keyword)
+			:gsub(pattern_end, markup_keyword)
+	end
+
+	-- strings literals
+	code = code
+		:gsub("'.-'", markup_with_color(gmx.Colors.Accent))
+		:gsub("\".-\"", markup_with_color(gmx.Colors.Accent))
+		:gsub("[^%-]%[%[.-%]%]", markup_with_color(gmx.Colors.Accent))
+
+	-- comments
+	code = code
+		:gsub("%-%-[^%[%]]-\n", markup_with_color(gmx.Colors.BackgroundStrip, true))
+		:gsub("%/%/.-\n", markup_with_color(gmx.Colors.BackgroundStrip, true))
+		:gsub("%-%-%[%[.-%]%]", markup_with_color(gmx.Colors.BackgroundStrip, true))
+		:gsub("%/%*.-%*%/", markup_with_color(gmx.Colors.BackgroundStrip, true))
+
+	local start_pos, end_pos
+	repeat
+		local new_start_pos, new_end_pos = code:find("%<color%=%d+%,%d+%,%d+%>(.-)%<%/color%>", end_pos and end_pos + 1 or 1)
+		if new_start_pos then
+			MsgC(gmx.Colors.Text, code:sub(end_pos and end_pos + 1 or 1, new_start_pos - 1))
+		else
+			MsgC(gmx.Colors.Text, code:sub(end_pos and end_pos + 1 or 1))
+		end
+
+		if new_start_pos and new_end_pos then
+			local r, g, b = 255, 255, 255
+			local chunk = code:sub(new_start_pos, new_end_pos)
+			chunk:gsub("%<color%=(%d+)%,(%d+)%,(%d+)%>", function(input_r, input_g, input_b)
+				r, g, b = tonumber(input_r) or 255, tonumber(input_g) or 255, tonumber(input_b) or 255
+			end)
+
+			chunk = sanitize_content(chunk)
+			MsgC(Color(r, g, b, 255), chunk)
+		end
+
+		start_pos, end_pos = new_start_pos, new_end_pos
+	until not start_pos and not end_pos
+
+	MsgC("\n")
+end
+
+gmx.Debug.PrintCode = PrintCode
+
 function PrintFunction(fn)
 	if not isfunction(fn) then
 		print(fn)
@@ -143,65 +215,10 @@ function PrintFunction(fn)
 
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
-	-- syntax
-	fn_source = fn_source
-		:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(gmx.Colors.Accent))
-		:gsub("[^%[]%[[^%[]",function(match) -- table indexing [
-			return match[1] .. markup_with_color(gmx.Colors.Accent, true)(match[2]) .. match[3]
-		end)
-		:gsub("[^%]]%][^%]]",function(match) -- table indexing ]
-			return match[1] .. markup_with_color(gmx.Colors.Accent, true)(match[2]) .. match[3]
-		end)
-
-	-- keywords
-	for _, keyword in ipairs(LUA_KEYWORDS) do
-		local pattern_body = ("%s%s%s"):format(BASE_LUA_KEYWORD_PATTERN, keyword, BASE_LUA_KEYWORD_PATTERN)
-		local pattern_start = ("^%s%s"):format(keyword, BASE_LUA_KEYWORD_PATTERN)
-		local pattern_end = ("%s%s$"):format(BASE_LUA_KEYWORD_PATTERN, keyword)
-		fn_source = fn_source
-			:gsub(pattern_body, markup_keyword)
-			:gsub(pattern_start, markup_keyword)
-			:gsub(pattern_end, markup_keyword)
-	end
-
-	-- strings literals
-	fn_source = fn_source
-		:gsub("'.-'", markup_with_color(gmx.Colors.Accent))
-		:gsub("\".-\"", markup_with_color(gmx.Colors.Accent))
-		:gsub("[^%-]%[%[.-%]%]", markup_with_color(gmx.Colors.Accent))
-
-	-- comments
-	fn_source = fn_source
-		:gsub("%-%-[^%[%]]-\n", markup_with_color(gmx.Colors.BackgroundStrip, true))
-		:gsub("%/%/.-\n", markup_with_color(gmx.Colors.BackgroundStrip, true))
-		:gsub("%-%-%[%[.-%]%]", markup_with_color(gmx.Colors.BackgroundStrip, true))
-		:gsub("%/%*.-%*%/", markup_with_color(gmx.Colors.BackgroundStrip, true))
-
-	local start_pos, end_pos
-	repeat
-		local new_start_pos, new_end_pos = fn_source:find("%<color%=%d+%,%d+%,%d+%>(.-)%<%/color%>", end_pos and end_pos + 1 or 1)
-		if new_start_pos then
-			MsgC(gmx.Colors.Text, fn_source:sub(end_pos and end_pos + 1 or 1, new_start_pos - 1))
-		else
-			MsgC(gmx.Colors.Text, fn_source:sub(end_pos and end_pos + 1 or 1))
-		end
-
-		if new_start_pos and new_end_pos then
-			local r, g, b = 255, 255, 255
-			local chunk = fn_source:sub(new_start_pos, new_end_pos)
-			chunk:gsub("%<color%=(%d+)%,(%d+)%,(%d+)%>", function(input_r, input_g, input_b)
-				r, g, b = tonumber(input_r) or 255, tonumber(input_g) or 255, tonumber(input_b) or 255
-			end)
-
-			chunk = sanitize_content(chunk)
-			MsgC(Color(r, g, b, 255), chunk)
-		end
-
-		start_pos, end_pos = new_start_pos, new_end_pos
-	until not start_pos and not end_pos
-
-	MsgC("\n")
+	PrintCode(fn_source)
 end
+
+gmx.Debug.PrintFunction = PrintFunction
 
 debug.setmetatable(function() end, {
 	src = function(self) return get_function_source(self) end,
@@ -233,7 +250,8 @@ function print(...)
 		old_print(...)
 	end
 end
-GMX_DBG_PRINT = print
+
+gmx.Debug.Print = print
 
 local time_out_state = false
 local last_tick = -1
