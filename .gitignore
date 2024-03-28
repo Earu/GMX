@@ -1,2 +1,6 @@
 **/archives
 .DS_STORE
+
+vscode-ext/.vscode
+vscode-ext/node_modules
+vscode-ext/dist
