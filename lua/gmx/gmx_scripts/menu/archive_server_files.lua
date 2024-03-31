@@ -1,4 +1,7 @@
-require("zip")
+gmx.Require("zip", function()
+	Zip = function() error("zip module not loaded") end
+	Unzip = function() error("zip module not loaded") end
+end)
 
 local function create_tmp_package(base_path)
 	local files = gmx.GetServerLuaFiles()

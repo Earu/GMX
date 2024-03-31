@@ -23,7 +23,7 @@ $gmodPath = Read-Host -Prompt 'Input Garrys Mod path'
 $symLinks = "gmx", "menu/menu.lua", "menu/_menu.lua"
 Foreach ($link in $symLinks) {
 	$targetPath = Join-Path -Path $gmodPath -ChildPath "lua/$link"
-	$sourcePath = Join-Path -Path "./lua" -ChildPath "$link"
+	$sourcePath = Join-Path -Path (Resolve-Path "./lua") -ChildPath "$link"
 
 	Write-Host "Creating symlink $sourcePath -> $targetPath"
 
@@ -42,7 +42,7 @@ Foreach ($link in $symLinks) {
 Get-ChildItem "./lua/bin" -Filter *.dll | ForEach-Object {
 	$targetFileName = Split-Path "$_" -Leaf  
 	$targetPath = Join-Path -Path $gmodPath -ChildPath "lua/bin/$targetFileName"
-	$sourcePath = Join-Path -Path "./" -ChildPath "lua/bin/$_"
+	$sourcePath = Join-Path -Path (Resolve-Path "./") -ChildPath "lua/bin/$targetFileName"
 
 	Write-Host "Creating symlink $sourcePath -> $targetPath"
 

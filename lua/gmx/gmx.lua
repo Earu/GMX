@@ -63,7 +63,23 @@ else
 ============================================================]] .. "\n")
 end
 
-require("rocx")
+function gmx.Require(module_name, fallback)
+	if not util.IsBinaryModuleInstalled(module_name) then
+		MsgC(ERR_COLOR, "[GMX] Could not require '" .. module_name .. "' module\n")
+
+		if isfunction(fallback) then
+			fallback()
+		end
+
+		return
+	end
+
+	require(module_name)
+end
+
+gmx.Require("rocx", function()
+	RunOnClient = function() error("rocx module not loaded") end
+end)
 
 concommand.Remove("gmx")
 concommand.Add("gmx", function(_, _, _, cmd)

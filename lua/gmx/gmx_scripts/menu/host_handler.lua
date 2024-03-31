@@ -1,5 +1,16 @@
-require("dns")
-require("gameevent")
+gmx.Require("dns", function()
+	dns = {
+		Lookup = function() error("module dns was not loaded") end,
+		ReverseLookup = function() error("module dns was not loaded") end,
+	}
+end)
+
+gmx.Require("gameevent", function()
+	gameevent = {
+		Listen = function() end
+	}
+end)
+
 gameevent.Listen("client_beginconnect")
 gameevent.Listen("client_disconnect")
 

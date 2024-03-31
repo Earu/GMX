@@ -1,4 +1,4 @@
-require("stringtable")
+gmx.Require("stringtable")
 
 local function normalize_path(path)
 	if path:match("^addons/.+/lua/") then

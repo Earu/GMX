@@ -1,4 +1,4 @@
-require("stringtable")
+gmx.Require("stringtable")
 
 gmx.SkidCheckDB = {}
 http.Fetch("https://api.github.com/repos/MFSiNC/SkidCheck-2.0/git/trees/main?recursive=1", function(json, json_len, _, http_code)
