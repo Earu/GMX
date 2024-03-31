@@ -1,5 +1,3 @@
-if not system.IsWindows() then return end
-
 gmx.Require("http_filter")
 
 local firewall_rules = {
