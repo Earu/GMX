@@ -28,9 +28,7 @@ concommand.Add("gmx_explore_server_files", function()
 	]], { "util", "interop" })
 end)
 
-if util.IsBinaryModuleInstalled("luasocket") then
-	require("luasocket")
-end
+gmx.Require("luasocket")
 
 local methods = {
 	["menu"] = function(sock)
