@@ -36,7 +36,6 @@ local CALLBACKS = {
 	end,
 	["FS_REQUEST_OPEN"] = function(sock, data)
 		local path = data.path
-		print("FS_REQUEST_OPEN", path)
 		local code = gmx.ReadFromLuaCache(path)
 
 		send("FS_OPEN", { title = path, code = code })
