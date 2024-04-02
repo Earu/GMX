@@ -12,6 +12,14 @@
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "gmx",
+          "name": "Lua"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "gmx.runOnMenu",
@@ -20,6 +28,10 @@
       {
         "command": "gmx.runOnClient",
         "title": "GMX: Run on Client state"
+      },
+      {
+        "command": "gmx.refresh",
+        "title": "GMX: Refresh explorer"
       }
     ]
   },

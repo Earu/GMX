@@ -144,6 +144,8 @@ function gmx.ReadFromLuaCache(path, print_errors)
 		return ""
 	end
 
+	path = path:gsub("\\", "/")
+
 	local succ, code = read_lua_cache(path)
 	if succ then return code end
 

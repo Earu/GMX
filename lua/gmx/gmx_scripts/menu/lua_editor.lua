@@ -3,46 +3,58 @@ local function err_print(head, msg)
 	MsgC(ERR_COLOR, "[GMX:", head, "] ", msg, "\n")
 end
 
-concommand.Remove("gmx_explore_server_files")
-concommand.Add("gmx_explore_server_files", function()
-	gmx.RunOnClient([[
-		local frame = vgui.Create("DFrame")
-		frame:SetSize(800, 400)
-		frame:SetSizable(true)
-		frame:Center()
-		frame:MakePopup()
-		frame:SetTitle("Server File Browser")
-
-		local browser = vgui.Create("DFileBrowser", frame)
-		browser:Dock(FILL)
-		browser:SetPath("LUA")
-		browser:SetBaseFolder("")
-		browser:SetOpen(true)
-		browser:SetCurrentFolder("persist")
-
-		function browser:OnSelect(path, pnl)
-			if file.Exists(path, "LUA") then
-				MENU_HOOK("OpenServerFile", path)
-			end
-		end
-	]], { "util", "interop" })
-end)
-
 gmx.Require("luasocket")
 
-local methods = {
-	["menu"] = function(sock)
-		local title = sock:receive("*l")
-		local code = sock:receive("*a")
+local function send(op, data)
+	if not socket then return end
+	if not socket.tcp then return end
+
+	local json = util.TableToJSON({
+		op = op,
+		data = data,
+	})
+
+	local s = socket.tcp()
+	s:connect("127.0.0.1", 27203)
+	s:send(json)
+	s:shutdown()
+	s:close()
+end
+
+local function send_virtual_fs()
+	local virtual_paths = {}
+	for _, path_data in pairs(IsInGame() and gmx.GetServerLuaFiles() or {}) do
+		table.insert(virtual_paths, path_data.VirtualPath)
+	end
+
+	send("FS_SYNC", virtual_paths)
+end
+
+local CALLBACKS = {
+	["FS_REQUEST_SYNC"] = function()
+		send_virtual_fs()
+	end,
+	["FS_REQUEST_OPEN"] = function(sock, data)
+		local path = data.path
+		print("FS_REQUEST_OPEN", path)
+		local code = gmx.ReadFromLuaCache(path)
+
+		send("FS_OPEN", { title = path, code = code })
+	end,
+	["RUN_MENU"] = function(sock, data)
+		local title = data.title
+		local code = data.code
+
 		if not code then return end
 		if code:len() < 1 then return end
 
 		gmx.Print("Menu running:", title)
 		RunString(code, title)
 	end,
-	["client"] = function(sock)
-		local title = sock:receive("*l")
-		local code = sock:receive("*a")
+	["RUN_CLIENT"] = function(sock, data)
+		local title = data.title
+		local code = data.code
+
 		if not code then return end
 		if code:len() < 1 then return end
 
@@ -92,28 +104,18 @@ hook.Add("Think", "gmx_socket", function()
 
 	client:settimeout(0)
 
-	local protocol = client:receive("*l")
-	local method = protocol == "extension" and client:receive("*l") or protocol
-	if method and methods[method] then
-		methods[method](client)
+	local json = client:receive("*a")
+	if json then
+		local payload = util.JSONToTable(json)
+		local callback = CALLBACKS[payload.op]
+		if callback then
+			callback(client, payload.data)
+		end
 	end
 
 	client:shutdown()
 end)
 
 function gmx.OpenCodeTab(tab_name, tab_code)
-	--MsgC(gmx.Colors.TextAlternative, ("-- %s\n"):format(tab_name))
-	--gmx.Debug.PrintCode(tab_code)
-
-	local s = socket.tcp()
-	s:connect("127.0.0.1", 27203)
-	s:send(tab_name .. "\n" .. tab_code)
-	s:shutdown()
-	s:close()
+	send("FS_OPEN", { title = tab_name, code = tab_code })
 end
-
-hook.Add("OpenServerFile", "gmx_explore_srv_files", function(original_path)
-	local code = gmx.ReadFromLuaCache(original_path)
-	gmx.Print("Lua Editor", "Opening server file " .. original_path)
-	gmx.OpenCodeTab(original_path, code)
-end)
