@@ -35,7 +35,7 @@ local CALLBACKS = {
 		send_virtual_fs()
 	end,
 	["FS_REQUEST_OPEN"] = function(sock, data)
-		local path = data.path
+		local path = data.path:gsub("^lua[/\\]", "")
 		local code = gmx.ReadFromLuaCache(path)
 
 		send("FS_OPEN", { title = path, code = code })
