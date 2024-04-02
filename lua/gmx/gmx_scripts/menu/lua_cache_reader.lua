@@ -98,6 +98,7 @@ end
 local BAD = ("\0"):rep(32)
 local cache = {}
 local function read_lua_cache(path)
+	if not path then return false, ("Error trying to open %s"):format(path) end
 	if isfunction(path) then path = debug.getinfo(path).source end
 
 	path = path:gsub("^lua/",""):gsub("^gamemodes/",""):gsub("%.lua$","")
@@ -159,6 +160,8 @@ function gmx.ReadFromLuaCache(path, print_errors)
 	end
 
 	local real_path = path_lookup_cache[path]
+	if not real_path then return "" end
+
 	succ, code = read_lua_cache(real_path)
 	if succ then return code end
 
