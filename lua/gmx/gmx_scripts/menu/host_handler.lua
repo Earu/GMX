@@ -85,6 +85,11 @@ local function set_host_state(state, addr)
 end
 
 hook.Add("client_beginconnect", "GMXHostConnectionStatus", function(connection_data)
+	if is_connected then
+		-- forcc disconnect before, in some cases like map changes client_disconnect is not called
+		set_host_state(false, nil)
+	end
+
 	set_host_state(true, sanitize_address(connection_data.address))
 end)
 
