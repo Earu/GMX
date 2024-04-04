@@ -178,7 +178,17 @@ concommand.Add(gmx.ComIdentifier, function(_, _, _, data)
 	end
 end)
 
-function gmx.PrepareCode(code, deps)
+gmx.ConstantProviders = {}
+function gmx.RegisterConstantProvider(name, fnOrValue)
+	gmx.ConstantProviders[name] = isfunction(fnOrValue)
+		and function() return tostring(fnOrValue()) end
+		or function() return tostring(fnOrValue) end
+end
+
+gmx.RegisterConstantProvider("GMX_CODE_IDENTIFIER", gmx.ComIdentifier)
+gmx.RegisterConstantProvider("GMX_CYPHER_OFFSET", gmx.CypherOffset)
+
+function gmx.PrependDependencies(code, deps)
 	if not code then code = "" end
 	if not deps then deps = {} end
 
@@ -187,9 +197,6 @@ function gmx.PrepareCode(code, deps)
 		local path = ("lua/gmx/client_state/%s.lua"):format(dep)
 		if file.Exists(path, "MOD") then
 			local content = file.Read(path, "MOD")
-				:gsub("{COM_IDENTIFIER}", gmx.ComIdentifier)
-				:gsub("{CYPHER_OFFSET}", gmx.CypherOffset)
-
 			table.insert(outs, content)
 		end
 	end
@@ -198,8 +205,19 @@ function gmx.PrepareCode(code, deps)
 	return table.concat(outs, "\n")
 end
 
+function gmx.BuildConstantDeclarations()
+	local lines = {}
+	for const_name, const_provider in pairs(gmx.ConstantProviders) do
+		table.insert(lines, ("local %s = \"%s\""):format(const_name, const_provider()))
+	end
+
+	return table.concat(lines, "\n")
+end
+
 function gmx.RunOnClient(code, deps)
-	local final_code = gmx.PrepareCode(code, deps)
+	local code_with_deps = gmx.PrependDependencies(code, deps)
+	local final_code = ("%s\n%s"):format(gmx.BuildConstantDeclarations(), code_with_deps)
+
 	RunOnClient(final_code)
 end
 
@@ -263,7 +281,7 @@ end
 
 -- pre-init
 do
-	gmx.AddClientInitScript(gmx.PrepareCode(nil, {
+	gmx.AddClientInitScript(gmx.PrependDependencies(nil, {
 		"util",
 		"detouring",
 		"interop"
@@ -274,7 +292,7 @@ end
 
 -- post-init
 do
-	gmx.AddClientInitScript(gmx.PrepareCode([[
+	gmx.AddClientInitScript(gmx.PrependDependencies([[
 		local called = false
 		HOOK("InitPostEntity", function()
 			if called then return end
@@ -302,6 +320,7 @@ local init_scripts_ran = false
 hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 	if not init_scripts_ran and path:EndsWith("lua/includes/init.lua") then
 		init_scripts_ran = true
+		local constant_declarations = gmx.BuildConstantDeclarations()
 
 		local pre_init_scripts = {}
 		table.Add(pre_init_scripts, gmx.PreInitScripts)
@@ -311,9 +330,11 @@ hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 		table.Add(post_init_scripts, gmx.PostInitScripts)
 		table.Add(post_init_scripts, table.ClearKeys(gmx.ScriptLookup.Post))
 
-		return ("do\n%s\nend\n%s\ndo\n%s\nend"):format(
+		return ("do\n%s\n%s\nend\n%s\ndo\n%s\n%s\nend"):format(
+			constant_declarations,
 			table.concat(pre_init_scripts, "\n"),
 			str,
+			constant_declarations,
 			table.concat(post_init_scripts, "\n")
 		)
 	end

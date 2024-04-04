@@ -86,7 +86,7 @@ end
 
 hook.Add("client_beginconnect", "GMXHostConnectionStatus", function(connection_data)
 	if is_connected then
-		-- forcc disconnect before, in some cases like map changes client_disconnect is not called
+		-- force disconnect before, in some cases like map changes client_disconnect is not called
 		set_host_state(false, nil)
 	end
 
@@ -130,6 +130,10 @@ function gmx.IsHostWhitelisted()
 	if not IsInGame() then return true end
 	return WHITELIST[gmx.GetConnectedServerIPAddress()] ~= nil
 end
+
+gmx.RegisterConstantProvider("GMX_HOST_WHITELISTED", function()
+	return WHITELIST[gmx.GetConnectedServerIPAddress()] ~= nil
+end)
 
 local HOSTNAME_LOOKUP = {}
 for _, hostname in ipairs(HOSTNAMES_TO_REVERSE) do
