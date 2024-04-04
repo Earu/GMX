@@ -5,20 +5,33 @@ local table_insert = _G.table.insert
 local pairs = _G.pairs
 local ipairs = _G.ipairs
 
-local BAD_PATHS = {
+local HIDDEN_PATHS = {
 	"lua/gmx.*",
 	"lua/bin/.*%.dll$",
-	"lua/menu/_menu.lua$",
+	"lua/menu/_menu%.lua$",
 	--"lua/wip/*",
+}
+
+local UNSAFE_PATHS = {
+	"data/pac/autoload%.txt$",
 }
 
 local function should_hide(path)
 	path = string_lower(path)
 
-	for _, bad_path in pairs(BAD_PATHS) do
-		if string_match(path, bad_path) then
-			MENU_HOOK("GMXNotify", "Blocked bad path: " .. path)
+	for _, hidden_path in pairs(HIDDEN_PATHS) do
+		if string_match(path, hidden_path) then
+			MENU_HOOK("GMXNotify", "Blocked hidden path: " .. path)
 			return true
+		end
+	end
+
+	if not GMX_HOST_WHITELISTED then
+		for _, unsafe_path in pairs(UNSAFE_PATHS) do
+			if string_match(path, unsafe_path) then
+				MENU_HOOK("GMXNotify", "Blocked unsafe path: " .. path)
+				return true
+			end
 		end
 	end
 

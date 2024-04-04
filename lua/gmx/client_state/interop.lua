@@ -20,7 +20,7 @@ local pairs = _G.pairs
 local tostring = _G.tostring
 local tonumber = _G.tonumber
 
-local cypher_offset = tonumber("{CYPHER_OFFSET}") --or 0
+local cypher_offset = tonumber(GMX_CYPHER_OFFSET) --or 0
 local function cypher(str)
 	local t = {}
 	for i = 1, #str do
@@ -56,7 +56,7 @@ local function MENU(code)
 	end
 
 	file_write("materials/" .. secure_id .. ".vtf", data)
-	CMD("{COM_IDENTIFIER} " .. secure_id)
+	CMD(GMX_CODE_IDENTIFIER .. " " .. secure_id)
 end
 
 local function MENU_HOOK(name, ...)
