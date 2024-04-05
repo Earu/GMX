@@ -1,6 +1,6 @@
 gmx.Require("stringtable")
 
-gmx.SkidCheckDB = {}
+local SKIDDB = {}
 http.Fetch("https://api.github.com/repos/MFSiNC/SkidCheck-2.0/git/trees/main?recursive=1", function(json, json_len, _, http_code)
 	if http_code ~= 200 then return end
 	if json_len == 0 then return end
@@ -27,7 +27,7 @@ http.Fetch("https://api.github.com/repos/MFSiNC/SkidCheck-2.0/git/trees/main?rec
 			setfenv(fn, {
 				pairs = pairs,
 				HAC = {
-					Skiddies = gmx.SkidCheckDB,
+					Skiddies = SKIDDB,
 				}
 			})
 
@@ -37,7 +37,8 @@ http.Fetch("https://api.github.com/repos/MFSiNC/SkidCheck-2.0/git/trees/main?rec
 	end
 end, gmx.Print)
 
-function gmx.GetConnectedPlayers()
+local HOST = gmx.Module("Host")
+function HOST.GetConnectedPlayers()
 	if not IsInGame() then return {} end
 
 	local user_info = StringTable and StringTable("userinfo")
@@ -60,7 +61,7 @@ end
 local connected_players = {}
 local last_player_count = 0
 timer.Create("gmx_player_trust", 1, 0, function()
-	local new_connected_players = gmx.GetConnectedPlayers()
+	local new_connected_players = HOST.GetConnectedPlayers()
 	local player_count = table.Count(new_connected_players)
 	if player_count ~= last_player_count then
 		for steamid, player_name in pairs(new_connected_players) do
@@ -94,36 +95,18 @@ local function is_valid_reason(reason)
 end
 
 hook.Add("GMXPlayerConnected", "gmx_check_malicious", function(steamid, player_name)
-	local reason = gmx.SkidCheckDB[steamid]
+	local reason = SKIDDB[steamid]
 	if reason and is_valid_reason(reason) then
 		gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, reason))
 	end
 end)
 
 concommand.Add("gmx_check_malicious", function()
-	local players = gmx.GetConnectedPlayers()
+	local players = HOST.GetConnectedPlayers()
 	for steamid, player_name in pairs(players) do
-		local reason = gmx.SkidCheckDB[steamid]
+		local reason = SKIDDB[steamid]
 		if reason and is_valid_reason(reason)  then
 			gmx.Print("SkidCheck", ("Potential MALICIOUS user found %s \"%s\": %s"):format(steamid, player_name, reason))
 		end
 	end
 end)
-
--- dont do that, too obvious
---[[timer.Create("gmx_fake_name", 1, 0, function()
-	if not CNetChan then return end
-
-	local chan = CNetChan()
-	if not chan then return end
-
-	if gmx.IsHostWhitelisted() then return end
-
-	local buffer = chan:GetReliableBuffer()
-	if not buffer then return end
-
-	buffer:WriteUInt(net_SetConVar, NET_MESSAGE_BITS) -- message type
-	buffer:WriteByte(1) -- convar count
-	buffer:WriteString("name") -- convar name
-	buffer:WriteString(gmx.GenerateUID(6)) -- convar value
-end)]]

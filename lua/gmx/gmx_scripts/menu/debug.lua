@@ -252,34 +252,3 @@ function print(...)
 end
 
 gmx.Debug.Print = print
-
-local time_out_state = false
-local last_tick = -1
-function gmx.IsClientTimingOut()
-	if last_tick == -1 then return false end
-	return time_out_state, SysTime() - last_tick
-end
-
-hook.Add("GMXHostDisconnected", "gmx_client_time_out", function()
-	time_out_state = false
-	last_tick = -1
-end)
-
-local time_out_start_time = -1
-hook.Add("Think", "gmx_client_time_out", function()
-	if last_tick == -1 then return end
-
-	local is_timing_out = SysTime() - last_tick > 1
-	if is_timing_out ~= time_out_state then
-		time_out_state = is_timing_out
-		if is_timing_out then
-			time_out_start_time = SysTime()
-
-			gmx.Print("TimeOut", "client is timing out!")
-		else
-			gmx.Print("TimeOut", time_out_start_time ~= -1 and ("client recovered (%fs)!"):format(SysTime() - time_out_start_time) or "client recovered!")
-		end
-
-		hook.Run("GMXClientTimeOut", time_out_state)
-	end
-end)

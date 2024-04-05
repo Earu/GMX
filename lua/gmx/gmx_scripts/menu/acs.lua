@@ -1,5 +1,6 @@
+local HOST = gmx.Module("Host")
 hook.Add("RunOnClient", "gmx_acs", function(source, script)
-	if gmx.IsHostWhitelisted() then return end
+	if HOST.IsWhitelisted() then return end
 
 	source = source:lower()
 

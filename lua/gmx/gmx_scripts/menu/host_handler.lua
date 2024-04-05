@@ -13,7 +13,11 @@ end)
 
 gameevent.Listen("client_beginconnect")
 gameevent.Listen("client_disconnect")
+gameevent.Listen("player_activate")
 
+local HOST = gmx.Module("Host")
+local INTEROP = gmx.Module("Interop")
+local INIT = gmx.Module("ClientInit")
 local WHITELIST = {
 	["0"] = true, -- menu
 	["149.202.89.113"] = true, -- s1.hbn.gg:27025
@@ -52,7 +56,7 @@ end
 
 local INVALID_IP = "0.0.0.0"
 local cached_address
-function gmx.GetConnectedServerIPAddress()
+function HOST.GetIPAddress()
 	if cached_address == "loopback" then return cached_address end
 
 	if cached_address then
@@ -72,29 +76,41 @@ function gmx.GetConnectedServerIPAddress()
 end
 
 local is_connected = false
+local client_fully_initialized = false
 local function set_host_state(state, addr)
 	if is_connected == state then return end
 
 	if state then
 		cached_address = addr
-		hook.Run("GMXHostConnected", gmx.GetConnectedServerIPAddress())
+		hook.Run("GMXHostConnected", HOST.GetIPAddress())
 	else
-		cached_address = addr
+		client_fully_initialized = false
+		cached_address = nil
 		hook.Run("GMXHostDisconnected")
 	end
 end
 
-hook.Add("client_beginconnect", "GMXHostConnectionStatus", function(connection_data)
+hook.Add("client_beginconnect", "gmx_host_connection_status", function(connection_data)
 	if is_connected then
 		-- force disconnect before, in some cases like map changes client_disconnect is not called
-		set_host_state(false, nil)
+		set_host_state(false)
 	end
 
 	set_host_state(true, sanitize_address(connection_data.address))
 end)
 
-hook.Add("client_disconnect", "GMXHostConnectionStatus", function()
-	set_host_state(false, nil)
+hook.Add("client_disconnect", "gmx_host_connection_status", function()
+	set_host_state(false)
+end)
+
+hook.Add("player_activate", "gmx_client_fully_connected", function(data)
+	if client_fully_initialized then return end
+
+	INTEROP.RequestClientData("GetHostName():sub(1, 15)", function(hostname)
+		hook.Run("ClientFullyInitialized", hostname)
+		gmx.Print("Client fully initialized")
+		client_fully_initialized = true
+	end)
 end)
 
 _G.OldGameDetails = _G.OldGameDetails or _G.GameDetails
@@ -106,7 +122,7 @@ function GameDetails(server_name, server_url, map_name, max_players, steamid, gm
 end
 
 if IsInGame() then
-	gmx.RequestClientData("game.GetIPAddress()", function(ip)
+	INTEROP.RequestClientData("game.GetIPAddress()", function(ip)
 		cached_address = sanitize_address(ip)
 	end)
 
@@ -114,7 +130,7 @@ if IsInGame() then
 end
 
 local host_ip_cvar = GetConVar("hostip")
-function gmx.GetLocalNetworkIPAddress()
+function HOST.GetLocalNetworkIPAddress()
 	local host_ip = host_ip_cvar:GetInt()
 	local ip = {}
 
@@ -126,13 +142,13 @@ function gmx.GetLocalNetworkIPAddress()
 	return table.concat(ip, ".")
 end
 
-function gmx.IsHostWhitelisted()
+function HOST.IsWhitelisted()
 	if not IsInGame() then return true end
-	return WHITELIST[gmx.GetConnectedServerIPAddress()] ~= nil
+	return WHITELIST[HOST.GetIPAddress()] ~= nil
 end
 
 gmx.RegisterConstantProvider("GMX_HOST_WHITELISTED", function()
-	return WHITELIST[gmx.GetConnectedServerIPAddress()] ~= nil
+	return WHITELIST[HOST.GetIPAddress()] ~= nil
 end)
 
 local HOSTNAME_LOOKUP = {}
@@ -143,12 +159,12 @@ for _, hostname in ipairs(HOSTNAMES_TO_REVERSE) do
 	end
 end
 
-function gmx.GetConnectedServerHostname()
-	return HOSTNAME_LOOKUP[gmx.GetConnectedServerIPAddress()]
+function HOST.GetHostname()
+	return HOSTNAME_LOOKUP[HOST.GetIPAddress()]
 end
 
 local scripts_running = false
-function gmx.RunningHostCode()
+function HOST.IsRunningCode()
 	return scripts_running
 end
 
@@ -211,12 +227,11 @@ local function run_host_custom_code(ip)
 					if IsInGame() and not IsInLoading() then
 						gmx.RunOnClient(code, {
 							"util",
-							"detouring",
 							"interop"
 						})
 					else
 						local identifier = ("gmx_host_custom_code[%s]"):format(client_file_path)
-						gmx.AddClientInitScript(code, true, identifier)
+						INIT.AddClientInitScript(code, true, identifier)
 						table.insert(init_script_identifiers, identifier)
 					end
 
@@ -228,11 +243,11 @@ local function run_host_custom_code(ip)
 end
 
 hook.Add("GMXHostConnected", "gmx_hostname_custom_code", run_host_custom_code)
-concommand.Add("gmx_run_host_code", function() run_host_custom_code(gmx.GetConnectedServerIPAddress()) end)
+concommand.Add("gmx_run_host_code", function() run_host_custom_code(HOST.GetIPAddress()) end)
 
 hook.Add("GMXHostDisconnected", "gmx_hostname_custom_code", function()
 	for _, identifier in ipairs(init_script_identifiers) do
-		gmx.RemoveClientInitScript(true, identifier)
+		INIT.RemoveClientInitScript(true, identifier)
 	end
 
 	scripts_running = false

@@ -3,10 +3,11 @@ gmx.Require("zip", function()
 	Unzip = function() error("zip module not loaded") end
 end)
 
+local HOST = gmx.Module("Host")
 local function create_tmp_package(base_path)
-	local files = gmx.GetServerLuaFiles()
+	local files = HOST.GetLuaFiles()
 	for _, path_info in pairs(files) do
-		local code = gmx.ReadFromLuaCache(path_info.VirtualPath, false)
+		local code = HOST.ReadFromLuaCache(path_info.VirtualPath, false)
 		if not code or #code == 0 then
 			code = " -- could not read this file"
 		end
@@ -47,7 +48,7 @@ concommand.Remove("gmx_archive_lua_files")
 concommand.Add("gmx_archive_lua_files", archive_lua_files)
 
 hook.Add("ClientFullyInitialized", "gmx_archive_lua_files", function(host_name)
-	local srv_ip = gmx.GetConnectedServerIPAddress()
+	local srv_ip = HOST.GetIPAddress()
 
 	short_host_name = host_name:gsub("[%s%-%/%\\%[%]%:]", "_"):gsub("_+", "_"):gsub("_$", "")
 	archives_path = ("Archives/%s_%s"):format(srv_ip:gsub("%.","_"):gsub("%:", "_"), short_host_name)

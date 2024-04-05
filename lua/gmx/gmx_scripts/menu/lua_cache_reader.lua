@@ -132,11 +132,12 @@ local function read_lua_cache(path)
 	return true, data
 end
 
-gmx.GetServerLuaFiles = get_server_lua_files
+local HOST = gmx.Module("Host")
+HOST.GetLuaFiles = get_server_lua_files
 
 local path_lookup_cache = {}
 local path_lookup_cached = false
-function gmx.ReadFromLuaCache(path, print_errors)
+function HOST.ReadFromLuaCache(path, print_errors)
 	if not IsInGame() then
 		if print_errors then
 			gmx.Print("Cannot read lua cache: Not in game")
