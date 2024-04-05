@@ -113,10 +113,10 @@ hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, co
 					gmx.Print("Firewall", host_whitelisted and "Allowing" or "Blocking", " HTTP request because no rule was defined for: ", unknown_domain)
 				end
 
-				gmx.RunOnClient(("_G[%d] = %s"):format(reply_code, not host_whitelisted))
+				gmx.RunOnClient(("_G[%d] = %s"):format(reply_code, not host_whitelisted), {}, true)
 			end
 		else
-			gmx.RunOnClient(("_G[%d] = %s"):format(reply_code, blocked or false))
+			gmx.RunOnClient(("_G[%d] = %s"):format(reply_code, blocked or false), {}, true)
 		end
 	end
 
