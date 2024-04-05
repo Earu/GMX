@@ -13,7 +13,8 @@ end)
 
 gameevent.Listen("client_beginconnect")
 gameevent.Listen("client_disconnect")
-gameevent.Listen("player_activate")
+gameevent.Listen("server_spawn")
+gameevent.Listen("OnRequestFullUpdate")
 
 local HOST = gmx.Module("Host")
 local INTEROP = gmx.Module("Interop")
@@ -77,13 +78,17 @@ end
 
 local is_connected = false
 local client_fully_initialized = false
+local host_display_name = ""
 local function set_host_state(state, addr)
 	if is_connected == state then return end
 
 	if state then
+		is_connected = true
 		cached_address = addr
 		hook.Run("GMXHostConnected", HOST.GetIPAddress())
 	else
+		is_connected = false
+		host_display_name = ""
 		client_fully_initialized = false
 		cached_address = nil
 		hook.Run("GMXHostDisconnected")
@@ -103,13 +108,31 @@ hook.Add("client_disconnect", "gmx_host_connection_status", function()
 	set_host_state(false)
 end)
 
-hook.Add("player_activate", "gmx_client_fully_connected", function(data)
+hook.Add("server_spawn", "host_display_name", function(data)
+	host_display_name = data.hostname
+end)
+
+function HOST.GetDisplayName()
+	return host_display_name
+end
+
+hook.Add("OnRequestFullUpdate", "gmx_client_fully_initialized", function()
 	if client_fully_initialized then return end
 
-	INTEROP.RequestClientData("GetHostName():sub(1, 15)", function(hostname)
-		hook.Run("ClientFullyInitialized", hostname)
-		gmx.Print("Client fully initialized")
+	timer.Create("gmx_client_fully_initialized", 5, 0, function()
+		if not IsInGame() then return end
+		if IsInLoading() then return end
+
+		if not is_connected then
+			timer.Remove("gmx_client_fully_initialized")
+			return
+		end
+
+		hook.Run("ClientFullyInitialized")
 		client_fully_initialized = true
+		timer.Remove("gmx_client_fully_initialized")
+
+		gmx.Print("Client fully initialized!")
 	end)
 end)
 
@@ -121,13 +144,15 @@ function GameDetails(server_name, server_url, map_name, max_players, steamid, gm
 	_G.OldGameDetails(server_name, server_url, map_name, max_players, steamid, gm)
 end
 
-if IsInGame() then
+hook.Add("GMXInitialized", "gmx_host_ip", function()
+	if not IsInGame() then return end
+
 	INTEROP.RequestClientData("game.GetIPAddress()", function(ip)
 		cached_address = sanitize_address(ip)
 	end)
 
 	is_connected = true
-end
+end)
 
 local host_ip_cvar = GetConVar("hostip")
 function HOST.GetLocalNetworkIPAddress()
@@ -225,11 +250,13 @@ local function run_host_custom_code(ip)
 					gmx.Print(("Injecting \"%s\""):format(client_file_path))
 
 					if IsInGame() and not IsInLoading() then
+						-- ran only manually through the command when connected to host
 						gmx.RunOnClient(code, {
 							"util",
 							"interop"
 						})
 					else
+						-- added as soon as we're loading / connecting to host
 						local identifier = ("gmx_host_custom_code[%s]"):format(client_file_path)
 						INIT.AddClientInitScript(code, true, identifier)
 						table.insert(init_script_identifiers, identifier)

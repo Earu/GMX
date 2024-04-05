@@ -5,17 +5,12 @@
 1) **Scattered lua implementation**
 	- Bypasses repl_filter checks
 
-2) **Sourcenet not working**
-	- ConCommands are not blocked anymore
-	- Errors are sent to the server
-	- Custom scripts might not run in some cases because host is not properly detected
-
-3) **HTTP calls**
+2) **HTTP calls**
 	- Needs back and forth between client and menu state, even though everything is hidden behind random tokens, guessing the correct one could grant access to the current session
 	- Since latest gmod update client state uses curl instead of ISteamHTTP meaning each single thing using HTTP needs to be detoured, its possible to forget a function or to wrongly detour it
 
-4) **Crash Mitigation regarding util.GetModelMeshes**
-	- Creates files in DATA folder making it detectable through client state
+3) **debug.getregistry**
+	- As of lately `debug.getregistry` does not provide a way to override `hook.Call` anymore, also it seems any detour past `includes/init.lua` gets picked up by anti-cheats. Be extremely careful of anything ran through `RunOnClient` as it can easily be picked up.
 
 ## Patched
 - **Running concommands and known cvar to detect whether someone has the RunOnClient function**
@@ -46,14 +41,3 @@
 	- Fixed by scoping the added code
 - **jit.util fast address stuff**
 	- Not usable to detect gmx
-
-## References for future AC
-- you can also check commandnumber of usercmd, and if it ever goes lower the player is cheating
-tick count of usercmd is used for lag compensation
-and typically only increases
-i've heard that during lag it will decrease, but i'm not sure
-
-- i know specifically you can make a check for ttt
-and anyone using world clicker angles
-
-- ![](https://i.imgur.com/P0w8FRs.png)
