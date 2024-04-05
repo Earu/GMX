@@ -167,9 +167,9 @@ function gmx.BuildConstantDeclarations()
 	return table.concat(lines, "\n")
 end
 
-function gmx.RunOnClient(code, deps)
+function gmx.RunOnClient(code, deps, omit_constants)
 	local code_with_deps = gmx.PrependDependencies(code, deps)
-	local final_code = ("%s\n%s"):format(gmx.BuildConstantDeclarations(), code_with_deps)
+	local final_code = omit_constants and code_with_deps or ("%s\n%s"):format(gmx.BuildConstantDeclarations(), code_with_deps)
 
 	RunOnClient(final_code)
 end
