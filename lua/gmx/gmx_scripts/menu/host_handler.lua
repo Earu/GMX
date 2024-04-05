@@ -19,11 +19,7 @@ gameevent.Listen("OnRequestFullUpdate")
 local HOST = gmx.Module("Host")
 local INTEROP = gmx.Module("Interop")
 local INIT = gmx.Module("ClientInit")
-local WHITELIST = {
-	["0"] = true, -- menu
-	["149.202.89.113"] = true, -- s1.hbn.gg:27025
-}
-
+local WHITELIST = {}
 local HOSTNAMES_TO_REVERSE = {}
 
 local host_scripts_dir = "lua/gmx/gmx_scripts/dynamic/"
@@ -168,7 +164,8 @@ function HOST.GetLocalNetworkIPAddress()
 end
 
 function HOST.IsWhitelisted()
-	if not IsInGame() then return true end
+	if not IsInGame() and not IsInLoading() then return true end
+
 	return WHITELIST[HOST.GetIPAddress()] ~= nil
 end
 

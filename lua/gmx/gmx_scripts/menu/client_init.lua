@@ -66,13 +66,15 @@ hook.Add("RunOnClient", "gmx_client_init_scripts", function(path, str)
 		table.Add(post_init_scripts, POST_INIT_SCRIPTS)
 		table.Add(post_init_scripts, table.ClearKeys(SCRIPT_LOOKUP.Post))
 
-		return ("do\n%s\n%s\nend\n%s\ndo\n%s\n%s\nend"):format(
+		local final_code = ("do\n%s\n%s\nend\n%s\ndo\n%s\n%s\nend"):format(
 			constant_declarations,
 			table.concat(pre_init_scripts, "\n"),
 			str,
 			constant_declarations,
 			table.concat(post_init_scripts, "\n")
 		)
+
+		return final_code
 	end
 end)
 
