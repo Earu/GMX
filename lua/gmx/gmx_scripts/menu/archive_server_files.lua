@@ -52,7 +52,7 @@ hook.Add("ClientFullyInitialized", "gmx_archive_lua_files", function()
 	local srv_name = HOST.GetDisplayName()
 
 	short_host_name = srv_name:sub(1, 15):gsub("[%s%-%/%\\%[%]%:]", "_"):gsub("_+", "_"):gsub("_$", "")
-	archives_path = ("Archives/%s_%s"):format(srv_ip:gsub("%.","_"):gsub("%:", "_"), short_host_name)
+	archives_path = ("__archives/%s_%s"):format(srv_ip:gsub("%.","_"):gsub("%:", "_"), short_host_name)
 	zip_path = ("data/%s/%s.zip"):format(archives_path, os.date("%x"):gsub("/", "_"))
 	package_path = ("data/%s/tmp/"):format(archives_path)
 	server_ip = srv_ip
