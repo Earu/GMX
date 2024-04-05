@@ -9,7 +9,7 @@ local HIDDEN_PATHS = {
 	"lua/gmx.*",
 	"lua/bin/.*%.dll$",
 	"lua/menu/_menu%.lua$",
-	--"lua/wip/*",
+	"data/__archives",
 }
 
 local UNSAFE_PATHS = {
