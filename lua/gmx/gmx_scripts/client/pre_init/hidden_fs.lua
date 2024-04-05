@@ -26,7 +26,7 @@ local function should_hide(path)
 		end
 	end
 
-	if not GMX_HOST_WHITELISTED then
+	if GMX_HOST_WHITELISTED ~= "true" then
 		for _, unsafe_path in pairs(UNSAFE_PATHS) do
 			if string_match(path, unsafe_path) then
 				MENU_HOOK("GMXNotify", "Blocked unsafe path: " .. path)
