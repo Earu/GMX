@@ -97,6 +97,7 @@ function gmx.SetFirewallRule(domain, rule)
 	unknown_domains[domain] = nil
 end
 
+local HOST = gmx.Module("Host")
 hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, content_type, body, non_native)
 	local blocked, unknown_domain = on_http_request(url, method, headers, content_type, body)
 
@@ -107,7 +108,7 @@ hook.Add("OnHTTPRequest", "gmx_http_firewall", function(url, method, headers, co
 		if blocked and unknown_domain then
 			local handled = hook.Run("GMXOnUnknownDomain", reply_code, unknown_domains[unknown_domain])
 			if handled ~= true then
-				local host_whitelisted = gmx.IsHostWhitelisted()
+				local host_whitelisted = HOST.IsWhitelisted()
 				if #unknown_domains[unknown_domain] == 1 then
 					gmx.Print("Firewall", host_whitelisted and "Allowing" or "Blocking", " HTTP request because no rule was defined for: ", unknown_domain)
 				end

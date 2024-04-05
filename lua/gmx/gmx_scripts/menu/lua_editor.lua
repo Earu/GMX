@@ -4,6 +4,7 @@ local function err_print(head, msg)
 end
 
 gmx.Require("luasocket")
+local HOST = gmx.Module("Host")
 
 local function send(op, data)
 	if not socket then return end
@@ -23,7 +24,7 @@ end
 
 local function send_virtual_fs()
 	local virtual_paths = {}
-	for _, path_data in pairs(IsInGame() and gmx.GetServerLuaFiles() or {}) do
+	for _, path_data in pairs(IsInGame() and HOST.GetLuaFiles() or {}) do
 		table.insert(virtual_paths, path_data.VirtualPath)
 	end
 
@@ -36,7 +37,7 @@ local CALLBACKS = {
 	end,
 	["FS_REQUEST_OPEN"] = function(sock, data)
 		local path = data.path:gsub("^lua[/\\]", "")
-		local code = gmx.ReadFromLuaCache(path)
+		local code = HOST.ReadFromLuaCache(path, true)
 
 		send("FS_OPEN", { title = path, code = code })
 	end,
@@ -60,9 +61,7 @@ local CALLBACKS = {
 		gmx.Print("Client running:", title)
 		gmx.RunOnClient(code, {
 			"util",
-			"detouring",
 			"interop",
-			"hooking"
 		})
 	end,
 }
@@ -114,7 +113,3 @@ hook.Add("Think", "gmx_socket", function()
 
 	client:shutdown()
 end)
-
-function gmx.OpenCodeTab(tab_name, tab_code)
-	send("FS_OPEN", { title = tab_name, code = tab_code })
-end

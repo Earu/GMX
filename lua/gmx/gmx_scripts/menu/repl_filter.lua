@@ -1,3 +1,5 @@
+local HOST = gmx.Module("Host")
+local REPL = gmx.Module("REPL")
 local LUAJIT_OP_CODES = {
 	"ISLT", "ISGE", "ISLE", "ISGT", "ISEQV", "ISNEV", "ISEQS", "ISNES", "ISEQN", "ISNEN", "ISEQP",
 	"ISNEP", "ISTC",  "ISFC", "IST", "ISF", "MOV", "NOT", "UNM", "LEN", "ADDVN", "SUBVN", "MULVN",
@@ -40,25 +42,6 @@ local function check_lua_impl(path, str)
 	return res
 end
 
-gmx.NextGComputeCommandAllowed = false
-gmx.AddClientInitScript([[
-	local function is_gcompute_cmd(msg)
-		if msg:match("^[%!%.%/]") then
-			local cmd = msg:sub(2):Split(" ")[1]:lower():Trim()
-			return cmd == "pm" or cmd == "psc"
-		end
-
-		return false
-	end
-
-	-- before networked, only trust easychat
-	HOOK("ECShouldSendMessage", function(msg)
-		if not is_gcompute_cmd(msg) then return end
-		MENU("gmx.NextGComputeCommandAllowed = true")
-		MENU_HOOK("GMXNotify", "Temporarily allowing GCompute command")
-	end)
-]], true)
-
 -- LuaCmd => SendLuas
 -- @repl_0 => command
 -- <0:0:80006525|Earu><cmd:lsc> => command
@@ -77,9 +60,9 @@ local function update_whitelist(str, allow)
 	STEAM_ID_WHITELIST[steam_id:gsub("STEAM_", ""):Trim()] = allow and true or nil
 end
 
-gmx.ReplFilterCache = {}
+REPL.FilteredCache = {}
 local function store_code(path, str, method)
-	table.insert(gmx.ReplFilterCache, { Path = path, Lua = str, Method = method, Date = os.date("%x %X") })
+	table.insert(REPL.FilteredCache, { Path = path, Lua = str, Method = method, Date = os.date("%x %X") })
 	hook.Run("GMXReplFilterCacheChanged")
 end
 
@@ -90,18 +73,13 @@ end)
 hook.Add("RunOnClient", "gmx_repl_filter", function(path, str)
 	-- remove .p, .pm, .psc commands from gcompute
 	if path == "@repl_0" then
-		if gmx.NextGComputeCommandAllowed then
-			gmx.NextGComputeCommandAllowed = false
-			return str
-		end
-
 		store_code(path, str, "GCompute")
 		gmx.Print("Blocked gcompute command")
 		return DENY_CODE
 	end
 
 	-- blocks SendLua
-	if path == "LuaCmd" and not gmx.IsHostWhitelisted() then
+	if path == "LuaCmd" and not HOST.IsWhitelisted() then
 		store_code(path, str, "SendLua")
 		gmx.Print(("Blocked SendLua %s"):format(str))
 		return false
