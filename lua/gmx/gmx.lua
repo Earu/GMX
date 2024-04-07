@@ -180,18 +180,7 @@ for _, file_name in pairs(file.Find("lua/" .. MENU_SCRIPTS_PATH .. "*.lua", "MOD
 	gmx.Print(("Running \"%s\""):format(file_name))
 end
 
-gmx.FlushInitConsoleBuffer()
-
--- mount all games
-local GAMES = engine.GetGames()
-table.sort(GAMES, function(a, b) return a.depot < b.depot end)
-
-for _, game_data in pairs(GAMES) do
-	if not game_data.installed then continue end
-	if game_data.mounted then continue end
-
-	engine.SetMounted(game_data.depot, true)
-	gmx.Print("Mounting " .. game_data.title)
-end
-
-hook.Run("GMXInitialized")
+timer.Simple(0, function()
+	gmx.FlushInitConsoleBuffer()
+	hook.Run("GMXInitialized")
+end)
