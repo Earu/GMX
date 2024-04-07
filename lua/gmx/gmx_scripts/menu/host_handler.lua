@@ -11,7 +11,7 @@ gmx.Require("gameevent", function()
 	}
 end)
 
-gameevent.Listen("client_connect")
+gameevent.Listen("client_beginconnect")
 gameevent.Listen("server_spawn")
 gameevent.Listen("OnRequestFullUpdate")
 
@@ -92,7 +92,7 @@ local function set_host_state(state, addr)
 	end
 end
 
-hook.Add("client_connect", "gmx_host_connection_status", function(connection_data)
+hook.Add("client_beginconnect", "gmx_host_connection_status", function(connection_data)
 	if is_connected then
 		-- force disconnect before, in some cases like map changes client_disconnect is not called
 		set_host_state(false)
