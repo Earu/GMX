@@ -11,8 +11,7 @@ gmx.Require("gameevent", function()
 	}
 end)
 
-gameevent.Listen("client_beginconnect")
-gameevent.Listen("client_disconnect")
+gameevent.Listen("client_connect")
 gameevent.Listen("server_spawn")
 gameevent.Listen("OnRequestFullUpdate")
 
@@ -75,12 +74,14 @@ end
 local is_connected = false
 local client_fully_initialized = false
 local host_display_name = ""
+local last_cached_address
 local function set_host_state(state, addr)
 	if is_connected == state then return end
 
 	if state then
 		is_connected = true
 		cached_address = addr
+		last_cached_address = addr
 		hook.Run("GMXHostConnected", HOST.GetIPAddress())
 	else
 		is_connected = false
@@ -91,7 +92,7 @@ local function set_host_state(state, addr)
 	end
 end
 
-hook.Add("client_beginconnect", "gmx_host_connection_status", function(connection_data)
+hook.Add("client_connect", "gmx_host_connection_status", function(connection_data)
 	if is_connected then
 		-- force disconnect before, in some cases like map changes client_disconnect is not called
 		set_host_state(false)
@@ -100,7 +101,9 @@ hook.Add("client_beginconnect", "gmx_host_connection_status", function(connectio
 	set_host_state(true, sanitize_address(connection_data.address))
 end)
 
-hook.Add("client_disconnect", "gmx_host_connection_status", function()
+-- we use this instead of client_disconnect because it's not called for map changes
+-- the client state gets destroyed when the map is changed
+hook.Add("ClientStateDestroyed", "gmx_host_connection_status", function(data)
 	set_host_state(false)
 end)
 
@@ -134,6 +137,11 @@ end)
 
 _G.OldGameDetails = _G.OldGameDetails or _G.GameDetails
 function GameDetails(server_name, server_url, map_name, max_players, steamid, gm)
+	-- this means there was a map change and the connection was not stopped between the two sessions
+	if not is_connected and last_cached_address then
+		set_host_state(true, last_cached_address)
+	end
+
 	local is_blocked = hook.Run("OnHTTPRequest", server_url, "GET", {}, "text/html", "")
 	if is_blocked then return end
 
