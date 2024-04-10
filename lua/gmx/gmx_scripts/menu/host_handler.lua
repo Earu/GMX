@@ -73,14 +73,12 @@ end
 local is_connected = false
 local client_fully_initialized = false
 local host_info = {}
-local last_cached_address
 local function set_host_state(state, addr)
 	if is_connected == state then return end
 
 	if state then
 		is_connected = true
 		cached_address = addr
-		last_cached_address = addr
 		hook.Run("GMXHostConnected", HOST.GetIPAddress())
 	else
 		is_connected = false
@@ -153,11 +151,6 @@ end)
 
 _G.OldGameDetails = _G.OldGameDetails or _G.GameDetails
 function GameDetails(server_name, server_url, map_name, max_players, steamid, gm)
-	-- this means there was a map change and the connection was not stopped between the two sessions
-	if not is_connected and last_cached_address then
-		set_host_state(true, last_cached_address)
-	end
-
 	local is_blocked = hook.Run("OnHTTPRequest", server_url, "GET", {}, "text/html", "")
 	if is_blocked then return end
 
