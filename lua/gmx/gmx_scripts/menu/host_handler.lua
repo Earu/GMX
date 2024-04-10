@@ -11,7 +11,6 @@ gmx.Require("gameevent", function()
 	}
 end)
 
-gameevent.Listen("client_beginconnect")
 gameevent.Listen("server_spawn")
 gameevent.Listen("OnRequestFullUpdate")
 
@@ -73,7 +72,7 @@ end
 
 local is_connected = false
 local client_fully_initialized = false
-local host_display_name = ""
+local host_info = {}
 local last_cached_address
 local function set_host_state(state, addr)
 	if is_connected == state then return end
@@ -85,21 +84,12 @@ local function set_host_state(state, addr)
 		hook.Run("GMXHostConnected", HOST.GetIPAddress())
 	else
 		is_connected = false
-		host_display_name = ""
+		host_info = {}
 		client_fully_initialized = false
 		cached_address = nil
 		hook.Run("GMXHostDisconnected")
 	end
 end
-
-hook.Add("client_beginconnect", "gmx_host_connection_status", function(connection_data)
-	if is_connected then
-		-- force disconnect before, in some cases like map changes client_disconnect is not called
-		set_host_state(false)
-	end
-
-	set_host_state(true, sanitize_address(connection_data.address))
-end)
 
 -- we use this instead of client_disconnect because it's not called for map changes
 -- the client state gets destroyed when the map is changed
@@ -108,11 +98,37 @@ hook.Add("ClientStateDestroyed", "gmx_host_connection_status", function(data)
 end)
 
 hook.Add("server_spawn", "host_display_name", function(data)
-	host_display_name = data.hostname
+	if is_connected then
+		-- force disconnect before, in some cases like map changes client_disconnect is not called
+		set_host_state(false)
+	end
+
+	host_info = data
+	set_host_state(true, sanitize_address(data.address))
 end)
 
 function HOST.GetDisplayName()
-	return host_display_name
+	return host_info.hostname or ""
+end
+
+function HOST.GetGamemodeName()
+	return host_info.gamemode or ""
+end
+
+function HOST.GetPort()
+	return host_info.port or 0
+end
+
+function HOST.GetMapName()
+	return host_info.mapname or ""
+end
+
+function HOST.IsDedicated()
+	return tobool(host_info.dedicated) or false
+end
+
+function HOST.IsPasswordProtected()
+	return tobool(host_info.password) or false
 end
 
 hook.Add("OnRequestFullUpdate", "gmx_client_fully_initialized", function()
@@ -234,8 +250,21 @@ local function run_host_custom_code(ip)
 			gmx.Print("Host is TRUSTED/WHITELISTED")
 		end
 
-		if istable(config.MenuFiles) then
-			for _, menu_file in pairs(config.MenuFiles) do
+		local function get_files_to_run(file_config)
+			local files = {}
+			if not istable(file_config) then
+				return files
+			end
+
+			files = table.Add(files, file_config["*"])
+			files = table.Add(files, file_config[HOST.GetGamemodeName()])
+
+			return files
+		end
+
+		local menu_files = get_files_to_run(config.MenuFiles)
+		if #menu_files > 0 then
+			for _, menu_file in pairs(menu_files) do
 				local menu_file_path = ("%s/%s"):format(host_script_base_path, menu_file)
 				if file.Exists(menu_file_path, "MOD") then
 					menu_file_path = menu_file_path:gsub("^lua/", "")
@@ -247,8 +276,9 @@ local function run_host_custom_code(ip)
 			end
 		end
 
-		if istable(config.ClientFiles) then
-			for _, client_file in pairs(config.ClientFiles) do
+		local client_files = get_files_to_run(config.ClientFiles)
+		if #client_files > 0 then
+			for _, client_file in pairs(client_files) do
 				local client_file_path = ("%s/%s"):format(host_script_base_path, client_file)
 				if file.Exists(client_file_path, "MOD") then
 					local code = file.Read(client_file_path, "MOD")

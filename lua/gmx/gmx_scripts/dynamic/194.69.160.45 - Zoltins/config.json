@@ -1,6 +1,8 @@
 {
 	"Name": "Zoltins",
-	"MenuFiles": [],
-	"ClientFiles": [ "client.lua" ],
+	"MenuFiles": {},
+	"ClientFiles": {
+		"*": [ "client.lua" ]
+	},
 	"Trusted": false
 }
