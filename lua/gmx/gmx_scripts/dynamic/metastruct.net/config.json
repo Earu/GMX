@@ -5,14 +5,20 @@
 		"g2.metastruct.net",
 		"g3.metastruct.net"
 	],
-	"MenuFiles": [
-		"menu.lua"
-	],
-	"ClientFiles": [
-		"client/autorun.lua",
-		"client/hud.lua",
-		"client/weapon_select.lua",
-		"client/srv_load.lua"
-	],
+	"MenuFiles": {
+		"*": [
+			"menu.lua"
+		]
+	},
+	"ClientFiles": {
+		"*": [
+			"client/autorun.lua"
+		],
+		"sandbox_modded": [
+			"client/hud.lua",
+			"client/weapon_select.lua",
+			"client/srv_load.lua"
+		]
+	},
 	"Trusted": true
 }
