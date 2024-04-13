@@ -118,54 +118,20 @@ end)
 local me = player.GetBySteamID(steam_id)
 if not IsValid(me) then return end
 
--- Earu only stuff
-if me:SteamID() == "STEAM_0:0:80006525" then
-	me.role = "bloodgod"
+local net_data = {
+	cntry = "SG",
+	--pirate = true,
+}
+local function apply_net_data()
+	if not IsValid(me) then return end
 
-	local net_data = {
-		cntry = "SG",
-		--pirate = true,
-	}
-	local function apply_net_data()
-		if not IsValid(me) then return end
-
-		for key, value in pairs(net_data) do
-			if me:GetNetData(key) ~= value then
-				me:SetNetData(key, value)
-			end
+	for key, value in pairs(net_data) do
+		if me:GetNetData(key) ~= value then
+			me:SetNetData(key, value)
 		end
-
-		timer.Simple(0.1, apply_net_data)
 	end
 
-	apply_net_data()
-
-	if EasyChat and EasyChat.Transliterator then
-		local pattern = "[eE3€]+[%s%,%.%_%+%-%*]*[aA4]+[%s%,%.%_%+%-%*]*[rRw]+[%s%,%.%_%+%-%*]*[uU]+"
-		local function try_replace(ply, text)
-			text = ec_markup.GetText(EasyChat.Transliterator:Transliterate(text))
-			if text:match(pattern) then
-				return true, text:gsub(pattern, ply.Nick and ply:Nick() or ply)
-			end
-
-			return false
-		end
-
-		hook_add("PlayerSayTransform", "incognito", function(ply, data)
-			local should_replace, replacement = try_replace(ply, data[1] or "")
-			if should_replace then
-				data[1] = replacement
-			end
-		end)
-
-		hook_add("PlayerSay", "incognito", function(ply, txt)
-			local should_replace, replacement = try_replace(ply, txt)
-			if should_replace then return replacement end
-		end)
-
-		hook_add("DiscordSay", "incognito", function(user, txt)
-			local should_replace, replacement = try_replace(user.name or "??", txt)
-			if should_replace then return replacement end
-		end)
-	end
+	timer.Simple(0.1, apply_net_data)
 end
+
+apply_net_data()
