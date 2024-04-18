@@ -9,7 +9,7 @@ hook.Add("OnLuaError", "MenuErrorHandler", function(str, realm, stack, addon_tit
 		return
 	end
 
-	local text = ("[%s] %s"):format(realm:upper() .. (isstring(addon_title) and " | " .. addon_title or ""), stack[1] and stack[1].File or language.GetPhrase("errors.something_p"))
+	local text = ("[%s] %s"):format(realm:upper() .. (isstring(addon_title) and " | " .. addon_title or ""), stack[#stack] and stack[#stack].File or language.GetPhrase("errors.something_p"))
 	ERRORS[addon_id] = {
 		first = SysTime(),
 		last = SysTime(),
