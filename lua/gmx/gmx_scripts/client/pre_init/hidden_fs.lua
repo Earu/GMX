@@ -7,9 +7,9 @@ local ipairs = _G.ipairs
 
 local HIDDEN_PATHS = {
 	"lua/gmx.*",
-	"lua/bin/.*%.dll$",
-	"lua/menu/_menu%.lua$",
-	"data/__archives",
+	"lua/bin/gmsv.*%.dll$",
+	"lua/menu/%_menu%.lua$",
+	"data/%_%_archives",
 }
 
 local UNSAFE_PATHS = {
