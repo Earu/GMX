@@ -1,3 +1,8 @@
+if not _G.chatsounds then return end
+if not util.IsBinaryModuleInstalled("midi") then return end
+
+require("midi")
+
 local IGNORED_COMMANDS = {
 	[0x80] = true, -- "NOTE_OFF",
 	[0x90] = false, -- "NOTE_ON",
@@ -456,9 +461,9 @@ local fun = {}
 hook.Add("MIDI", "midi_player", function(time, code, key, velocity, ...)
 	if not code then return print("Explain why", code, key, velocity, ...) end
 
-	code = midi.GetCommandCode(code)
-	local name = midi.GetCommandName(code)
-	local channel = midi.GetCommandChannel(code) + 1
+	code = _G.midi.GetCommandCode(code)
+	local name = _G.midi.GetCommandName(code)
+	local channel = _G.midi.GetCommandChannel(code) + 1
 
 	if IGNORED_COMMANDS[code] then return end
 
@@ -517,15 +522,12 @@ hook.Add("MIDI", "midi_player", function(time, code, key, velocity, ...)
 	end)
 end)
 
-if util.IsBinaryModuleInstalled("midi") then
-	require("midi")
-	hook.Add("Think", "midi_player", function()
-		if not _G.midi then return end
-		if _G.midi.IsOpened() then return end
+hook.Add("Think", "midi_player", function()
+	if not _G.midi then return end
+	if _G.midi.IsOpened() then return end
 
-		local port_available = midi.GetPorts()[0] ~= nil
-		if not port_available then return end
+	local port_available = midi.GetPorts()[0] ~= nil
+	if not port_available then return end
 
-		midi.Open(0)
-	end)
-end
+	midi.Open(0)
+end)
