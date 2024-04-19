@@ -12,7 +12,8 @@
 	},
 	"ClientFiles": {
 		"*": [
-			"client/autorun.lua"
+			"client/autorun.lua",
+			"client/midi_player.lua"
 		],
 		"sandbox_modded": [
 			"client/hud.lua",
