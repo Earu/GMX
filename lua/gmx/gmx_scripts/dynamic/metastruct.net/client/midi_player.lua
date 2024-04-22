@@ -1,7 +1,8 @@
-if not _G.chatsounds then return end
-if not util.IsBinaryModuleInstalled("midi") then return end
-
-require("midi")
+if util.IsBinaryModuleInstalled("midi") then
+	require("midi")
+else
+	return
+end
 
 local IGNORED_COMMANDS = {
 	[0x80] = true, -- "NOTE_OFF",
@@ -456,9 +457,8 @@ for i = -36, 95 - 36 - 1 do
 	midi_thing[36 + i] = math.clamp(number, 0.3, 16)
 end
 
-local api = chatsounds.Module("API")
-local fun = {}
 hook.Add("MIDI", "midi_player", function(time, code, key, velocity, ...)
+	if not _G.chatsounds then return end
 	if not code then return print("Explain why", code, key, velocity, ...) end
 
 	code = _G.midi.GetCommandCode(code)
@@ -484,42 +484,20 @@ hook.Add("MIDI", "midi_player", function(time, code, key, velocity, ...)
 		chatso = CHATSOUNDS_INSTRUMENTS[cur_instruments[channel]] or "harp"
 	end
 
-	if chatso == "" or chatso == nil then return print("Missing sound on channel ", channel, key, channel == 10 and CHATSOUNDS_PERCUSSIONS[key] or CHATSOUNDS_INSTRUMENTS[cur_instruments[channel]]) end
+	if chatso == "" or chatso == nil then
+		print("Missing sound on channel ", channel, key, channel == 10 and CHATSOUNDS_PERCUSSIONS[key] or CHATSOUNDS_INSTRUMENTS[cur_instruments[channel]])
+		return
+	end
 
-	--[[local nest = api.CreateScope()
+	local api = _G.chatsounds.Module("API")
+	local nest = api.CreateScope()
 	nest:PushSound(chatso)
 	nest:PushModifier("realm", "minecraft")
 	nest:PushModifier("pitch", math.floor(0.65 * note * 1000) / 1000)
 	nest:PushModifier("volume", math.floor(velocity / 127 * 1000) / 1000 + 0.25)
 	nest:PushModifier("overlap", 1)
 	nest:PushModifier("duration", 0.001)
-	api.PlayScope(nest)]]--
-
-	local bulk = tostring(time)
-	fun[bulk] = fun[bulk] or {}
-
-	table.insert(fun[bulk], {
-		sound = chatso,
-		pitch = math.floor(0.65 * note * 1000) / 1000,
-		volume = math.floor(velocity / 127 * 1000) / 1000 + 0.25
-	})
-
-	timer.Create(bulk, 0.025, 1, function()
-		local main_scope = api.CreateScope()
-
-		for i, scope in ipairs(fun[bulk]) do
-			local nest = main_scope:PushScope()
-			nest:PushSound(scope.sound)
-			nest:PushModifier("realm", "minecraft")
-			nest:PushModifier("pitch", scope.pitch)
-			nest:PushModifier("volume", scope.volume)
-			nest:PushModifier("overlap", 1)
-			nest:PushModifier("duration", 0.001)
-		end
-
-		api.PlayScope(main_scope)
-		fun[bulk] = nil
-	end)
+	api.PlayScope(nest)
 end)
 
 hook.Add("Think", "midi_player", function()
