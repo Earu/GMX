@@ -1,9 +1,3 @@
-if util.IsBinaryModuleInstalled("midi") then
-	require("midi")
-else
-	return
-end
-
 local IGNORED_COMMANDS = {
 	[0x80] = true, -- "NOTE_OFF",
 	[0x90] = false, -- "NOTE_ON",
@@ -454,7 +448,7 @@ for i = -36, 95 - 36 - 1 do
 		end
 	end
 
-	midi_thing[36 + i] = math.clamp(number, 0.3, 16)
+	midi_thing[36 + i] = math.Clamp(number, 0.3, 16)
 end
 
 hook.Add("MIDI", "midi_player", function(time, code, key, velocity, ...)
@@ -498,14 +492,18 @@ hook.Add("MIDI", "midi_player", function(time, code, key, velocity, ...)
 	nest:PushModifier("overlap", 1)
 	nest:PushModifier("duration", 0.001)
 	api.PlayScope(nest)
+	--print(nest:ToString())
 end)
 
+local required = false
 hook.Add("Think", "midi_player", function()
+	if util.IsBinaryModuleInstalled("midi") and not required then
+		required = true
+		require("midi")
+	end
+
 	if not _G.midi then return end
 	if _G.midi.IsOpened() then return end
 
-	local port_available = midi.GetPorts()[0] ~= nil
-	if not port_available then return end
-
-	midi.Open(0)
+	_G.midi.Open(0)
 end)
