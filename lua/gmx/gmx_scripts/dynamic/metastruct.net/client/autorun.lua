@@ -1,6 +1,11 @@
 local tag = "gmx_autorun"
 local next_check = 0
 local next_sound = 0
+local sounds = {
+	"says youre a pussy",
+	"id like to apologize to anyone ive not offended yet",
+	"im here to intercourse your dad",
+}
 hook.Add("Tick", tag, function(self)
 	if CurTime() < next_check then return end
 	if not engine.ActiveGamemode():match("sandbox") then return end
@@ -10,7 +15,7 @@ hook.Add("Tick", tag, function(self)
 		RunConsoleCommand("aowl", "revive")
 
 		if CurTime() > next_sound then
-			RunConsoleCommand("saysound", "hurt#1")
+			RunConsoleCommand("saysound", sounds[math.random(#sounds)])
 			next_sound = CurTime() + 2
 		end
 	end
