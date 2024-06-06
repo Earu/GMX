@@ -505,5 +505,8 @@ hook.Add("Think", "midi_player", function()
 	if not _G.midi then return end
 	if _G.midi.IsOpened() then return end
 
-	_G.midi.Open(0)
+	local ports = _G.midi.GetPorts()
+	if ports[0] then
+		_G.midi.Open(0)
+	end
 end)
