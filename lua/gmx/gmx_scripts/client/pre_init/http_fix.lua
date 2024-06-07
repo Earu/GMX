@@ -8,10 +8,14 @@ local FindMetaTable = _G.FindMetaTable
 local PANEL = FindMetaTable("Panel")
 local PANEL_is_valid = PANEL.IsValid
 
+local function escape_url(url)
+	return url:gsub("\\", "\\\\"):gsub("\"", "\\\"")
+end
+
 local function http_detour(native_fn, args, url, method, content_type, body)
 	local reply_index = rand(-2e9, 2e9)
 	MENU("gmx.HTTPReplyCode = " .. reply_index)
-	MENU_HOOK("OnHTTPRequest", url, string_upper(method or "GET"), "", content_type or "text/plain", body or "", true)
+	MENU_HOOK("OnHTTPRequest", escape_url(url), string_upper(method or "GET"), "", content_type or "text/plain", body or "", true)
 
 	local time = 0
 	local timer_name = "__" .. reply_index .. "__"

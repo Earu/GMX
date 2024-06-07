@@ -33,6 +33,7 @@ function INTEROP.Decypher(str)
 	return table.concat(t, "")
 end
 
+local ERR_COLOR = Color(255, 0, 0)
 concommand.Add(INTEROP.ComIdentifier, function(_, _, _, data)
 	local secure_id = data:Trim()
 	if #secure_id == 0 then return end
