@@ -15,7 +15,10 @@ hook.Add("Tick", tag, function(self)
 		RunConsoleCommand("aowl", "revive")
 
 		if CurTime() > next_sound then
-			RunConsoleCommand("saysound", sounds[math.random(#sounds)])
+			if chatsounds and chatsounds.API then
+				chatsounds.API.PlaySound(sounds[math.random(#sounds)])
+			end
+
 			next_sound = CurTime() + 2
 		end
 	end
