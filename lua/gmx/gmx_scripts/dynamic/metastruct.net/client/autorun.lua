@@ -6,6 +6,14 @@ local sounds = {
 	"id like to apologize to anyone ive not offended yet",
 	"im here to intercourse your dad",
 }
+
+local function chatsounds_say(text)
+	if not _G.chatsounds then return end
+
+	local api = _G.chatsounds.Module("API")
+	pcall(api.PlaySound, text)
+end
+
 hook.Add("Tick", tag, function(self)
 	if CurTime() < next_check then return end
 	if not engine.ActiveGamemode():match("sandbox") then return end
@@ -15,10 +23,7 @@ hook.Add("Tick", tag, function(self)
 		RunConsoleCommand("aowl", "revive")
 
 		if CurTime() > next_sound then
-			if chatsounds and chatsounds.API then
-				chatsounds.API.PlaySound(sounds[math.random(#sounds)])
-			end
-
+			chatsounds_say(sounds[math.random(#sounds)])
 			next_sound = CurTime() + 2
 		end
 	end
