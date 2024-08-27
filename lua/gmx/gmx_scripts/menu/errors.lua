@@ -2,7 +2,7 @@ local ERRORS = {}
 hook.Add("OnLuaError", "MenuErrorHandler", function(str, realm, stack, addon_title, addon_id)
 	addon_id = addon_id or 0
 
-	print({ str, real, addon_title, addon_id, unpack(stack) })
+	--print({ str, real, addon_title, addon_id, unpack(stack) })
 
 	if ERRORS[addon_id] then
 		ERRORS[addon_id].times = ERRORS[addon_id].times + 1
