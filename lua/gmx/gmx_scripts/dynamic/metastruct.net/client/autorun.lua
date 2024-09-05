@@ -93,3 +93,14 @@ end
 
 hook.Add("ECPostLoadModules", tag, detour_libs)
 hook.Add("InitPostEntity", tag, detour_libs)
+
+local ALWAYS_MUTE = {
+	["STEAM_0:0:238852761"] = true, -- OPCamTick, never shuts his mouth legit.
+}
+timer.Create("GMXMuteAlways", 5, 0, function()
+	for _, ply in ipairs(player.GetAll()) do
+		if not ply:IsMuted() and ALWAYS_MUTE[ply:SteamID() or ""] then
+			ply:SetMuted(true)
+		end
+	end
+end)
