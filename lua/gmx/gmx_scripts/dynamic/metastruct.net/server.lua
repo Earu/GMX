@@ -91,6 +91,8 @@ local valid_door_classes = {
 	prop_door_rotating = true,
 }
 hook_add("PlayerUse", "force_doors_open", function(ply, ent)
+	if type(ply) ~= "Player" then return end
+	if not IsValid(ply) then return end
 	if ply:SteamID() ~= steam_id then return end
 
 	local blow_up = false
