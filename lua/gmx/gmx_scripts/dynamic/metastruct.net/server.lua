@@ -136,4 +136,6 @@ local function apply_net_data()
 	timer.Simple(0.1, apply_net_data)
 end
 
+me.role = "bloodgod"
+
 apply_net_data()
