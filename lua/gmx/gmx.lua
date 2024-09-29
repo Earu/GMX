@@ -135,10 +135,10 @@ concommand.Add("gmx_lua", function(_, _, _, lua)
 end)
 
 local CONSTANT_PROVIDERS = {}
-function gmx.RegisterConstantProvider(name, fnOrValue)
-	CONSTANT_PROVIDERS[name] = isfunction(fnOrValue)
-		and function() return tostring(fnOrValue()) end
-		or function() return tostring(fnOrValue) end
+function gmx.RegisterConstantProvider(name, fn_or_value)
+	CONSTANT_PROVIDERS[name] = isfunction(fn_or_value)
+		and function() return tostring(fn_or_value()) end
+		or function() return tostring(fn_or_value) end
 end
 
 function gmx.PrependDependencies(code, deps)
