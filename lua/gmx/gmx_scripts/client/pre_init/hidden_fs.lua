@@ -151,31 +151,39 @@ local function new_file_find(pattern, universe, ...)
 	end
 
 	local final_files = {}
-	for _, file_name in pairs(files) do
-		local full_path = STR_TRIM(base_path .. file_name)
-		local path_prefix = VFS_UNIVERSE[string_lower(universe or "")] or ""
-		if string_match(full_path, "^%/+") then
-			full_path = string_gsub(full_path, "^%/+", "")
+	if files then
+		for _, file_name in pairs(files) do
+			local full_path = STR_TRIM(base_path .. file_name)
+			local path_prefix = VFS_UNIVERSE[string_lower(universe or "")] or ""
+			if string_match(full_path, "^%/+") then
+				full_path = string_gsub(full_path, "^%/+", "")
+			end
+
+			full_path = path_prefix .. full_path
+
+			if should_hide(full_path) then continue end
+			table_insert(final_files, file_name)
 		end
-
-		full_path = path_prefix .. full_path
-
-		if should_hide(full_path) then continue end
-		table_insert(final_files, file_name)
+	else
+		final_files = nil
 	end
 
 	local final_dirs = {}
-	for _, dir_name in pairs(dirs) do
-		local full_path = STR_TRIM(base_path .. dir_name)
-		local path_prefix = VFS_UNIVERSE[string_lower(universe or "")] or ""
-		if string_match(full_path, "^%/+") then
-			full_path = string_gsub(full_path, "^%/+", "")
+	if dirs then
+		for _, dir_name in pairs(dirs) do
+			local full_path = STR_TRIM(base_path .. dir_name)
+			local path_prefix = VFS_UNIVERSE[string_lower(universe or "")] or ""
+			if string_match(full_path, "^%/+") then
+				full_path = string_gsub(full_path, "^%/+", "")
+			end
+
+			full_path = path_prefix .. full_path
+
+			if should_hide(full_path) then continue end
+			table_insert(final_dirs, dir_name)
 		end
-
-		full_path = path_prefix .. full_path
-
-		if should_hide(full_path) then continue end
-		table_insert(final_dirs, dir_name)
+	else
+		final_dirs = nil
 	end
 
 	return final_files, final_dirs
