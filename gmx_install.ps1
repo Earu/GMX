@@ -19,6 +19,10 @@ if ($env:OS -eq "Windows_NT") {
 	}
 }
 
+$scriptPath = $MyInvocation.MyCommand.Path
+$scriptDir = Split-Path $scriptpath
+Push-Location $scriptDir # make sure the working directory is the script directory
+
 $gmodPath = Read-Host -Prompt 'Input Garrys Mod path'
 $symLinks = "gmx", "menu/menu.lua", "menu/_menu.lua"
 Foreach ($link in $symLinks) {
@@ -40,7 +44,7 @@ Foreach ($link in $symLinks) {
 }
 
 Get-ChildItem "./lua/bin" -Filter *.dll | ForEach-Object {
-	$targetFileName = Split-Path "$_" -Leaf  
+	$targetFileName = Split-Path "$_" -Leaf
 	$targetPath = Join-Path -Path $gmodPath -ChildPath "lua/bin/$targetFileName"
 	$sourcePath = Join-Path -Path (Resolve-Path "./") -ChildPath "lua/bin/$targetFileName"
 
@@ -51,7 +55,7 @@ Get-ChildItem "./lua/bin" -Filter *.dll | ForEach-Object {
 			New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath
 			Write-Host "Symlink created" -ForegroundColor Green
 		} catch [System.Exception] {
-			
+
 			Write-Host "Failed to create symlink $sourcePath -> $targetPath : $_" -ForegroundColor Red
 		}
 	} else {
