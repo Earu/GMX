@@ -1,3 +1,15 @@
+FindMetaTable("Vector").__tostring = function(self)
+	return ("Vector (%d, %d, %d)"):format(self.x, self.y, self.z)
+end
+
+FindMetaTable("Angle").__tostring = function(self)
+	return ("Angle (%d, %d, %d)"):format(self.pitch, self.yaw, self.roll)
+end
+
+FindMetaTable("Color").__tostring = function(self)
+	return ("Color (%d, %d, %d, %d)"):format(self.r, self.g, self.b, self.a)
+end
+
 local function get_function_source(fn)
 	local info = debug.getinfo(fn)
 	if info.short_src == "[C]" then
@@ -18,6 +30,10 @@ local function compute_spacing_print_pos(tbl, compute_keys, max_spacing)
 	local min = 0
 	for key, value in pairs(tbl) do
 		local len = #tostring(key) + 2 -- '[' + ']'
+		if isstring(key) then
+			len = len + 2 -- ""
+		end
+
 		if not compute_keys then
 			len = #tostring(value)
 		end
@@ -49,7 +65,7 @@ function DBG.PrintTable(tbl)
 
 	local min_equal_pos = compute_spacing_print_pos(tbl, true, VALUE_SPACING_MAX)
 	local tbl_keys = table.GetKeys(tbl)
-	table.sort(tbl_keys)
+	table.sort(tbl_keys, function(a, b) return tostring(a) < tostring(b) end)
 
 	for _, key in ipairs(tbl_keys) do
 		local value = tbl[key]
@@ -119,7 +135,7 @@ function DBG.PrintTable(tbl)
 		end
 
 		local key_name = tostring(key)
-		local key_len = #key_name + 2
+		local key_len = #key_name + 2 + (isstring(key) and 2 or 0)
 		local spacing_value = ""
 		if key_len < min_equal_pos then
 			spacing_value = (" "):rep(min_equal_pos - key_len)
@@ -155,10 +171,6 @@ function DBG.PrintTable(tbl)
 	table.insert(final_args, "}\n")
 
 	MsgC(unpack(final_args))
-end
-
-FindMetaTable("Vector").__tostring = function(self)
-	return ("Vector (%d, %d, %d)"):format(self.x, self.y, self.z)
 end
 
 local function markup_keyword(match)
