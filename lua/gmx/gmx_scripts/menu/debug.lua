@@ -32,19 +32,20 @@ local function compute_spacing_print_pos(tbl, compute_keys, max_spacing)
 	return min
 end
 
-gmx.Debug = {}
-
+local DBG = gmx.Module("Debug")
 local LITERAL_COLOR = Color(199, 116, 78)
 local STR_LITERAL_COLOR = Color(162, 255, 150)
 local VALUE_SPACING_MAX, INFO_SPACING_MAX = 40, 30
-function PrintTable(tbl)
+function DBG.PrintTable(tbl)
 	if not istable(tbl) then
 		print(tbl)
 		return
 	end
 
-	MsgC(gmx.Colors.TextAlternative, "-- " .. tostring(tbl) .. "\n")
-	MsgC(gmx.Colors.Accent, "{\n")
+	local final_args = {
+		gmx.Colors.TextAlternative, "-- " .. tostring(tbl) .. "\n",
+		gmx.Colors.Accent, "{\n",
+	}
 
 	local min_equal_pos = compute_spacing_print_pos(tbl, true, VALUE_SPACING_MAX)
 	local tbl_keys = table.GetKeys(tbl)
@@ -78,8 +79,8 @@ function PrintTable(tbl)
 			args = { STR_LITERAL_COLOR, value_str }
 		elseif isnumber(value) or isbool(value) then
 			args = { LITERAL_COLOR, value_str }
-		elseif IsColor(value) or type(value) == "Vector" then
-			local type_name = IsColor(value) and "Color" or "Vector"
+		elseif IsColor(value) or type(value) == "Vector" or type(value) == "Angle" then
+			local type_name = IsColor(value) and "Color" or type(value)
 			args = { gmx.Colors.AccentAlternative, type_name, gmx.Colors.Text, " (" }
 			value_str = type_name .. " ("
 
@@ -124,28 +125,37 @@ function PrintTable(tbl)
 			spacing_value = (" "):rep(min_equal_pos - key_len)
 		end
 
-		local final_args = {
-			gmx.Colors.Accent, "\t[", gmx.Colors.Text, key_name, gmx.Colors.Accent, "]",
-			gmx.Colors.Text, spacing_value .. " = "
-		}
-
-		final_args = table.Add(final_args, args)
-		final_args = table.Add(final_args, { gmx.Colors.TextAlternative, spacing_info .. " -- "})
-
-		if isstring(comment) then
-			table.insert(final_args, comment .. "\n")
-		elseif istable(comment) then
-			final_args = table.Add(final_args, comment)
-			table.insert(final_args, "\n")
+		local line_args = {}
+		if isstring(key) then
+			line_args = {
+				gmx.Colors.Accent, "\t[", gmx.Colors.Text, "\"", key_name, "\"", gmx.Colors.Accent, "]",
+				gmx.Colors.Text, spacing_value .. " = "
+			}
+		else
+			line_args = {
+				gmx.Colors.Accent, "\t[", LITERAL_COLOR, key_name, gmx.Colors.Accent, "]",
+				gmx.Colors.Text, spacing_value .. " = "
+			}
 		end
 
-		MsgC(unpack(final_args))
+		line_args = table.Add(line_args, args)
+		line_args = table.Add(line_args, { gmx.Colors.TextAlternative, spacing_info .. " -- "})
+
+		if isstring(comment) then
+			table.insert(line_args, comment .. "\n")
+		elseif istable(comment) then
+			line_args = table.Add(line_args, comment)
+			table.insert(line_args, "\n")
+		end
+
+		final_args = table.Add(final_args, line_args)
 	end
 
-	MsgC(gmx.Colors.Accent, "}\n")
-end
+	table.insert(final_args, gmx.Colors.Accent)
+	table.insert(final_args, "}\n")
 
-gmx.Debug.PrintTable = PrintTable
+	MsgC(unpack(final_args))
+end
 
 FindMetaTable("Vector").__tostring = function(self)
 	return ("Vector (%d, %d, %d)"):format(self.x, self.y, self.z)
@@ -172,8 +182,13 @@ local function sanitize_content(match, remove_string_markers)
 	return ret
 end
 
-local function markup_with_color(color, remove_string_markers)
+local function markup_with_color(color_to_use, remove_string_markers, color_literals)
 	return function(match)
+		local color = color_to_use
+		if color_literals and match:match("[0-9]") and #match == 1 then
+			color = LITERAL_COLOR
+		end
+
 		return ("<color=%d,%d,%d>%s</color>"):format(
 			color.r, color.g, color.b,
 			sanitize_content(match, remove_string_markers)
@@ -187,10 +202,12 @@ local LUA_KEYWORDS = {
 	"false", "true"
 }
 local BASE_LUA_KEYWORD_PATTERN = "[\n\t%s%)%(%{%}%,%<%>]"
-function PrintCode(code)
+function DBG.PrintCode(code)
+	local args = {}
+
 	-- syntax
 	code = code
-		:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(gmx.Colors.Accent))
+		:gsub("[%(%)%{%}%.%=%,%+%;%%%!%~%&%|%#%:0-9]", markup_with_color(gmx.Colors.Accent, false, true))
 		:gsub("[^%[]%[[^%[]",function(match) -- table indexing [
 			return match[1] .. markup_with_color(gmx.Colors.Accent, true)(match[2]) .. match[3]
 		end)
@@ -226,9 +243,9 @@ function PrintCode(code)
 	repeat
 		local new_start_pos, new_end_pos = code:find("%<color%=%d+%,%d+%,%d+%>(.-)%<%/color%>", end_pos and end_pos + 1 or 1)
 		if new_start_pos then
-			MsgC(gmx.Colors.Text, code:sub(end_pos and end_pos + 1 or 1, new_start_pos - 1))
+			args = table.Add(args, { gmx.Colors.Text, code:sub(end_pos and end_pos + 1 or 1, new_start_pos - 1) })
 		else
-			MsgC(gmx.Colors.Text, code:sub(end_pos and end_pos + 1 or 1))
+			args = table.Add(args, { gmx.Colors.Text, code:sub(end_pos and end_pos + 1 or 1) })
 		end
 
 		if new_start_pos and new_end_pos then
@@ -239,18 +256,17 @@ function PrintCode(code)
 			end)
 
 			chunk = sanitize_content(chunk)
-			MsgC(Color(r, g, b, 255), chunk)
+			args = table.Add(args, { Color(r, g, b, 255), chunk })
 		end
 
 		start_pos, end_pos = new_start_pos, new_end_pos
 	until not start_pos and not end_pos
 
-	MsgC("\n")
+	table.insert(args, "\n")
+	MsgC(unpack(args))
 end
 
-gmx.Debug.PrintCode = PrintCode
-
-function PrintFunction(fn)
+function DBG.PrintFunction(fn)
 	if not isfunction(fn) then
 		print(fn)
 		return
@@ -267,40 +283,83 @@ function PrintFunction(fn)
 
 	if file_path == "Native" or file_path == "Anonymous" then return end
 
-	PrintCode(fn_source)
+	DBG.PrintCode(fn_source)
 end
-
-gmx.Debug.PrintFunction = PrintFunction
 
 debug.setmetatable(function() end, {
 	src = function(self) return get_function_source(self) end,
-	psrc = function(self) PrintFunction(self) end,
+	psrc = function(self) DBG.PrintFunction(self) end,
 })
 
-local function get_first_value(tbl)
-	for _, value in pairs(tbl) do
-		return value
-	end
+function DBG.PrintVector(vec)
+	MsgC(gmx.Colors.AccentAlternative, "Vector", gmx.Colors.Text, " (",
+		LITERAL_COLOR, vec.x, gmx.Colors.Text, ", ",
+		LITERAL_COLOR, vec.y, gmx.Colors.Text, ", ",
+		LITERAL_COLOR, vec.z, gmx.Colors.Text, ")\n"
+	)
 end
 
-local old_print = print
-function print(...)
-	local args = {...}
-	local args_len = table.Count(args)
-	if args_len == 1 then
-		local first_arg = get_first_value(args)
-		if isfunction(first_arg) then
-			PrintFunction(first_arg)
-		elseif istable(first_arg) then
-			PrintTable(first_arg)
-		else
-			old_print(first_arg)
-		end
-	elseif args_len == 0 then
-		old_print("nil")
+function DBG.PrintAngle(ang)
+	MsgC(gmx.Colors.AccentAlternative, "Angle", gmx.Colors.Text, " (",
+		LITERAL_COLOR, ang.pitch, gmx.Colors.Text, ", ",
+		LITERAL_COLOR, ang.yaw, gmx.Colors.Text, ", ",
+		LITERAL_COLOR, ang.roll, gmx.Colors.Text, ")\n"
+	)
+end
+
+function DBG.PrintColor(col)
+	MsgC(gmx.Colors.TextAlternative, "-- Color (", col, "███", gmx.Colors.TextAlternative, ")\n")
+	MsgC(gmx.Colors.AccentAlternative, "Color", gmx.Colors.Text, " (",
+		LITERAL_COLOR, col.r, gmx.Colors.Text, ", ",
+		LITERAL_COLOR, col.g, gmx.Colors.Text, ", ",
+		LITERAL_COLOR, col.b, gmx.Colors.Text, ", ",
+		LITERAL_COLOR, col.a, gmx.Colors.Text, ")\n"
+	)
+end
+
+function DBG.PrintString(str)
+	MsgC(gmx.Colors.TextAlternative, ("-- %d bytes\n"):format(#str), STR_LITERAL_COLOR, "\"" .. str .. "\"\n")
+end
+
+function DBG.PrintLiteral(literal)
+	if isnumber(literal) or literal == true or literal == false then
+		MsgC(LITERAL_COLOR, tostring(literal) .. "\n")
 	else
-		old_print(...)
+		print(literal)
 	end
 end
 
-gmx.Debug.Print = print
+function DBG.PrintNil()
+	MsgC(gmx.Colors.Accent, "nil\n")
+end
+
+function DBG.Print(...)
+	local args = {...}
+	if not next(args) then
+		DBG.PrintNil()
+		return
+	end
+
+	for _, arg in pairs(args) do
+		if isfunction(arg) then
+			DBG.PrintFunction(arg)
+		elseif type(arg) == "Vector" then
+			DBG.PrintVector(arg)
+		elseif type(arg) == "Angle" then
+			DBG.PrintAngle(arg)
+		elseif istable(arg) then
+			if IsColor(arg) then
+				DBG.PrintColor(arg)
+				continue
+			end
+
+			DBG.PrintTable(arg)
+		elseif isstring(arg) then
+			DBG.PrintString(arg)
+		elseif isnumber(arg) or arg == true or arg == false then
+			DBG.PrintLiteral(arg)
+		else
+			print(arg)
+		end
+	end
+end

@@ -94,7 +94,7 @@ concommand.Remove("gmx")
 concommand.Add("gmx", function(_, _, _, cmd)
 	cmd = cmd:Trim()
 	if #cmd == 0 then
-		PrintTable(gmx)
+		gmx.Debug.PrintTable(gmx)
 		return
 	end
 
@@ -113,7 +113,7 @@ concommand.Add("gmx", function(_, _, _, cmd)
 	end
 
 	gmx.Print("Menu running:", cmd)
-	local err = RunString([[local ret = (]] .. cmd .. [[) local p = ((isfunction(ret) or istable(ret)) and gmx.Debug and gmx.Debug.Print or print) p(ret)]], "gmx", true)
+	local err = RunString([[local ret = (]] .. cmd .. [[) local p = (gmx.Debug and gmx.Debug.Print or print) p(ret)]], "gmx", true)
 	if err then print(err) end
 end)
 
