@@ -24,10 +24,9 @@ $scriptDir = Split-Path $scriptpath
 Push-Location $scriptDir # make sure the working directory is the script directory
 
 $gmodPath = Read-Host -Prompt 'Input Garrys Mod path'
-$symLinks = "gmx", "menu/menu.lua", "menu/_menu.lua"
-Foreach ($link in $symLinks) {
-	$targetPath = Join-Path -Path $gmodPath -ChildPath "lua/$link"
-	$sourcePath = Join-Path -Path (Resolve-Path "./lua") -ChildPath "$link"
+
+function SymLink {
+	param ([string]$sourcePath, [string]$targetPath)
 
 	Write-Host "Creating symlink $sourcePath -> $targetPath"
 
@@ -43,25 +42,28 @@ Foreach ($link in $symLinks) {
 	}
 }
 
-Get-ChildItem "./lua/bin" -Filter *.dll | ForEach-Object {
-	$targetFileName = Split-Path "$_" -Leaf
-	$targetPath = Join-Path -Path $gmodPath -ChildPath "lua/bin/$targetFileName"
-	$sourcePath = Join-Path -Path (Resolve-Path "./") -ChildPath "lua/bin/$targetFileName"
+# core
+$symLinks = "gmx", "menu/menu.lua", "menu/_menu.lua"
+Foreach ($link in $symLinks) {
+	$sourcePath = Join-Path -Path (Resolve-Path "./lua") -ChildPath "$link"
+	$targetPath = Join-Path -Path $gmodPath -ChildPath "lua/$link"
 
-	Write-Host "Creating symlink $sourcePath -> $targetPath"
-
-	if (!(Test-Path -Path $targetPath)) {
-		try {
-			New-Item -ItemType SymbolicLink -Path $targetPath -Target $sourcePath
-			Write-Host "Symlink created" -ForegroundColor Green
-		} catch [System.Exception] {
-
-			Write-Host "Failed to create symlink $sourcePath -> $targetPath : $_" -ForegroundColor Red
-		}
-	} else {
-		Write-Host "Symbolic link already exists: $targetPath"
-	}
+	SymLink $sourcePath $targetPath
 }
 
+# binaries
+Get-ChildItem "./lua/bin" -Filter *.dll | ForEach-Object {
+	$targetFileName = Split-Path "$_" -Leaf
+	$sourcePath = Join-Path -Path (Resolve-Path "./") -ChildPath "lua/bin/$targetFileName"
+	$targetPath = Join-Path -Path $gmodPath -ChildPath "lua/bin/$targetFileName"
+
+	SymLink $sourcePath $targetPath
+}
+
+# source theme
+$sourceSchemePath = Resolve-Path "./resource/SourceScheme.res"
+$targetSchemePath = Join-Path -Path $gmodPath -ChildPath "resource/SourceScheme.res"
+SymLink $sourceSchemePath $targetSchemePath
+
 Write-Host "All done! Exiting in 5s..."
-Start-Sleep -Seconds 20
+Start-Sleep -Seconds 5
