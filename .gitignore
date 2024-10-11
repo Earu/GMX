@@ -4,3 +4,5 @@
 vscode-ext/.vscode
 vscode-ext/node_modules
 vscode-ext/dist
+
+./lua/gmx/gmx_scripts/dynamic/**
