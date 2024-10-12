@@ -70,5 +70,5 @@ Example:
 - **CLIENT POST INIT**: In `lua/gmx/gmx_scripts/client/post_init/` add a Lua file and it will be ran after Lua init.
 
 # Final notes
-GMX is before all a tool to debug your other scripts or protect your client to some degree from potential malicious uses. It cannot be responsible of your usage, **if you get banned from any server because you've stolen proprietary code or cheated this is on you.**
-Also to fully understand GMX I vividly recommend reading its code and you will be able to use it much more effectively once your understand it. **Consider GMX like a framework to build more things rather than an out of the box working tool.**
+- GMX is before all a tool to debug your other scripts or protect your client to some degree from potential malicious uses. It cannot be responsible of your usage, **`if you get banned from any server because you've stolen proprietary code or cheated this is on you.`**
+- Also to fully understand GMX I vividly recommend reading its code and you will be able to use it much more effectively once your understand it. **`Consider GMX like a framework to build more things rather than an out of the box working tool.`**
