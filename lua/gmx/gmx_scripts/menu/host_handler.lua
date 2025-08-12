@@ -19,6 +19,7 @@ local INTEROP = gmx.Module("Interop")
 local INIT = gmx.Module("ClientInit")
 local WHITELIST = {}
 local HOSTNAMES_TO_REVERSE = {}
+local HOSTNAME_LOOKUP = {}
 
 local host_scripts_dir = "lua/gmx/gmx_scripts/dynamic/"
 local _, script_dirs = file.Find(host_scripts_dir .. "/*", "MOD")
@@ -35,6 +36,16 @@ for _, script_dir in ipairs(script_dirs) do
 					local ip = dns.Lookup(sub_domain)[1]
 					if ip then WHITELIST[ip] = true end
 				end
+			end
+		end
+
+		if host_config.IPs then
+			for _, ip in ipairs(host_config.IPs) do
+				if host_config.Trusted then
+					WHITELIST[ip] = true
+				end
+
+				HOSTNAME_LOOKUP[ip] = script_dir
 			end
 		end
 	else
@@ -190,7 +201,6 @@ gmx.RegisterConstantProvider("GMX_HOST_WHITELISTED", function()
 	return WHITELIST[HOST.GetIPAddress()] ~= nil
 end)
 
-local HOSTNAME_LOOKUP = {}
 for _, hostname in ipairs(HOSTNAMES_TO_REVERSE) do
 	local ips = dns.Lookup(hostname)
 	for _, ip in ipairs(ips) do
