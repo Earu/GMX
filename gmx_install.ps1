@@ -60,10 +60,5 @@ Get-ChildItem "./lua/bin" -Filter *.dll | ForEach-Object {
 	SymLink $sourcePath $targetPath
 }
 
-# source theme
-$sourceSchemePath = Resolve-Path "./resource/SourceScheme.res"
-$targetSchemePath = Join-Path -Path $gmodPath -ChildPath "resource/SourceScheme.res"
-SymLink $sourceSchemePath $targetSchemePath
-
 Write-Host "All done! Exiting in 5s..."
 Start-Sleep -Seconds 5
